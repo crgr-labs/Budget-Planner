@@ -1852,6 +1852,10 @@ td { padding: 10px 12px; }
         grid-template-columns: 1fr;
     }
 
+    .dashboard-grid .add-panel {
+        order: -1;
+    }
+
     .metric-card,
     .report-card,
     .panel,
