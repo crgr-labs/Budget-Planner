@@ -13,6 +13,9 @@ interface Transaction {
   subcategory: string;
   type: TransactionType;
   amount: number;
+  savings?: boolean;
+  fundType?: string;
+  account?: string;
 }
 
 interface NewTransaction {
@@ -22,6 +25,17 @@ interface NewTransaction {
   subcategory: string;
   type: TransactionType;
   amount: number | null;
+  fundType?: string;
+  account?: string;
+  savings?: boolean;
+}
+
+interface SavingsMonthlySummary {
+  month: string;
+  contributions: number;
+  withdrawals: number;
+  netSavings: number;
+  runningBalance: number;
 }
 
 interface CategoryGroup {
@@ -35,6 +49,12 @@ interface SubcategoryTrend {
   points: number[];
 }
 
+interface SavingsTrendPoint {
+  month: string;
+  amount: number;
+  height: number;
+}
+
 @Component({
   imports: [CommonModule, FormsModule],
   selector: 'app-root',
@@ -42,6 +62,7 @@ interface SubcategoryTrend {
   templateUrl: './app.html',
 })
 export class App {
+  private draggedTile: HTMLElement | null = null;
   private readonly apiUrl = ['localhost', '127.0.0.1'].includes(window.location.hostname)
     ? 'http://localhost:3000/api/transactions'
     : null;
@@ -58,25 +79,89 @@ export class App {
     { name: 'Bills', subcategories: ['Phone', 'Internet', 'Insurance'] },
     { name: 'Health', subcategories: ['Medicine', 'Appointments', 'Fitness'] },
   ]);
+  protected readonly savingsCategoryGroups = signal<CategoryGroup[]>([
+    { name: 'Emergency Fund', subcategories: ['Short-term buffer', 'Medical reserve'] },
+    { name: 'General Savings', subcategories: ['Monthly savings', 'Long-term savings'] },
+    { name: 'Investment Fund', subcategories: ['Stocks', 'Bonds'] },
+    { name: 'Travel Fund', subcategories: ['Flights', 'Accommodation'] },
+    { name: 'Other', subcategories: [] },
+  ]);
   protected get categories(): string[] { return this.categoryGroups().map((group) => group.name); }
+  protected get savingsCategories(): string[] { return this.savingsCategoryGroups().map((group) => group.name); }
   protected readonly transactions = signal<Transaction[]>([]);
+  protected readonly regularTransactions = computed(() => this.transactions().filter((item) => !item.savings));
   protected readonly newTransaction = signal<NewTransaction>(this.emptyTransaction());
   protected readonly budget = signal(3800);
-  protected readonly selectedTransactions = computed(() => this.transactions().filter((item) => item.date.startsWith(this.selectedMonth())));
+  protected readonly selectedTransactions = computed(() => this.regularTransactions().filter((item) => item.date.startsWith(this.selectedMonth())));
   protected readonly totalIncome = computed(() => this.selectedTransactions().filter((item) => item.type === 'Income').reduce((sum, item) => sum + item.amount, 0));
   protected readonly totalSpent = computed(() => this.selectedTransactions().filter((item) => item.type === 'Expense').reduce((sum, item) => sum + item.amount, 0));
   protected readonly balance = computed(() => this.totalIncome() - this.totalSpent());
+  protected readonly availableBalance = computed(() => {
+    const monthlyRegularSpending = this.selectedTransactions().filter((item) => item.type === 'Expense' && !item.savings).reduce((sum, item) => sum + item.amount, 0);
+    return this.budget() - monthlyRegularSpending;
+  });
   protected readonly budgetProgress = computed(() => Math.min(100, (this.totalSpent() / this.budget()) * 100));
   protected readonly reportCategories = computed(() => this.categories
     .map((category) => ({ category, total: this.categoryTotal(category) }))
     .filter((item) => item.total > 0)
     .sort((first, second) => second.total - first.total));
-  protected readonly reportExpenseCount = computed(() => this.transactions().filter((item) => item.type === 'Expense').length);
-  protected readonly reportSavingsRate = computed(() => this.totalIncome() > 0 ? (this.balance() / this.totalIncome()) * 100 : 0);
-  protected readonly budgetLeft = computed(() => Math.max(0, this.budget() - this.totalSpent()));
+  protected readonly reportTransactions = computed(() => this.selectedTransactions().filter((item) => !item.savings));
+  protected readonly reportTotalIncome = computed(() => this.reportTransactions().filter((item) => item.type === 'Income').reduce((sum, item) => sum + item.amount, 0));
+  protected readonly reportTotalSpent = computed(() => this.reportTransactions().filter((item) => item.type === 'Expense').reduce((sum, item) => sum + item.amount, 0));
+  protected readonly reportBalance = computed(() => this.reportTotalIncome() - this.reportTotalSpent());
+  protected readonly reportBudgetProgress = computed(() => Math.min(100, (this.reportTotalSpent() / this.budget()) * 100));
+  protected readonly reportExpenseCount = computed(() => this.reportTransactions().filter((item) => item.type === 'Expense').length);
+  protected readonly reportSavingsRate = computed(() => this.reportTotalIncome() > 0 ? (this.reportBalance() / this.reportTotalIncome()) * 100 : 0);
+  protected readonly budgetLeft = computed(() => Math.max(0, this.budget() - this.reportTotalSpent()));
   protected readonly savingsProgress = computed(() => Math.min(100, this.reportSavingsRate()));
-  protected readonly savingsFundGoal = 10000;
-  protected readonly savingsFundProgress = computed(() => Math.min(100, Math.max(0, (this.balance() / this.savingsFundGoal) * 100)));
+  protected readonly targetSavingsGoal = signal(10000);
+  protected readonly targetSavingsProgress = computed(() => Math.min(100, Math.max(0, (this.savingsBalance() / this.targetSavingsGoal()) * 100)));
+  protected readonly savingsTransactions = computed(() => this.transactions().filter((item) => item.savings));
+  protected readonly savingsBalance = computed(() => this.savingsTransactions().reduce((sum, item) => sum + (item.type === 'Income' ? item.amount : -item.amount), 0));
+  protected readonly savingsGoalProgress = computed(() => Math.min(100, Math.max(0, (this.savingsBalance() / this.targetSavingsGoal()) * 100)));
+  protected readonly amountRemaining = computed(() => Math.max(0, this.targetSavingsGoal() - this.savingsBalance()));
+  protected readonly savingsSummary = computed<SavingsMonthlySummary[]>(() => {
+    const months = [...new Set(this.savingsTransactions().map((item) => item.date.slice(0, 7)))].sort();
+    let runningBalance = 0;
+    return months.map((month) => {
+      const monthTransactions = this.savingsTransactions().filter((item) => item.date.startsWith(month));
+      const contributions = monthTransactions.filter((item) => item.type === 'Income').reduce((sum, item) => sum + item.amount, 0);
+      const withdrawals = monthTransactions.filter((item) => item.type === 'Expense').reduce((sum, item) => sum + item.amount, 0);
+      const netSavings = contributions - withdrawals;
+      runningBalance += netSavings;
+      return { month, contributions, withdrawals, netSavings, runningBalance };
+    }).reverse();
+  });
+  protected readonly currentSavingsSummary = computed(() => this.savingsSummary().find((item) => item.month === this.selectedMonth()) ?? {
+    month: this.selectedMonth(), contributions: 0, withdrawals: 0, netSavings: 0, runningBalance: this.savingsBalance(),
+  });
+  protected readonly monthlyContribution = computed(() => this.savingsSummary().find((item) => item.month === this.selectedMonth())?.contributions ?? 0);
+  protected readonly targetDate = computed(() => {
+    if (this.amountRemaining() === 0) return 'Goal reached';
+    if (this.monthlyContribution() === 0) return 'Add monthly savings';
+    const target = new Date();
+    target.setMonth(target.getMonth() + Math.ceil(this.amountRemaining() / this.monthlyContribution()));
+    return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(target);
+  });
+  protected readonly recentSavingsTransactions = computed(() => this.transactions()
+    .filter((item) => item.savings)
+    .slice(0, 5));
+  protected readonly savingsBalances = computed(() => [
+    { name: 'Target savings', amount: Math.min(Math.max(this.savingsBalance(), 0), this.targetSavingsGoal()) },
+    { name: 'Additional savings', amount: Math.max(this.savingsBalance() - this.targetSavingsGoal(), 0) },
+  ]);
+  protected readonly savingsTrendData = computed<SavingsTrendPoint[]>(() => {
+    const months = this.monthOptions().slice(0, 6).reverse();
+    const amounts = months.map((month) => this.savingsTransactions()
+      .filter((item) => item.date.startsWith(month))
+      .reduce((sum, item) => sum + (item.type === 'Income' ? item.amount : -item.amount), 0));
+    const maximum = Math.max(...amounts, 1);
+    return months.map((month, index) => ({
+      month: new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(new Date(`${month}-01T00:00:00Z`)),
+      amount: amounts[index],
+      height: amounts[index] > 0 ? Math.max(8, (amounts[index] / maximum) * 100) : 4,
+    }));
+  });
   protected readonly trendData = computed(() => this.monthOptions().slice(0, 6).reverse().map((month) => ({
     month: new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(new Date(`${month}-01T00:00:00Z`)),
     amount: this.transactions().filter((item) => item.type === 'Expense' && item.date.startsWith(month)).reduce((sum, item) => sum + item.amount, 0),
@@ -103,6 +188,7 @@ export class App {
   protected readonly newCategorySubcategory = signal('');
   protected readonly selectedCategoryForSubcategory = signal('');
   protected readonly newSubcategoryName = signal('');
+  protected readonly newSavingsTransaction = signal<NewTransaction>(this.emptySavingsTransaction());
 
   constructor() {
     const saved = localStorage.getItem('ledger-transactions');
@@ -111,9 +197,15 @@ export class App {
     }
     const savedBudget = Number(localStorage.getItem('ledger-budget'));
     if (savedBudget > 0) this.budget.set(savedBudget);
+    const savedTargetSavings = Number(localStorage.getItem('ledger-target-savings'));
+    if (savedTargetSavings > 0) this.targetSavingsGoal.set(savedTargetSavings);
     const savedCategories = localStorage.getItem('ledger-categories');
     if (savedCategories) {
       try { this.categoryGroups.set(JSON.parse(savedCategories)); } catch { localStorage.removeItem('ledger-categories'); }
+    }
+    const savedSavingsCategories = localStorage.getItem('ledger-savings-categories');
+    if (savedSavingsCategories) {
+      try { this.savingsCategoryGroups.set(JSON.parse(savedSavingsCategories)); } catch { localStorage.removeItem('ledger-savings-categories'); }
     }
     this.loadFromApi();
   }
@@ -126,6 +218,14 @@ export class App {
     }
   }
 
+  protected updateTargetSavingsGoal(value: string | number): void {
+    const amount = Number(value);
+    if (amount > 0) {
+      this.targetSavingsGoal.set(amount);
+      localStorage.setItem('ledger-target-savings', String(amount));
+    }
+  }
+
   protected editBudget(): void {
     const value = window.prompt('Enter your monthly budget', String(this.budget()));
     if (value !== null) this.updateBudget(value);
@@ -135,13 +235,29 @@ export class App {
     this.newTransaction.update((form) => {
       if (field === 'type' && value === 'Income') return { ...form, type: 'Income', category: 'Income' };
       if (field === 'type' && value === 'Expense') return { ...form, type: 'Expense', category: form.category === 'Income' ? this.categories[0] : form.category, subcategory: form.subcategory || this.subcategoriesFor(form.category === 'Income' ? this.categories[0] : form.category)[0] || '' };
-      if (field === 'category') return { ...form, category: String(value), subcategory: this.subcategoriesFor(String(value))[0] || '' };
+      if (field === 'category') return form.savings
+        ? { ...form, category: String(value), subcategory: this.savingsSubcategoriesFor(String(value))[0] || '' }
+        : { ...form, category: String(value), subcategory: this.subcategoriesFor(String(value))[0] || '' };
       return { ...form, [field]: value };
     });
   }
 
+  protected selectTransactionMode(mode: 'Expense' | 'Savings'): void {
+    this.newTransaction.update((form) => mode === 'Savings'
+      ? { ...form, type: 'Income', savings: true, category: this.savingsCategories[0], subcategory: 'Contribution' }
+      : { ...form, type: 'Expense', savings: false, category: form.savings ? this.categories[0] : form.category, subcategory: form.savings ? this.subcategoriesFor(this.categories[0])[0] || '' : form.subcategory });
+  }
+
+  protected updateSavingsField(field: keyof NewTransaction, value: string | number | null): void {
+    this.newSavingsTransaction.update((form) => ({ ...form, [field]: value }));
+  }
+
   protected subcategoriesFor(category: string): string[] {
     return this.categoryGroups().find((group) => group.name === category)?.subcategories ?? [];
+  }
+
+  protected savingsSubcategoriesFor(category: string): string[] {
+    return this.savingsCategoryGroups().find((group) => group.name === category)?.subcategories ?? [];
   }
 
   protected addCategory(name: string, subcategory: string): void {
@@ -159,6 +275,21 @@ export class App {
     this.persistCategories();
   }
 
+  protected addSavingsCategory(name: string, subcategory: string): void {
+    const categoryName = name.trim();
+    const subcategoryName = subcategory.trim();
+    if (!categoryName || this.savingsCategories.some((category) => category.toLowerCase() === categoryName.toLowerCase())) return;
+    this.savingsCategoryGroups.update((groups) => [...groups, { name: categoryName, subcategories: subcategoryName ? [subcategoryName] : [] }]);
+    this.persistSavingsCategories();
+  }
+
+  protected addSavingsSubcategory(category: string, subcategory: string): void {
+    const subcategoryName = subcategory.trim();
+    if (!category || !subcategoryName) return;
+    this.savingsCategoryGroups.update((groups) => groups.map((group) => group.name === category && !group.subcategories.some((item) => item.toLowerCase() === subcategoryName.toLowerCase()) ? { ...group, subcategories: [...group.subcategories, subcategoryName] } : group));
+    this.persistSavingsCategories();
+  }
+
   protected createCategory(): void {
     this.addCategory(this.newCategoryName(), this.newCategorySubcategory());
     this.newCategoryName.set('');
@@ -167,6 +298,17 @@ export class App {
 
   protected createSubcategory(): void {
     this.addSubcategory(this.selectedCategoryForSubcategory(), this.newSubcategoryName());
+    this.newSubcategoryName.set('');
+  }
+
+  protected createSavingsCategory(): void {
+    this.addSavingsCategory(this.newCategoryName(), this.newCategorySubcategory());
+    this.newCategoryName.set('');
+    this.newCategorySubcategory.set('');
+  }
+
+  protected createSavingsSubcategory(): void {
+    this.addSavingsSubcategory(this.selectedCategoryForSubcategory(), this.newSubcategoryName());
     this.newSubcategoryName.set('');
   }
 
@@ -179,6 +321,35 @@ export class App {
     this.mobileMenuOpen.update((isOpen) => !isOpen);
   }
 
+  protected startTileDrag(event: DragEvent): void {
+    const tile = event.currentTarget as HTMLElement;
+    this.draggedTile = tile;
+    tile.classList.add('tile-dragging');
+    event.dataTransfer?.setData('text/plain', 'dashboard-tile');
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+  }
+
+  protected allowTileDrop(event: DragEvent): void {
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+  }
+
+  protected dropTile(event: DragEvent): void {
+    event.preventDefault();
+    const target = event.currentTarget as HTMLElement;
+    const parent = target.parentElement;
+    if (!this.draggedTile || !parent || this.draggedTile === target || this.draggedTile.parentElement !== parent) return;
+    const tiles = [...parent.children];
+    const draggedIndex = tiles.indexOf(this.draggedTile);
+    const targetIndex = tiles.indexOf(target);
+    parent.insertBefore(this.draggedTile, draggedIndex < targetIndex ? target.nextSibling : target);
+  }
+
+  protected endTileDrag(): void {
+    this.draggedTile?.classList.remove('tile-dragging');
+    this.draggedTile = null;
+  }
+
   protected selectMonth(month: string): void {
     this.selectedMonth.set(month);
   }
@@ -186,10 +357,31 @@ export class App {
   protected addTransaction(): void {
     const entry = this.newTransaction();
     if (!entry.description.trim() || !entry.date || !entry.category || !entry.amount || entry.amount <= 0) return;
-    this.transactions.update((items) => [{ ...entry, id: Date.now(), description: entry.description.trim(), amount: Number(entry.amount) }, ...items]);
+    this.transactions.update((items) => [{ ...entry, id: Date.now(), savings: entry.savings ?? false, description: entry.description.trim(), amount: Number(entry.amount) }, ...items]);
     this.persist();
     this.syncToApi();
     this.newTransaction.set(this.emptyTransaction());
+  }
+
+  protected addSavingsTransaction(): void {
+    const entry = this.newSavingsTransaction();
+    const fundType = entry.fundType?.trim() ?? '';
+    const account = entry.account?.trim() ?? '';
+    if (!entry.description.trim() || !entry.date || !entry.amount || entry.amount <= 0 || !fundType || !account) return;
+    this.transactions.update((items) => [{
+      ...entry,
+      id: Date.now(),
+      category: 'Savings',
+      subcategory: entry.type === 'Income' ? 'Contribution' : 'Withdrawal',
+      fundType,
+      account,
+      savings: true,
+      description: entry.description.trim(),
+      amount: Number(entry.amount),
+    }, ...items]);
+    this.persist();
+    this.syncToApi();
+    this.newSavingsTransaction.set(this.emptySavingsTransaction());
   }
 
   protected removeTransaction(id: number): void {
@@ -214,6 +406,7 @@ export class App {
         type: String(row['Type'] ?? 'Expense') === 'Income' ? 'Income' as TransactionType : 'Expense' as TransactionType,
         subcategory: String(row['Subcategory'] ?? ''),
         amount: Number(row['Amount'] ?? 0),
+        savings: false,
       })).filter((item) => item.amount > 0);
       this.transactions.set([...imported, ...this.transactions()]);
       this.persist();
@@ -241,6 +434,7 @@ export class App {
 
   private persist(): void { localStorage.setItem('ledger-transactions', JSON.stringify(this.transactions())); }
   private persistCategories(): void { localStorage.setItem('ledger-categories', JSON.stringify(this.categoryGroups())); }
+  private persistSavingsCategories(): void { localStorage.setItem('ledger-savings-categories', JSON.stringify(this.savingsCategoryGroups())); }
   private loadFromApi(): void {
     if (!this.apiUrl) return;
     void fetch(this.apiUrl).then((response) => response.ok ? response.json() : Promise.reject()).then((items: Transaction[]) => {
@@ -252,5 +446,6 @@ export class App {
     if (!this.apiUrl) return;
     void fetch(this.apiUrl, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.transactions()) }).catch(() => undefined);
   }
-  private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null }; }
+  private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null, savings: false }; }
+  private emptySavingsTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Savings', subcategory: 'Contribution', type: 'Income', amount: null, fundType: 'Target savings', account: '' }; }
 }

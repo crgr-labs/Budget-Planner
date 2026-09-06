@@ -338,6 +338,15 @@
     box-shadow: 0 3px 12px rgba(32, 58, 45, .025);
 }
 
+[draggable="true"] {
+    cursor: grab;
+}
+
+.tile-dragging {
+    opacity: .55;
+    cursor: grabbing;
+}
+
 .panel-heading {
     display: flex;
     justify-content: space-between;
