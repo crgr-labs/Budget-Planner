@@ -46,6 +46,7 @@ export class App {
     ? 'http://localhost:3000/api/transactions'
     : null;
   protected readonly activeSection = signal('Overview');
+  protected readonly mobileMenuOpen = signal(false);
   protected readonly selectedMonth = signal('2026-09');
   protected readonly monthOptions = computed(() => [...new Set(this.transactions().map((item) => item.date.slice(0, 7)))].sort().reverse());
   protected readonly monthLabel = computed(() => this.formatMonth(this.selectedMonth()));
@@ -171,6 +172,11 @@ export class App {
 
   protected selectSection(section: string): void {
     this.activeSection.set(section);
+    this.mobileMenuOpen.set(false);
+  }
+
+  protected toggleMobileMenu(): void {
+    this.mobileMenuOpen.update((isOpen) => !isOpen);
   }
 
   protected selectMonth(month: string): void {

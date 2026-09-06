@@ -1,7 +1,10 @@
 <main class="app-shell">
-  <nav class="sidebar">
+  <nav class="sidebar" [class.menu-open]="mobileMenuOpen()">
     <div class="brand"><span class="brand-mark">$</span><span>ledger</span></div>
-    <div class="nav-label">WORKSPACE</div>
+    <button class="mobile-menu-toggle" type="button" [attr.aria-expanded]="mobileMenuOpen()"
+      aria-controls="workspace-navigation" (click)="toggleMobileMenu()"><span aria-hidden="true">☰</span><span>{{
+        mobileMenuOpen() ? 'Hide menu' : 'Show menu' }}</span></button>
+    <div class="nav-label" id="workspace-navigation">WORKSPACE</div>
     <a class="nav-link" [class.active]="activeSection() === 'Overview'" (click)="selectSection('Overview')"><span
         class="nav-icon">◈</span>Overview</a>
     <a class="nav-link" [class.active]="activeSection() === 'Transactions'"
