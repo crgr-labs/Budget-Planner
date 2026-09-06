@@ -298,6 +298,35 @@
         </div>
       </section>
       }
+      @if (activeSection() === 'Transactions') {
+      <section class="panel transaction-entry-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Add transaction</h2>
+            <p class="muted">Keep your ledger up to date</p>
+          </div><span class="plus-badge">＋</span>
+        </div>
+        <div class="type-toggle"><button type="button" [class.selected]="newTransaction().type === 'Expense'"
+            (click)="updateField('type', 'Expense')">Expense</button><button type="button"
+            [class.selected]="newTransaction().type === 'Income'"
+            (click)="updateField('type', 'Income')">Income</button></div>
+        <div class="form-grid"><label>Description<input [ngModel]="newTransaction().description"
+              (ngModelChange)="updateField('description', $event)" placeholder="e.g. Coffee with friends" /></label><label
+            >Amount<div class="amount-input"><span>₱</span><input type="number" min="0"
+                [ngModel]="newTransaction().amount" (ngModelChange)="updateField('amount', $event)"
+                placeholder="0.00" /></div></label><label>Category<select [ngModel]="newTransaction().category"
+              (ngModelChange)="updateField('category', $event)">@if (newTransaction().type === 'Income') {<option
+                value="Income">Income</option>} @for (category of categories; track category) {<option
+                [value]="category">{{ category }}</option>}</select></label><label>Sub-category<select
+              [ngModel]="newTransaction().subcategory" (ngModelChange)="updateField('subcategory', $event)">
+              <option value="">No sub-category</option>@for (subcategory of
+              subcategoriesFor(newTransaction().category); track subcategory) {<option [value]="subcategory">{{
+                subcategory }}</option>}
+            </select></label><label>Date<input type="date" [ngModel]="newTransaction().date"
+              (ngModelChange)="updateField('date', $event)" /></label></div><button class="add-button" type="button"
+          (click)="addTransaction()">Add transaction <span>→</span></button>
+      </section>
+      }
       <section class="panel transactions-panel">
         <div class="panel-heading">
           <div>
