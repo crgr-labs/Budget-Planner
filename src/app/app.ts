@@ -249,7 +249,19 @@ export class App {
   }
 
   protected updateSavingsField(field: keyof NewTransaction, value: string | number | null): void {
-    this.newSavingsTransaction.update((form) => ({ ...form, [field]: value }));
+    this.newSavingsTransaction.update((form) => {
+      if (field === 'fundType') {
+        const type: TransactionType = value === 'Withdrawal' ? 'Expense' : 'Income';
+        const subcategory = value === 'Withdrawal' ? 'Withdrawal' : 'Contribution';
+        return { ...form, fundType: String(value), type, subcategory };
+      }
+      if (field === 'type') {
+        const fundType = value === 'Expense' ? 'Withdrawal' : 'Contribution';
+        const subcategory = value === 'Expense' ? 'Withdrawal' : 'Contribution';
+        return { ...form, type: value as TransactionType, fundType, subcategory };
+      }
+      return { ...form, [field]: value };
+    });
   }
 
   protected subcategoriesFor(category: string): string[] {
@@ -447,5 +459,5 @@ export class App {
     void fetch(this.apiUrl, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.transactions()) }).catch(() => undefined);
   }
   private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null, savings: false }; }
-  private emptySavingsTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Savings', subcategory: 'Contribution', type: 'Income', amount: null, fundType: 'Target savings', account: '' }; }
+  private emptySavingsTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Savings', subcategory: 'Contribution', type: 'Income', amount: null, fundType: 'Contribution', account: '' }; }
 }
