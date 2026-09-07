@@ -1,6 +1,6 @@
 <main class="app-shell">
   <nav class="sidebar" [class.menu-open]="mobileMenuOpen()">
-    <div class="brand"><span class="brand-mark">$</span><span>ledger</span></div>
+    <div class="brand"><span class="brand-mark">SAP</span><span>Ledger</span></div>
     <button class="mobile-menu-toggle" type="button" [attr.aria-expanded]="mobileMenuOpen()"
       aria-controls="workspace-navigation" (click)="toggleMobileMenu()"><span aria-hidden="true">☰</span><span>{{
         mobileMenuOpen() ? 'Hide menu' : 'Show menu' }}</span></button>
@@ -22,7 +22,7 @@
   </nav>
   <section class="workspace">
     <header class="topbar">
-      <div class="breadcrumbs">Workspace <span>/</span> {{ activeSection() === 'Transactions' ? 'Regular spending' : activeSection() }}</div>
+      <div class="breadcrumbs">Financial Management <span>/</span> {{ activeSection() === 'Transactions' ? 'Regular spending' : activeSection() }}</div>
       <div class="top-actions"><label class="import-button">↥ Import Excel<input type="file" accept=".xlsx,.xls,.csv"
             (change)="importWorkbook($event)" /></label><button class="export-button" type="button"
           (click)="exportWorkbook()">＋ Export .xlsx</button></div>
