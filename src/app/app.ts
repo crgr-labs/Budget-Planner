@@ -100,7 +100,11 @@ export class App {
     const monthlyRegularSpending = this.selectedTransactions().filter((item) => item.type === 'Expense' && !item.savings).reduce((sum, item) => sum + item.amount, 0);
     return this.budget() - monthlyRegularSpending;
   });
-  protected readonly budgetProgress = computed(() => Math.min(100, (this.totalSpent() / this.budget()) * 100));
+  protected readonly budgetProgress = computed(() => {
+    const budgetAmount = this.budget();
+    if (budgetAmount <= 0) return this.totalSpent() > 0 ? 100 : 0;
+    return Math.min(100, Math.max(0, (this.totalSpent() / budgetAmount) * 100));
+  });
   protected readonly reportCategories = computed(() => this.categories
     .map((category) => ({ category, total: this.categoryTotal(category) }))
     .filter((item) => item.total > 0)
@@ -109,16 +113,28 @@ export class App {
   protected readonly reportTotalIncome = computed(() => this.reportTransactions().filter((item) => item.type === 'Income').reduce((sum, item) => sum + item.amount, 0));
   protected readonly reportTotalSpent = computed(() => this.reportTransactions().filter((item) => item.type === 'Expense').reduce((sum, item) => sum + item.amount, 0));
   protected readonly reportBalance = computed(() => this.reportTotalIncome() - this.reportTotalSpent());
-  protected readonly reportBudgetProgress = computed(() => Math.min(100, (this.reportTotalSpent() / this.budget()) * 100));
+  protected readonly reportBudgetProgress = computed(() => {
+    const budgetAmount = this.budget();
+    if (budgetAmount <= 0) return this.reportTotalSpent() > 0 ? 100 : 0;
+    return Math.min(100, Math.max(0, (this.reportTotalSpent() / budgetAmount) * 100));
+  });
   protected readonly reportExpenseCount = computed(() => this.reportTransactions().filter((item) => item.type === 'Expense').length);
   protected readonly reportSavingsRate = computed(() => this.reportTotalIncome() > 0 ? (this.reportBalance() / this.reportTotalIncome()) * 100 : 0);
   protected readonly budgetLeft = computed(() => Math.max(0, this.budget() - this.reportTotalSpent()));
   protected readonly savingsProgress = computed(() => Math.min(100, this.reportSavingsRate()));
   protected readonly targetSavingsGoal = signal(10000);
-  protected readonly targetSavingsProgress = computed(() => Math.min(100, Math.max(0, (this.savingsBalance() / this.targetSavingsGoal()) * 100)));
+  protected readonly targetSavingsProgress = computed(() => {
+    const goal = this.targetSavingsGoal();
+    if (goal <= 0) return this.savingsBalance() > 0 ? 100 : 0;
+    return Math.min(100, Math.max(0, (this.savingsBalance() / goal) * 100));
+  });
   protected readonly savingsTransactions = computed(() => this.transactions().filter((item) => item.savings));
   protected readonly savingsBalance = computed(() => this.savingsTransactions().reduce((sum, item) => sum + (item.type === 'Income' ? item.amount : -item.amount), 0));
-  protected readonly savingsGoalProgress = computed(() => Math.min(100, Math.max(0, (this.savingsBalance() / this.targetSavingsGoal()) * 100)));
+  protected readonly savingsGoalProgress = computed(() => {
+    const goal = this.targetSavingsGoal();
+    if (goal <= 0) return this.savingsBalance() > 0 ? 100 : 0;
+    return Math.min(100, Math.max(0, (this.savingsBalance() / goal) * 100));
+  });
   protected readonly amountRemaining = computed(() => Math.max(0, this.targetSavingsGoal() - this.savingsBalance()));
   protected readonly savingsSummary = computed<SavingsMonthlySummary[]>(() => {
     const months = [...new Set(this.savingsTransactions().map((item) => item.date.slice(0, 7)))].sort();
@@ -195,10 +211,16 @@ export class App {
     if (saved) {
       try { this.transactions.set(JSON.parse(saved)); } catch { localStorage.removeItem('ledger-transactions'); }
     }
-    const savedBudget = Number(localStorage.getItem('ledger-budget'));
-    if (savedBudget > 0) this.budget.set(savedBudget);
-    const savedTargetSavings = Number(localStorage.getItem('ledger-target-savings'));
-    if (savedTargetSavings > 0) this.targetSavingsGoal.set(savedTargetSavings);
+    const savedBudget = localStorage.getItem('ledger-budget');
+    if (savedBudget !== null) {
+      const parsed = Number(savedBudget);
+      if (!Number.isNaN(parsed) && parsed >= 0) this.budget.set(parsed);
+    }
+    const savedTargetSavings = localStorage.getItem('ledger-target-savings');
+    if (savedTargetSavings !== null) {
+      const parsed = Number(savedTargetSavings);
+      if (!Number.isNaN(parsed) && parsed >= 0) this.targetSavingsGoal.set(parsed);
+    }
     const savedCategories = localStorage.getItem('ledger-categories');
     if (savedCategories) {
       try { this.categoryGroups.set(JSON.parse(savedCategories)); } catch { localStorage.removeItem('ledger-categories'); }
@@ -211,16 +233,22 @@ export class App {
   }
 
   protected updateBudget(value: string | number): void {
-    const amount = Number(value);
-    if (amount > 0) {
+    if (value === null || value === undefined) return;
+    const trimmed = String(value).trim();
+    if (!trimmed) return;
+    const amount = Number(trimmed);
+    if (!Number.isNaN(amount) && amount >= 0) {
       this.budget.set(amount);
       localStorage.setItem('ledger-budget', String(amount));
     }
   }
 
   protected updateTargetSavingsGoal(value: string | number): void {
-    const amount = Number(value);
-    if (amount > 0) {
+    if (value === null || value === undefined) return;
+    const trimmed = String(value).trim();
+    if (!trimmed) return;
+    const amount = Number(trimmed);
+    if (!Number.isNaN(amount) && amount >= 0) {
       this.targetSavingsGoal.set(amount);
       localStorage.setItem('ledger-target-savings', String(amount));
     }
