@@ -1254,20 +1254,82 @@ tbody tr:hover {
 /* --------------------------------------------------------------------------
    Reports Dashboard & Budget Health
    -------------------------------------------------------------------------- */
+/* Reports Dashboard wrapper */
+.reports-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px 32px;
+}
+
+.report-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* KPI summary strip — 3 equal cards */
 .report-metrics {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 16px;
 }
 
+/* Report card: label on top, value bold middle, sub-label small bottom */
 .report-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 16px 18px;
+  padding: 18px 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
+
+.report-card span {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.report-card strong {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1d2d3e;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.report-card small {
+  display: block;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.report-card.report-income strong { color: #0a7140; }
+.report-card.report-expense strong { color: #b00020; }
+
+/* Two-column report grid (breakdown + health) */
+.report-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.report-breakdown,
+.report-health {
+  min-height: 0;
+}
+
 
 .report-category-list {
   display: flex;
@@ -1572,12 +1634,23 @@ tbody tr:hover {
   .metric-grid,
   .reference-metrics,
   .report-metrics,
+  .report-grid,
   .dashboard-grid,
   .reference-tiles,
   .category-manager-grid {
     grid-template-columns: 1fr;
     gap: 12px;
     margin-bottom: 14px;
+  }
+
+  .reports-dashboard {
+    padding: 16px 14px;
+    gap: 14px;
+  }
+
+  .report-header {
+    flex-direction: column;
+    gap: 10px;
   }
 
   .metric-card,
