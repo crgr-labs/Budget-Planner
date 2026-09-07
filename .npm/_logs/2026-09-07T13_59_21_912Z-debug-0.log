@@ -1,0 +1,23 @@
+0 verbose cli /Users/sheigarcia/.nvm/versions/node/v24.20.0/bin/node /Users/sheigarcia/.nvm/versions/node/v24.20.0/bin/npm
+1 info using npm@11.19.0
+2 info using node@v24.20.0
+3 silly config load:file:/Users/sheigarcia/.nvm/versions/node/v24.20.0/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/sheigarcia/Desktop/Eric_VS/.npmrc
+5 silly config load:file:/Users/sheigarcia/.nvm/versions/node/v24.20.0/etc/npmrc
+6 verbose title npm run build
+7 verbose argv "run" "build"
+8 verbose logfile logs-max:10 dir:/Users/sheigarcia/Desktop/Eric_VS/.npm/_logs/2026-09-07T13_59_21_912Z-
+9 verbose logfile /Users/sheigarcia/Desktop/Eric_VS/.npm/_logs/2026-09-07T13_59_21_912Z-debug-0.log
+10 silly logfile done cleaning log files
+11 http fetch GET 200 https://registry.npmjs.org/npm 325ms
+12 verbose cwd /Users/sheigarcia/Desktop/Eric_VS
+13 verbose os Darwin 25.6.0
+14 verbose node v24.20.0
+15 verbose npm  v11.19.0
+16 notice
+16 notice New major version of npm available! 11.19.0 -> 12.0.2
+16 notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2
+16 notice To update run: npm install -g npm@12.0.2
+16 notice  { force: true, Symbol(proc-log.meta): true }
+17 verbose exit 0
+18 info ok
