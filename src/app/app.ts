@@ -47,6 +47,7 @@ interface ExpectedBill {
   id: number;
   name: string;
   category: string;
+  subcategory: string;
   amount: number;
   dueDay: number;
   active: boolean;
@@ -114,12 +115,13 @@ export class App {
   protected readonly expectedBills = signal<ExpectedBill[]>([]);
   protected readonly newBillName = signal('');
   protected readonly newBillCategory = signal('Bills');
+  protected readonly newBillSubcategory = signal('Phone');
   protected readonly newBillAmount = signal<number | null>(null);
   protected readonly newBillDueDay = signal(1);
   protected readonly activeExpectedBills = computed(() => this.expectedBills().filter((bill) => bill.active));
   protected readonly billTracking = computed(() => this.activeExpectedBills().map((bill) => {
     const spent = this.selectedTransactions()
-      .filter((item) => item.type === 'Expense' && item.category === bill.category)
+      .filter((item) => item.type === 'Expense' && item.category === bill.category && item.subcategory === bill.subcategory)
       .reduce((sum, item) => sum + item.amount, 0);
     return { ...bill, spent, remaining: bill.amount - spent, overspent: spent > bill.amount };
   }));
@@ -399,13 +401,14 @@ export class App {
     const name = this.newBillName().trim();
     const amount = Number(this.newBillAmount());
     const dueDay = Math.max(1, Math.min(31, Number(this.newBillDueDay()) || 1));
-    if (!name || !this.newBillCategory() || !Number.isFinite(amount) || amount <= 0) return;
+    if (!name || !this.newBillCategory() || !this.newBillSubcategory() || !Number.isFinite(amount) || amount <= 0) return;
     this.expectedBills.update((bills) => [...bills, {
-      id: Date.now(), name, category: this.newBillCategory(), amount, dueDay, active: true,
+      id: Date.now(), name, category: this.newBillCategory(), subcategory: this.newBillSubcategory(), amount, dueDay, active: true,
     }]);
     this.persistExpectedBills();
     this.syncToApi();
     this.newBillName.set('');
+    this.newBillSubcategory.set(this.subcategoriesFor(this.newBillCategory())[0] || '');
     this.newBillAmount.set(null);
     this.newBillDueDay.set(1);
   }
@@ -414,6 +417,11 @@ export class App {
     this.expectedBills.update((bills) => bills.filter((bill) => bill.id !== id));
     this.persistExpectedBills();
     this.syncToApi();
+  }
+
+  protected updateBillCategory(category: string): void {
+    this.newBillCategory.set(category);
+    this.newBillSubcategory.set(this.subcategoriesFor(category)[0] || '');
   }
 
   protected billProgress(spent: number, amount: number): number {
@@ -609,7 +617,7 @@ export class App {
         localStorage.setItem('ledger-target-savings', String(targetSavingsGoal));
       }
       if (Array.isArray(cloudData.expectedBills)) {
-        this.expectedBills.set(cloudData.expectedBills);
+        this.expectedBills.set(cloudData.expectedBills.map((bill) => ({ ...bill, subcategory: String(bill.subcategory || '') })));
         this.persistExpectedBills();
       }
       this.persist();

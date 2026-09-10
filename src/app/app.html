@@ -155,17 +155,18 @@
             <h3>Add expected bill</h3>
             <p class="muted">Set a reference amount before recording expenses.</p>
             <label>Bill name<input [ngModel]="newBillName()" (ngModelChange)="newBillName.set($event)" placeholder="e.g. Internet" /></label>
-            <label>Category<select [ngModel]="newBillCategory()" (ngModelChange)="newBillCategory.set($event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
+            <label>Category<select [ngModel]="newBillCategory()" (ngModelChange)="updateBillCategory($event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
+            <label>Sub-category<select [ngModel]="newBillSubcategory()" (ngModelChange)="newBillSubcategory.set($event)"><option value="">Choose a sub-category</option>@for (subcategory of subcategoriesFor(newBillCategory()); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label>
             <label>Expected amount<div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="newBillAmount()" (ngModelChange)="newBillAmount.set($event)" placeholder="0.00" /></div></label>
             <label>Due day <span class="optional">1-31</span><input type="number" min="1" max="31" [ngModel]="newBillDueDay()" (ngModelChange)="newBillDueDay.set($event)" /></label>
             <button class="add-button" type="button" (click)="addExpectedBill()">Add expected bill <span>→</span></button>
           </section>
           <section class="panel bill-list-panel">
-            <div class="panel-heading"><div><h3>Bill tracking</h3><p class="muted">Actual category spending versus your plan.</p></div><span class="report-icon">▣</span></div>
+            <div class="panel-heading"><div><h3>Bill tracking</h3><p class="muted">Actual sub-category spending versus your plan.</p></div><span class="report-icon">▣</span></div>
             @if (billTracking().length) {
             <div class="bill-list">@for (bill of billTracking(); track bill.id) {
               <article class="bill-row" [class.bill-overspent]="bill.overspent">
-                <div class="bill-row-heading"><div><strong>{{ bill.name }}</strong><small>{{ bill.category }} · Due day {{ bill.dueDay }}</small></div><button class="delete-button" type="button" aria-label="Remove expected bill" (click)="removeExpectedBill(bill.id)">×</button></div>
+                <div class="bill-row-heading"><div><strong>{{ bill.name }}</strong><small>{{ bill.category }} → {{ bill.subcategory }} · Due day {{ bill.dueDay }}</small></div><button class="delete-button" type="button" aria-label="Remove expected bill" (click)="removeExpectedBill(bill.id)">×</button></div>
                 <div class="bill-amounts"><span>Spent <b>{{ bill.spent | currency:'PHP':'symbol':'1.0-0' }}</b></span><span>Plan <b>{{ bill.amount | currency:'PHP':'symbol':'1.0-0' }}</b></span></div>
                 <div class="progress-track"><span [style.width.%]="billProgress(bill.spent, bill.amount)" [class.expense-progress]="bill.overspent"></span></div>
                 <small class="bill-status">{{ billStatus(bill.spent, bill.amount, bill.overspent) }}</small>
