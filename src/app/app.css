@@ -186,6 +186,67 @@
   cursor: pointer;
 }
 
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.edit-row-button,
+.save-row-button,
+.cancel-row-button {
+  min-height: 28px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.edit-row-button,
+.save-row-button {
+  border: 1px solid #bfdbfe;
+  background: #eef5fc;
+  color: #0070f2;
+}
+
+.cancel-row-button {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #64748b;
+}
+
+.expense-edit-fields {
+  display: grid;
+  grid-template-columns: minmax(140px, 1.5fr) minmax(110px, 1fr) minmax(120px, 1fr) minmax(120px, 1fr);
+  gap: 6px;
+}
+
+.expense-edit-fields input,
+.expense-edit-fields select,
+.expense-edit-amount input {
+  width: 100%;
+  min-height: 28px;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #1d2d3e;
+  font: inherit;
+  font-size: 11px;
+}
+
+.expense-edit-amount {
+  min-width: 110px;
+}
+
+.editing-row {
+  background: #f8fafc;
+}
+
 /* --------------------------------------------------------------------------
    Workspace & Shell Topbar
    -------------------------------------------------------------------------- */
