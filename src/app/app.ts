@@ -422,7 +422,6 @@ export class App {
   }
 
   protected editCategory(name: string, savings: boolean): void {
-    if (!this.isUserCategory(name, savings)) return;
     const updatedName = window.prompt('Edit category name', name)?.trim();
     if (!updatedName || updatedName === name) return;
     const groups = savings ? this.savingsCategoryGroups() : this.categoryGroups();
@@ -442,7 +441,6 @@ export class App {
   }
 
   protected editSubcategory(category: string, subcategory: string, savings: boolean): void {
-    if (!this.isUserSubcategory(category, subcategory, savings)) return;
     const updatedName = window.prompt('Edit sub-category name', subcategory)?.trim();
     if (!updatedName || updatedName === subcategory) return;
     const groups = savings ? this.savingsCategoryGroups() : this.categoryGroups();
