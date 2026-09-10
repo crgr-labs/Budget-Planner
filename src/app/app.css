@@ -1575,6 +1575,8 @@ tbody tr:hover {
     gap: 8px;
     background: #ffffff;
     border-bottom: 1px solid #e2e8f0;
+    position: relative;
+    z-index: 1;
   }
 
   .breadcrumbs {
@@ -1593,19 +1595,23 @@ tbody tr:hover {
   .import-button,
   .export-button {
     flex: 1;
+    min-width: 0;
     justify-content: center;
     text-align: center;
     padding: 8px 6px;
     font-size: 12px;
     min-height: 38px;
     box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* Page Content */
   .page-content {
     width: 100%;
     max-width: 100%;
-    padding: 14px 12px 28px;
+    padding: 20px 12px 28px;
     box-sizing: border-box;
   }
 
@@ -1614,7 +1620,13 @@ tbody tr:hover {
     flex-direction: column;
     align-items: stretch;
     gap: 10px;
+    margin-top: 0;
     margin-bottom: 14px;
+  }
+
+  .page-heading > div,
+  .report-page-heading > div {
+    min-width: 0;
   }
 
   .page-heading h1,
