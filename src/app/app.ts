@@ -78,6 +78,17 @@ interface CloudData {
   templateUrl: './app.html',
 })
 export class App {
+  private readonly builtInCategories = new Set(['Housing', 'Food', 'Transport', 'Lifestyle', 'Bills', 'Expected Bills', 'Health']);
+  private readonly builtInCategorySubcategories = new Map([
+    ['Housing', ['Rent', 'Utilities', 'Repairs']],
+    ['Food', ['Groceries', 'Restaurants', 'Coffee']],
+    ['Transport', ['Commute', 'Fuel', 'Parking']],
+    ['Lifestyle', ['Entertainment', 'Shopping', 'Subscriptions']],
+    ['Bills', ['Phone', 'Internet', 'Insurance']],
+    ['Expected Bills', ['Globe', 'Condo']],
+    ['Health', ['Medicine', 'Appointments', 'Fitness']],
+  ]);
+  private readonly builtInSavingsCategories = new Set(['Emergency Fund', 'General Savings', 'Investment Fund', 'Travel Fund', 'Other']);
   private draggedTile: HTMLElement | null = null;
   private readonly googleSheetsUrl = 'https://script.google.com/macros/s/AKfycbwEoC7gfYgAP8BXiyZtlS_QNyrGMEKX9tqkzhXeMCJJXSqrbUFsdUGBNF6RWgaEe9rq/exec?token=budget-planner-private-92sadf31s81sa2a255';
   private readonly apiUrl = ['localhost', '127.0.0.1'].includes(window.location.hostname)
@@ -399,6 +410,56 @@ export class App {
   protected createSavingsSubcategory(): void {
     this.addSavingsSubcategory(this.selectedCategoryForSubcategory(), this.newSubcategoryName());
     this.newSubcategoryName.set('');
+  }
+
+  protected isUserCategory(name: string, savings: boolean): boolean {
+    return !(savings ? this.builtInSavingsCategories : this.builtInCategories).has(name);
+  }
+
+  protected isUserSubcategory(category: string, subcategory: string, savings: boolean): boolean {
+    if (savings) return this.isUserCategory(category, true);
+    return !(this.builtInCategorySubcategories.get(category) ?? []).includes(subcategory);
+  }
+
+  protected editCategory(name: string, savings: boolean): void {
+    if (!this.isUserCategory(name, savings)) return;
+    const updatedName = window.prompt('Edit category name', name)?.trim();
+    if (!updatedName || updatedName === name) return;
+    const groups = savings ? this.savingsCategoryGroups() : this.categoryGroups();
+    if (groups.some((group) => group.name !== name && group.name.toLowerCase() === updatedName.toLowerCase())) return;
+    if (savings) {
+      this.savingsCategoryGroups.update((items) => items.map((group) => group.name === name ? { ...group, name: updatedName } : group));
+      this.persistSavingsCategories();
+    } else {
+      this.categoryGroups.update((items) => items.map((group) => group.name === name ? { ...group, name: updatedName } : group));
+      this.transactions.update((items) => items.map((item) => item.category === name ? { ...item, category: updatedName } : item));
+      this.expectedBills.update((items) => items.map((bill) => bill.category === name ? { ...bill, category: updatedName } : bill));
+      this.persistCategories();
+      this.persist();
+      this.persistExpectedBills();
+      this.syncToApi();
+    }
+  }
+
+  protected editSubcategory(category: string, subcategory: string, savings: boolean): void {
+    if (!this.isUserSubcategory(category, subcategory, savings)) return;
+    const updatedName = window.prompt('Edit sub-category name', subcategory)?.trim();
+    if (!updatedName || updatedName === subcategory) return;
+    const groups = savings ? this.savingsCategoryGroups() : this.categoryGroups();
+    const group = groups.find((item) => item.name === category);
+    if (!group || group.subcategories.some((item) => item !== subcategory && item.toLowerCase() === updatedName.toLowerCase())) return;
+    if (savings) {
+      this.savingsCategoryGroups.update((items) => items.map((item) => item.name === category ? { ...item, subcategories: item.subcategories.map((entry) => entry === subcategory ? updatedName : entry) } : item));
+      this.persistSavingsCategories();
+    } else {
+      this.categoryGroups.update((items) => items.map((item) => item.name === category ? { ...item, subcategories: item.subcategories.map((entry) => entry === subcategory ? updatedName : entry) } : item));
+      this.transactions.update((items) => items.map((item) => item.category === category && item.subcategory === subcategory ? { ...item, subcategory: updatedName } : item));
+      this.expectedBills.update((items) => items.map((bill) => bill.category === category && bill.subcategory === subcategory ? { ...bill, subcategory: updatedName } : bill));
+      this.persistCategories();
+      this.persist();
+      this.persistExpectedBills();
+      this.syncToApi();
+    }
   }
 
   protected addExpectedBill(): void {

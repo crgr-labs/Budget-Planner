@@ -1429,6 +1429,13 @@ tbody tr:hover {
   color: #1d2d3e;
 }
 
+.category-directory-title {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .category-directory-row > div {
   display: flex;
   flex-wrap: wrap;
@@ -1444,6 +1451,22 @@ tbody tr:hover {
   font-weight: 500;
   color: #475569;
   border: 1px solid #e2e8f0;
+}
+
+.category-directory-row span .edit-subcategory-button {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #0070f2;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.category-directory-row .edit-row-button,
+.category-directory-row .edit-subcategory-button:hover {
+  text-decoration: underline;
 }
 
 .category-directory-row .empty-category {
