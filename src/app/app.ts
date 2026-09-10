@@ -63,9 +63,10 @@ interface SavingsTrendPoint {
 })
 export class App {
   private draggedTile: HTMLElement | null = null;
+  private readonly googleSheetsUrl = 'https://script.google.com/macros/s/AKfycbwEoC7gfYgAP8BXiyZtlS_QNyrGMEKX9tqkzhXeMCJJXSqrbUFsdUGBNF6RWgaEe9rq/exec?token=budget-planner-private-92sadf31s81sa2a255';
   private readonly apiUrl = ['localhost', '127.0.0.1'].includes(window.location.hostname)
     ? 'http://localhost:3000/api/transactions'
-    : null;
+    : this.googleSheetsUrl;
   protected readonly activeSection = signal('Overview');
   protected readonly mobileMenuOpen = signal(false);
   protected readonly selectedMonth = signal('2026-09');
@@ -427,7 +428,11 @@ export class App {
   protected removeTransaction(id: number): void {
     this.transactions.update((items) => items.filter((item) => item.id !== id));
     this.persist();
-    if (this.apiUrl) void fetch(`${this.apiUrl}/${id}`, { method: 'DELETE' }).catch(() => undefined);
+    if (this.apiUrl) void fetch(this.apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'delete', id }),
+    }).catch(() => undefined);
   }
 
   protected importWorkbook(event: Event): void {
@@ -484,7 +489,12 @@ export class App {
   }
   private syncToApi(): void {
     if (!this.apiUrl) return;
-    void fetch(this.apiUrl, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.transactions()) }).catch(() => undefined);
+    const isGoogleSheets = this.apiUrl === this.googleSheetsUrl;
+    void fetch(this.apiUrl, {
+      method: isGoogleSheets ? 'POST' : 'PUT',
+      headers: { 'Content-Type': isGoogleSheets ? 'text/plain;charset=utf-8' : 'application/json' },
+      body: JSON.stringify(isGoogleSheets ? { action: 'replace', transactions: this.transactions() } : this.transactions()),
+    }).catch(() => undefined);
   }
   private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null, savings: false }; }
   private emptySavingsTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Savings', subcategory: 'Contribution', type: 'Income', amount: null, fundType: 'Contribution', account: '' }; }
