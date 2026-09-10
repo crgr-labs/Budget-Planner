@@ -1133,7 +1133,7 @@ tbody tr:hover {
   min-height: 0;
   overflow-y: auto;
   padding-right: 4px;
-  max-height: 520px;
+  max-height: 420px;
 }
 
 .bill-list-panel {
@@ -1146,7 +1146,7 @@ tbody tr:hover {
 }
 
 .bill-list-panel .bill-list {
-  flex: 1;
+  flex: 0 1 420px;
 }
 
 .bill-row {
