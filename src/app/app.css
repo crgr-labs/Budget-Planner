@@ -1014,11 +1014,43 @@ tbody tr:hover {
   box-sizing: border-box;
 }
 
-.bills-metrics {
+.bills-summary-tile {
+  display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
+}
+
+.bill-summary-item {
+  min-width: 0;
+}
+
+.bill-summary-item span,
+.bill-summary-item small {
+  display: block;
+}
+
+.bill-summary-item span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bill-summary-item strong {
+  display: block;
+  color: #1d2d3e;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  margin: 8px 0 4px;
+}
+
+.bill-summary-item small {
+  color: #94a3b8;
+  font-size: 11px;
 }
 
 .bills-page,
@@ -1748,7 +1780,8 @@ tbody tr:hover {
   .dashboard-grid,
   .reference-tiles,
   .category-manager-grid,
-  .bills-layout {
+  .bills-layout,
+  .bills-summary-tile {
     grid-template-columns: 1fr;
     gap: 12px;
     margin-bottom: 14px;
