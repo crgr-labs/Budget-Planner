@@ -166,10 +166,15 @@
             @if (billTracking().length) {
             <div class="bill-list">@for (bill of billTracking(); track bill.id) {
               <article class="bill-row" [class.bill-overspent]="bill.overspent">
-                <div class="bill-row-heading"><div><strong>{{ bill.name }}</strong><small>{{ bill.category }} → {{ bill.subcategory }} · Due day {{ bill.dueDay }}</small></div><button class="delete-button" type="button" aria-label="Remove expected bill" (click)="removeExpectedBill(bill.id)">×</button></div>
+                @if (editingBillId() === bill.id && editingBill(); as editBill) {
+                <div class="bill-edit-fields"><input aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateBillEdit('name', $event)" /><select aria-label="Edit bill category" [ngModel]="editBill.category" (ngModelChange)="updateEditingBillCategory($event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select><select aria-label="Edit bill sub-category" [ngModel]="editBill.subcategory" (ngModelChange)="updateBillEdit('subcategory', $event)"><option value="">Choose a sub-category</option>@for (subcategory of subcategoriesFor(editBill.category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select><input aria-label="Edit bill amount" type="number" min="0" [ngModel]="editBill.amount" (ngModelChange)="updateBillEdit('amount', $event)" /><input aria-label="Edit bill due day" type="number" min="1" max="31" [ngModel]="editBill.dueDay" (ngModelChange)="updateBillEdit('dueDay', $event)" /></div>
+                <div class="row-actions bill-edit-actions"><button class="save-row-button" type="button" (click)="saveEditingBill()">Save</button><button class="cancel-row-button" type="button" (click)="cancelEditingBill()">Cancel</button></div>
+                } @else {
+                <div class="bill-row-heading"><div><strong>{{ bill.name }}</strong><small>{{ bill.category }} → {{ bill.subcategory }} · Due day {{ bill.dueDay }}</small></div><div class="row-actions"><button class="edit-row-button icon-action" type="button" aria-label="Edit expected bill" title="Edit expected bill" (click)="startEditingBill(bill)">✎</button><button class="delete-button" type="button" aria-label="Remove expected bill" (click)="removeExpectedBill(bill.id)">×</button></div></div>
                 <div class="bill-amounts"><span>Spent <b>{{ bill.spent | currency:'PHP':'symbol':'1.0-0' }}</b></span><span>Plan <b>{{ bill.amount | currency:'PHP':'symbol':'1.0-0' }}</b></span></div>
                 <div class="progress-track"><span [style.width.%]="billProgress(bill.spent, bill.amount)" [class.expense-progress]="bill.overspent"></span></div>
                 <small class="bill-status">{{ billStatus(bill.spent, bill.amount, bill.overspent) }}</small>
+                }
               </article>
             }</div>
             } @else {

@@ -132,6 +132,8 @@ export class App {
   protected readonly newBillSubcategory = signal('Globe');
   protected readonly newBillAmount = signal<number | null>(null);
   protected readonly newBillDueDay = signal(1);
+  protected readonly editingBillId = signal<number | null>(null);
+  protected readonly editingBill = signal<ExpectedBill | null>(null);
   protected readonly activeExpectedBills = computed(() => this.expectedBills().filter((bill) => bill.active));
   protected readonly billTracking = computed(() => this.activeExpectedBills().map((bill) => {
     const spent = this.selectedTransactions()
@@ -542,6 +544,47 @@ export class App {
     this.expectedBills.update((bills) => bills.filter((bill) => bill.id !== id));
     this.persistExpectedBills();
     this.syncToApi();
+  }
+
+  protected startEditingBill(bill: ExpectedBill): void {
+    this.editingBillId.set(bill.id);
+    this.editingBill.set({ ...bill });
+  }
+
+  protected updateBillEdit(field: keyof ExpectedBill, value: string | number | boolean): void {
+    this.editingBill.update((bill) => bill ? { ...bill, [field]: value } : bill);
+  }
+
+  protected updateEditingBillCategory(category: string): void {
+    this.editingBill.update((bill) => bill ? {
+      ...bill,
+      category,
+      subcategory: this.subcategoriesFor(category)[0] || '',
+    } : bill);
+  }
+
+  protected cancelEditingBill(): void {
+    this.editingBillId.set(null);
+    this.editingBill.set(null);
+  }
+
+  protected saveEditingBill(): void {
+    const id = this.editingBillId();
+    const bill = this.editingBill();
+    const amount = Number(bill?.amount);
+    const dueDay = Math.max(1, Math.min(31, Number(bill?.dueDay) || 1));
+    if (id === null || !bill || !bill.name.trim() || !bill.category || !bill.subcategory || !Number.isFinite(amount) || amount <= 0) return;
+    this.expectedBills.update((items) => items.map((item) => item.id === id ? {
+      ...item,
+      name: bill.name.trim(),
+      category: bill.category,
+      subcategory: bill.subcategory,
+      amount,
+      dueDay,
+    } : item));
+    this.persistExpectedBills();
+    this.syncToApi();
+    this.cancelEditingBill();
   }
 
   protected updateBillCategory(category: string): void {
