@@ -270,9 +270,11 @@ export class App {
     if (savedSavingsCategories) {
       try { this.savingsCategoryGroups.set(JSON.parse(savedSavingsCategories)); } catch { localStorage.removeItem('ledger-savings-categories'); }
     }
-    const savedBills = localStorage.getItem('ledger-expected-bills');
-    if (savedBills) {
-      try { this.expectedBills.set(JSON.parse(savedBills)); } catch { localStorage.removeItem('ledger-expected-bills'); }
+    if (!this.isHosted) {
+      const savedBills = localStorage.getItem('ledger-expected-bills');
+      if (savedBills) {
+        try { this.expectedBills.set(JSON.parse(savedBills)); } catch { localStorage.removeItem('ledger-expected-bills'); }
+      }
     }
     this.loadFromApi();
   }
