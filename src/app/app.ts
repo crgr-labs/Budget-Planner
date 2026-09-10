@@ -43,6 +43,15 @@ interface CategoryGroup {
   subcategories: string[];
 }
 
+interface ExpectedBill {
+  id: number;
+  name: string;
+  category: string;
+  amount: number;
+  dueDay: number;
+  active: boolean;
+}
+
 interface SubcategoryTrend {
   name: string;
   total: number;
@@ -58,6 +67,7 @@ interface SavingsTrendPoint {
 interface CloudData {
   transactions: Transaction[];
   settings?: { monthlyBudget?: number; targetSavingsGoal?: number };
+  expectedBills?: ExpectedBill[];
 }
 
 @Component({
@@ -101,6 +111,21 @@ export class App {
   protected readonly newTransaction = signal<NewTransaction>(this.emptyTransaction());
   protected readonly budget = signal(3800);
   protected readonly selectedTransactions = computed(() => this.regularTransactions().filter((item) => item.date.startsWith(this.selectedMonth())));
+  protected readonly expectedBills = signal<ExpectedBill[]>([]);
+  protected readonly newBillName = signal('');
+  protected readonly newBillCategory = signal('Bills');
+  protected readonly newBillAmount = signal<number | null>(null);
+  protected readonly newBillDueDay = signal(1);
+  protected readonly activeExpectedBills = computed(() => this.expectedBills().filter((bill) => bill.active));
+  protected readonly billTracking = computed(() => this.activeExpectedBills().map((bill) => {
+    const spent = this.selectedTransactions()
+      .filter((item) => item.type === 'Expense' && item.category === bill.category)
+      .reduce((sum, item) => sum + item.amount, 0);
+    return { ...bill, spent, remaining: bill.amount - spent, overspent: spent > bill.amount };
+  }));
+  protected readonly billsExpectedTotal = computed(() => this.billTracking().reduce((sum, bill) => sum + bill.amount, 0));
+  protected readonly billsSpentTotal = computed(() => this.billTracking().reduce((sum, bill) => sum + bill.spent, 0));
+  protected readonly billsOverspentCount = computed(() => this.billTracking().filter((bill) => bill.overspent).length);
   protected readonly totalIncome = computed(() => this.selectedTransactions().filter((item) => item.type === 'Income').reduce((sum, item) => sum + item.amount, 0));
   protected readonly totalSpent = computed(() => this.selectedTransactions().filter((item) => item.type === 'Expense').reduce((sum, item) => sum + item.amount, 0));
   protected readonly balance = computed(() => this.totalIncome() - this.totalSpent());
@@ -239,6 +264,10 @@ export class App {
     if (savedSavingsCategories) {
       try { this.savingsCategoryGroups.set(JSON.parse(savedSavingsCategories)); } catch { localStorage.removeItem('ledger-savings-categories'); }
     }
+    const savedBills = localStorage.getItem('ledger-expected-bills');
+    if (savedBills) {
+      try { this.expectedBills.set(JSON.parse(savedBills)); } catch { localStorage.removeItem('ledger-expected-bills'); }
+    }
     this.loadFromApi();
   }
 
@@ -362,6 +391,36 @@ export class App {
   protected createSavingsSubcategory(): void {
     this.addSavingsSubcategory(this.selectedCategoryForSubcategory(), this.newSubcategoryName());
     this.newSubcategoryName.set('');
+  }
+
+  protected addExpectedBill(): void {
+    const name = this.newBillName().trim();
+    const amount = Number(this.newBillAmount());
+    const dueDay = Math.max(1, Math.min(31, Number(this.newBillDueDay()) || 1));
+    if (!name || !this.newBillCategory() || !Number.isFinite(amount) || amount <= 0) return;
+    this.expectedBills.update((bills) => [...bills, {
+      id: Date.now(), name, category: this.newBillCategory(), amount, dueDay, active: true,
+    }]);
+    this.persistExpectedBills();
+    this.syncToApi();
+    this.newBillName.set('');
+    this.newBillAmount.set(null);
+    this.newBillDueDay.set(1);
+  }
+
+  protected removeExpectedBill(id: number): void {
+    this.expectedBills.update((bills) => bills.filter((bill) => bill.id !== id));
+    this.persistExpectedBills();
+    this.syncToApi();
+  }
+
+  protected billProgress(spent: number, amount: number): number {
+    return Math.min(100, (spent / amount) * 100);
+  }
+
+  protected billStatus(spent: number, amount: number, overspent: boolean): string {
+    const difference = Math.abs(amount - spent).toLocaleString('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 });
+    return overspent ? `Overspending by ${difference}` : `${difference} remaining`;
   }
 
   protected selectSection(section: string): void {
@@ -507,6 +566,10 @@ export class App {
         this.targetSavingsGoal.set(targetSavingsGoal);
         localStorage.setItem('ledger-target-savings', String(targetSavingsGoal));
       }
+      if (Array.isArray(cloudData.expectedBills)) {
+        this.expectedBills.set(cloudData.expectedBills);
+        this.persistExpectedBills();
+      }
       this.persist();
       this.cloudDataReady.set(true);
     }).catch(() => this.cloudDataReady.set(true));
@@ -520,10 +583,12 @@ export class App {
       body: JSON.stringify(isGoogleSheets ? {
         action: 'replace',
         transactions: this.transactions(),
+        expectedBills: this.expectedBills(),
         settings: { monthlyBudget: this.budget(), targetSavingsGoal: this.targetSavingsGoal() },
       } : this.transactions()),
     }).catch(() => undefined);
   }
+  private persistExpectedBills(): void { localStorage.setItem('ledger-expected-bills', JSON.stringify(this.expectedBills())); }
   private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null, savings: false }; }
   private emptySavingsTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Savings', subcategory: 'Contribution', type: 'Income', amount: null, fundType: 'Contribution', account: '' }; }
 }

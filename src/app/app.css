@@ -1004,6 +1004,80 @@ tbody tr:hover {
   color: #94a3b8;
 }
 
+.bills-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.6fr);
+  gap: 16px;
+}
+
+.bills-metrics strong.expense-text,
+.bill-overspent .bill-status {
+  color: #c5221f;
+}
+
+.bill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bill-row {
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.bill-row.bill-overspent {
+  border-color: #f1b8b5;
+  background: #fff8f7;
+}
+
+.bill-row-heading,
+.bill-amounts {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.bill-row-heading strong,
+.bill-row-heading small,
+.bill-status {
+  display: block;
+}
+
+.bill-row-heading small,
+.bill-status {
+  color: #64748b;
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+.bill-amounts {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 10px;
+}
+
+.bill-amounts b {
+  color: #1d2d3e;
+  font-variant-numeric: tabular-nums;
+}
+
+.bill-row .progress-track {
+  margin: 10px 0 0;
+  height: 6px;
+}
+
+.bill-row .progress-track span.expense-progress {
+  background: #c5221f;
+}
+
+.bill-empty {
+  padding: 16px 0;
+}
+
 .reference-tiles {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1460,6 +1534,10 @@ tbody tr:hover {
   .reference-tiles {
     grid-template-columns: 1fr;
   }
+
+  .bills-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1651,7 +1729,8 @@ tbody tr:hover {
   .report-grid,
   .dashboard-grid,
   .reference-tiles,
-  .category-manager-grid {
+  .category-manager-grid,
+  .bills-layout {
     grid-template-columns: 1fr;
     gap: 12px;
     margin-bottom: 14px;
