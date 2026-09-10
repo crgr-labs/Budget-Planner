@@ -238,6 +238,8 @@ export class App {
   protected readonly selectedCategoryForSubcategory = signal('');
   protected readonly newSubcategoryName = signal('');
   protected readonly newSavingsTransaction = signal<NewTransaction>(this.emptySavingsTransaction());
+  protected readonly editingExpenseId = signal<number | null>(null);
+  protected readonly editingExpense = signal<NewTransaction | null>(null);
 
   constructor() {
     if (!this.isHosted) {
@@ -503,6 +505,46 @@ export class App {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action: 'delete', id }),
     }).catch(() => undefined);
+  }
+
+  protected startEditingExpense(transaction: Transaction): void {
+    if (transaction.type !== 'Expense' || transaction.savings) return;
+    this.editingExpenseId.set(transaction.id);
+    this.editingExpense.set({
+      date: transaction.date,
+      description: transaction.description,
+      category: transaction.category,
+      subcategory: transaction.subcategory,
+      type: 'Expense',
+      amount: transaction.amount,
+      savings: false,
+    });
+  }
+
+  protected updateExpenseEdit(field: keyof NewTransaction, value: string | number | null): void {
+    this.editingExpense.update((expense) => expense ? { ...expense, [field]: value } : expense);
+  }
+
+  protected cancelEditingExpense(): void {
+    this.editingExpenseId.set(null);
+    this.editingExpense.set(null);
+  }
+
+  protected saveEditingExpense(): void {
+    const id = this.editingExpenseId();
+    const expense = this.editingExpense();
+    if (id === null || !expense || !expense.description?.trim() || !expense.date || !expense.category || !expense.amount || expense.amount <= 0) return;
+    this.transactions.update((items) => items.map((item) => item.id === id ? {
+      ...item,
+      date: expense.date,
+      description: expense.description.trim(),
+      category: expense.category,
+      subcategory: expense.subcategory,
+      amount: Number(expense.amount),
+    } : item));
+    this.persist();
+    this.syncToApi();
+    this.cancelEditingExpense();
   }
 
   protected importWorkbook(event: Event): void {
