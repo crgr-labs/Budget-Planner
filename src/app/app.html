@@ -240,9 +240,9 @@
             </div><span class="report-icon">≡</span>
           </div>
           <div class="category-directory-list">@for (group of categoryGroups(); track group.name) {<div
-              class="category-directory-row"><div class="category-directory-title"><strong>{{ group.name }}</strong>@if (isUserCategory(group.name, false)) {<button class="edit-row-button" type="button" (click)="editCategory(group.name, false)">Edit</button>}</div>
+              class="category-directory-row"><div class="category-directory-title"><strong>{{ group.name }}</strong><button class="edit-row-button" type="button" (click)="editCategory(group.name, false)">Edit</button></div>
               <div>@if (group.subcategories.length) {@for (subcategory of group.subcategories; track subcategory)
-                {<span>{{ subcategory }} @if (isUserSubcategory(group.name, subcategory, false)) {<button class="edit-subcategory-button" type="button" (click)="editSubcategory(group.name, subcategory, false)" aria-label="Edit sub-category">Edit</button>}</span>}} @else {<span class="empty-category">No sub-categories yet</span>}
+                {<span>{{ subcategory }} <button class="edit-subcategory-button" type="button" (click)="editSubcategory(group.name, subcategory, false)" aria-label="Edit sub-category">Edit</button></span>}} @else {<span class="empty-category">No sub-categories yet</span>}
               </div>
             </div>}</div>
         </section>
@@ -254,9 +254,9 @@
             </div><span class="report-icon">◎</span>
           </div>
           <div class="category-directory-list">@for (group of savingsCategoryGroups(); track group.name) {<div
-              class="category-directory-row"><div class="category-directory-title"><strong>{{ group.name }}</strong>@if (isUserCategory(group.name, true)) {<button class="edit-row-button" type="button" (click)="editCategory(group.name, true)">Edit</button>}</div>
+              class="category-directory-row"><div class="category-directory-title"><strong>{{ group.name }}</strong><button class="edit-row-button" type="button" (click)="editCategory(group.name, true)">Edit</button></div>
               <div>@if (group.subcategories.length) {@for (subcategory of group.subcategories; track subcategory)
-                {<span>{{ subcategory }} @if (isUserSubcategory(group.name, subcategory, true)) {<button class="edit-subcategory-button" type="button" (click)="editSubcategory(group.name, subcategory, true)" aria-label="Edit sub-category">Edit</button>}</span>}} @else {<span class="empty-category">No sub-categories yet</span>}
+                {<span>{{ subcategory }} <button class="edit-subcategory-button" type="button" (click)="editSubcategory(group.name, subcategory, true)" aria-label="Edit sub-category">Edit</button></span>}} @else {<span class="empty-category">No sub-categories yet</span>}
               </div>
             </div>}</div>
         </section>
