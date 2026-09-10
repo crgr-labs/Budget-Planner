@@ -1668,6 +1668,7 @@ tbody tr:hover {
   }
 
   .bill-list-panel {
+    height: 420px;
     max-height: 420px;
   }
 }
@@ -2029,6 +2030,16 @@ tbody tr:hover {
 
   .sync-note span {
     display: none;
+  }
+
+  .bill-list-panel {
+    height: 360px;
+    max-height: 360px;
+  }
+
+  .bill-list-panel .bill-list {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 }
 
