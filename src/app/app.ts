@@ -493,7 +493,8 @@ export class App {
   private persistSavingsCategories(): void { localStorage.setItem('ledger-savings-categories', JSON.stringify(this.savingsCategoryGroups())); }
   private loadFromApi(): void {
     if (!this.apiUrl) return;
-    void fetch(this.apiUrl).then((response) => response.ok ? response.json() : Promise.reject()).then((data: Transaction[] | CloudData) => {
+    const requestUrl = this.isHosted ? `${this.apiUrl}&cacheBust=${Date.now()}` : this.apiUrl;
+    void fetch(requestUrl, { cache: 'no-store' }).then((response) => response.ok ? response.json() : Promise.reject()).then((data: Transaction[] | CloudData) => {
       const cloudData = Array.isArray(data) ? { transactions: data } : data;
       this.transactions.set(cloudData.transactions);
       const monthlyBudget = cloudData.settings?.monthlyBudget;
