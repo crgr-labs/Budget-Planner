@@ -1130,6 +1130,22 @@ tbody tr:hover {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.bill-list-panel {
+  height: 520px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.bill-list-panel .bill-list {
+  flex: 1;
 }
 
 .bill-row {
@@ -1648,6 +1664,10 @@ tbody tr:hover {
 
   .bills-layout {
     grid-template-columns: 1fr;
+  }
+
+  .bill-list-panel {
+    height: 420px;
   }
 }
 
