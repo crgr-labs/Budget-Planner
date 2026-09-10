@@ -1662,12 +1662,29 @@ tbody tr:hover {
   .category-directory {
     padding: 14px;
     box-sizing: border-box;
+    min-width: 0;
   }
 
   .metric-card strong,
   .reference-metrics strong {
     font-size: 22px;
     overflow-wrap: break-word;
+    min-width: 0;
+    line-height: 1.2;
+  }
+
+  .reference-metrics small {
+    overflow-wrap: anywhere;
+  }
+
+  .budget-total > div {
+    min-width: 0;
+  }
+
+  .budget-edit {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
 
   /* Form Grids on Mobile */
