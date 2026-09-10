@@ -1436,6 +1436,23 @@ tbody tr:hover {
   gap: 8px;
 }
 
+.category-actions {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+}
+
+.category-delete-button,
+.delete-subcategory-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #c5221f;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
 .category-directory-row > div {
   display: flex;
   flex-wrap: wrap;
@@ -1465,7 +1482,9 @@ tbody tr:hover {
 }
 
 .category-directory-row .edit-row-button,
-.category-directory-row .edit-subcategory-button:hover {
+.category-directory-row .edit-subcategory-button:hover,
+.category-delete-button:hover,
+.delete-subcategory-button:hover {
   text-decoration: underline;
 }
 
