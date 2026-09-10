@@ -1007,7 +1007,12 @@ tbody tr:hover {
 .bills-layout {
   display: grid;
   grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.6fr);
+  align-items: start;
   gap: 16px;
+}
+
+.bills-metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .bills-metrics strong.expense-text,
