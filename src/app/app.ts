@@ -95,6 +95,7 @@ export class App {
     { name: 'Transport', subcategories: ['Commute', 'Fuel', 'Parking'] },
     { name: 'Lifestyle', subcategories: ['Entertainment', 'Shopping', 'Subscriptions'] },
     { name: 'Bills', subcategories: ['Phone', 'Internet', 'Insurance'] },
+    { name: 'Expected Bills', subcategories: ['Globe', 'Condo'] },
     { name: 'Health', subcategories: ['Medicine', 'Appointments', 'Fitness'] },
   ]);
   protected readonly savingsCategoryGroups = signal<CategoryGroup[]>([
@@ -114,8 +115,8 @@ export class App {
   protected readonly selectedTransactions = computed(() => this.regularTransactions().filter((item) => item.date.startsWith(this.selectedMonth())));
   protected readonly expectedBills = signal<ExpectedBill[]>([]);
   protected readonly newBillName = signal('');
-  protected readonly newBillCategory = signal('Bills');
-  protected readonly newBillSubcategory = signal('Phone');
+  protected readonly newBillCategory = signal('Expected Bills');
+  protected readonly newBillSubcategory = signal('Globe');
   protected readonly newBillAmount = signal<number | null>(null);
   protected readonly newBillDueDay = signal(1);
   protected readonly activeExpectedBills = computed(() => this.expectedBills().filter((bill) => bill.active));
@@ -264,6 +265,7 @@ export class App {
     if (savedCategories) {
       try { this.categoryGroups.set(JSON.parse(savedCategories)); } catch { localStorage.removeItem('ledger-categories'); }
     }
+    this.ensureExpectedBillsCategory();
     const savedSavingsCategories = localStorage.getItem('ledger-savings-categories');
     if (savedSavingsCategories) {
       try { this.savingsCategoryGroups.set(JSON.parse(savedSavingsCategories)); } catch { localStorage.removeItem('ledger-savings-categories'); }
@@ -422,6 +424,20 @@ export class App {
   protected updateBillCategory(category: string): void {
     this.newBillCategory.set(category);
     this.newBillSubcategory.set(this.subcategoriesFor(category)[0] || '');
+  }
+
+  private ensureExpectedBillsCategory(): void {
+    const expectedBillsCategory = this.categoryGroups().find((group) => group.name === 'Expected Bills');
+    if (!expectedBillsCategory) {
+      this.categoryGroups.update((groups) => [...groups, { name: 'Expected Bills', subcategories: ['Globe', 'Condo'] }]);
+      this.persistCategories();
+      return;
+    }
+    const subcategories = [...new Set([...expectedBillsCategory.subcategories, 'Globe', 'Condo'])];
+    if (subcategories.length !== expectedBillsCategory.subcategories.length) {
+      this.categoryGroups.update((groups) => groups.map((group) => group.name === 'Expected Bills' ? { ...group, subcategories } : group));
+      this.persistCategories();
+    }
   }
 
   protected billProgress(spent: number, amount: number): number {

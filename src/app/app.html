@@ -147,7 +147,7 @@
         </div>
         <section class="panel bills-summary-tile">
           <div class="bill-summary-item"><span>Expected bills</span><strong>{{ billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Planned for this month</small></div>
-          <div class="bill-summary-item"><span>Bill spending</span><strong>{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Matched by category</small></div>
+          <div class="bill-summary-item"><span>Bill spending</span><strong>{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Matched by sub-category</small></div>
           <div class="bill-summary-item"><span>Overspending alerts</span><strong [class.expense-text]="billsOverspentCount() > 0">{{ billsOverspentCount() }}</strong><small>{{ billsOverspentCount() ? 'Review bills above plan' : 'All bills on track' }}</small></div>
         </section>
         <div class="bills-layout">
