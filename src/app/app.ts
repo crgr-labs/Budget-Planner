@@ -69,6 +69,8 @@ interface CloudData {
   transactions: Transaction[];
   settings?: { monthlyBudget?: number; targetSavingsGoal?: number };
   expectedBills?: ExpectedBill[];
+  categories?: CategoryGroup[];
+  savingsCategories?: CategoryGroup[];
 }
 
 @Component({
@@ -275,14 +277,18 @@ export class App {
         if (!Number.isNaN(parsed) && parsed >= 0) this.targetSavingsGoal.set(parsed);
       }
     }
-    const savedCategories = localStorage.getItem('ledger-categories');
-    if (savedCategories) {
-      try { this.categoryGroups.set(JSON.parse(savedCategories)); } catch { localStorage.removeItem('ledger-categories'); }
+    if (!this.isHosted) {
+      const savedCategories = localStorage.getItem('ledger-categories');
+      if (savedCategories) {
+        try { this.categoryGroups.set(JSON.parse(savedCategories)); } catch { localStorage.removeItem('ledger-categories'); }
+      }
     }
     this.ensureExpectedBillsCategory();
-    const savedSavingsCategories = localStorage.getItem('ledger-savings-categories');
-    if (savedSavingsCategories) {
-      try { this.savingsCategoryGroups.set(JSON.parse(savedSavingsCategories)); } catch { localStorage.removeItem('ledger-savings-categories'); }
+    if (!this.isHosted) {
+      const savedSavingsCategories = localStorage.getItem('ledger-savings-categories');
+      if (savedSavingsCategories) {
+        try { this.savingsCategoryGroups.set(JSON.parse(savedSavingsCategories)); } catch { localStorage.removeItem('ledger-savings-categories'); }
+      }
     }
     if (!this.isHosted) {
       const savedBills = localStorage.getItem('ledger-expected-bills');
@@ -369,6 +375,7 @@ export class App {
     if (!categoryName || this.categories.some((category) => category.toLowerCase() === categoryName.toLowerCase())) return;
     this.categoryGroups.update((groups) => [...groups, { name: categoryName, subcategories: subcategoryName ? [subcategoryName] : [] }]);
     this.persistCategories();
+    this.syncToApi();
   }
 
   protected addSubcategory(category: string, subcategory: string): void {
@@ -376,6 +383,7 @@ export class App {
     if (!category || !subcategoryName) return;
     this.categoryGroups.update((groups) => groups.map((group) => group.name === category && !group.subcategories.some((item) => item.toLowerCase() === subcategoryName.toLowerCase()) ? { ...group, subcategories: [...group.subcategories, subcategoryName] } : group));
     this.persistCategories();
+    this.syncToApi();
   }
 
   protected addSavingsCategory(name: string, subcategory: string): void {
@@ -384,6 +392,7 @@ export class App {
     if (!categoryName || this.savingsCategories.some((category) => category.toLowerCase() === categoryName.toLowerCase())) return;
     this.savingsCategoryGroups.update((groups) => [...groups, { name: categoryName, subcategories: subcategoryName ? [subcategoryName] : [] }]);
     this.persistSavingsCategories();
+    this.syncToApi();
   }
 
   protected addSavingsSubcategory(category: string, subcategory: string): void {
@@ -391,6 +400,7 @@ export class App {
     if (!category || !subcategoryName) return;
     this.savingsCategoryGroups.update((groups) => groups.map((group) => group.name === category && !group.subcategories.some((item) => item.toLowerCase() === subcategoryName.toLowerCase()) ? { ...group, subcategories: [...group.subcategories, subcategoryName] } : group));
     this.persistSavingsCategories();
+    this.syncToApi();
   }
 
   protected createCategory(): void {
@@ -443,6 +453,7 @@ export class App {
     if (savings) {
       this.savingsCategoryGroups.update((items) => items.map((group) => group.name === name ? { ...group, name: updatedName } : group));
       this.persistSavingsCategories();
+      this.syncToApi();
     } else {
       this.categoryGroups.update((items) => items.map((group) => group.name === name ? { ...group, name: updatedName } : group));
       this.transactions.update((items) => items.map((item) => item.category === name ? { ...item, category: updatedName } : item));
@@ -463,6 +474,7 @@ export class App {
     if (savings) {
       this.savingsCategoryGroups.update((items) => items.map((item) => item.name === category ? { ...item, subcategories: item.subcategories.map((entry) => entry === subcategory ? updatedName : entry) } : item));
       this.persistSavingsCategories();
+      this.syncToApi();
     } else {
       this.categoryGroups.update((items) => items.map((item) => item.name === category ? { ...item, subcategories: item.subcategories.map((entry) => entry === subcategory ? updatedName : entry) } : item));
       this.transactions.update((items) => items.map((item) => item.category === category && item.subcategory === subcategory ? { ...item, subcategory: updatedName } : item));
@@ -478,6 +490,7 @@ export class App {
     if (savings) {
       this.savingsCategoryGroups.update((items) => items.filter((group) => group.name !== name));
       this.persistSavingsCategories();
+      this.syncToApi();
       return;
     }
     this.categoryGroups.update((items) => items.filter((group) => group.name !== name));
@@ -493,6 +506,7 @@ export class App {
         ? { ...group, subcategories: group.subcategories.filter((item) => item !== subcategory) }
         : group));
       this.persistSavingsCategories();
+      this.syncToApi();
       return;
     }
     this.categoryGroups.update((items) => items.map((group) => group.name === category
@@ -745,6 +759,14 @@ export class App {
         this.expectedBills.set(cloudData.expectedBills.map((bill) => ({ ...bill, subcategory: String(bill.subcategory || '') })));
         this.persistExpectedBills();
       }
+      if (Array.isArray(cloudData.categories)) {
+        this.categoryGroups.set(cloudData.categories);
+        this.persistCategories();
+      }
+      if (Array.isArray(cloudData.savingsCategories)) {
+        this.savingsCategoryGroups.set(cloudData.savingsCategories);
+        this.persistSavingsCategories();
+      }
       this.persist();
       this.cloudDataReady.set(true);
     }).catch(() => this.cloudDataReady.set(true));
@@ -759,6 +781,8 @@ export class App {
         action: 'replace',
         transactions: this.transactions(),
         expectedBills: this.expectedBills(),
+        categories: this.categoryGroups(),
+        savingsCategories: this.savingsCategoryGroups(),
         settings: { monthlyBudget: this.budget(), targetSavingsGoal: this.targetSavingsGoal() },
       } : this.transactions()),
     }).catch(() => undefined);
