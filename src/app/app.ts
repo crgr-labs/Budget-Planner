@@ -55,6 +55,11 @@ interface SavingsTrendPoint {
   height: number;
 }
 
+interface CloudData {
+  transactions: Transaction[];
+  settings?: { monthlyBudget?: number; targetSavingsGoal?: number };
+}
+
 @Component({
   imports: [CommonModule, FormsModule],
   selector: 'app-root',
@@ -241,6 +246,7 @@ export class App {
     if (!Number.isNaN(amount) && amount >= 0) {
       this.budget.set(amount);
       localStorage.setItem('ledger-budget', String(amount));
+      this.syncToApi();
     }
   }
 
@@ -252,6 +258,7 @@ export class App {
     if (!Number.isNaN(amount) && amount >= 0) {
       this.targetSavingsGoal.set(amount);
       localStorage.setItem('ledger-target-savings', String(amount));
+      this.syncToApi();
     }
   }
 
@@ -482,8 +489,19 @@ export class App {
   private persistSavingsCategories(): void { localStorage.setItem('ledger-savings-categories', JSON.stringify(this.savingsCategoryGroups())); }
   private loadFromApi(): void {
     if (!this.apiUrl) return;
-    void fetch(this.apiUrl).then((response) => response.ok ? response.json() : Promise.reject()).then((items: Transaction[]) => {
-      this.transactions.set(items);
+    void fetch(this.apiUrl).then((response) => response.ok ? response.json() : Promise.reject()).then((data: Transaction[] | CloudData) => {
+      const cloudData = Array.isArray(data) ? { transactions: data } : data;
+      this.transactions.set(cloudData.transactions);
+      const monthlyBudget = cloudData.settings?.monthlyBudget;
+      if (typeof monthlyBudget === 'number' && monthlyBudget >= 0) {
+        this.budget.set(monthlyBudget);
+        localStorage.setItem('ledger-budget', String(monthlyBudget));
+      }
+      const targetSavingsGoal = cloudData.settings?.targetSavingsGoal;
+      if (typeof targetSavingsGoal === 'number' && targetSavingsGoal >= 0) {
+        this.targetSavingsGoal.set(targetSavingsGoal);
+        localStorage.setItem('ledger-target-savings', String(targetSavingsGoal));
+      }
       this.persist();
     }).catch(() => undefined);
   }
@@ -493,7 +511,11 @@ export class App {
     void fetch(this.apiUrl, {
       method: isGoogleSheets ? 'POST' : 'PUT',
       headers: { 'Content-Type': isGoogleSheets ? 'text/plain;charset=utf-8' : 'application/json' },
-      body: JSON.stringify(isGoogleSheets ? { action: 'replace', transactions: this.transactions() } : this.transactions()),
+      body: JSON.stringify(isGoogleSheets ? {
+        action: 'replace',
+        transactions: this.transactions(),
+        settings: { monthlyBudget: this.budget(), targetSavingsGoal: this.targetSavingsGoal() },
+      } : this.transactions()),
     }).catch(() => undefined);
   }
   private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null, savings: false }; }
