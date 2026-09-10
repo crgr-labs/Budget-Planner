@@ -1009,10 +1009,23 @@ tbody tr:hover {
   grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.6fr);
   align-items: start;
   gap: 16px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .bills-metrics {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.bills-page,
+.bills-page > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .bills-metrics strong.expense-text,
