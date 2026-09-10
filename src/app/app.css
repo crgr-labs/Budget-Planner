@@ -1169,6 +1169,30 @@ tbody tr:hover {
   gap: 10px;
 }
 
+.bill-edit-fields {
+  display: grid;
+  grid-template-columns: minmax(130px, 1.4fr) minmax(120px, 1fr) minmax(130px, 1fr) minmax(90px, 0.8fr) minmax(70px, 0.6fr);
+  gap: 6px;
+}
+
+.bill-edit-fields input,
+.bill-edit-fields select {
+  width: 100%;
+  min-height: 30px;
+  padding: 5px 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #1d2d3e;
+  font: inherit;
+  font-size: 11px;
+  box-sizing: border-box;
+}
+
+.bill-edit-actions {
+  margin-top: 8px;
+}
+
 .bill-row-heading strong,
 .bill-row-heading small,
 .bill-status {
