@@ -460,6 +460,42 @@ export class App {
     }
   }
 
+  protected deleteCategory(name: string, savings: boolean): void {
+    if (!window.confirm(`Delete the category "${name}"?`)) return;
+    if (savings) {
+      this.savingsCategoryGroups.update((items) => items.filter((group) => group.name !== name));
+      this.persistSavingsCategories();
+      return;
+    }
+    this.categoryGroups.update((items) => items.filter((group) => group.name !== name));
+    this.expectedBills.update((items) => items.filter((bill) => bill.category !== name));
+    this.persistCategories();
+    this.persistExpectedBills();
+    this.syncToApi();
+  }
+
+  protected deleteSubcategory(category: string, subcategory: string, savings: boolean): void {
+    if (!window.confirm(`Delete the sub-category "${subcategory}"?`)) return;
+    if (savings) {
+      this.savingsCategoryGroups.update((items) => items.map((group) => group.name === category
+        ? { ...group, subcategories: group.subcategories.filter((item) => item !== subcategory) }
+        : group));
+      this.persistSavingsCategories();
+      return;
+    }
+    this.categoryGroups.update((items) => items.map((group) => group.name === category
+      ? { ...group, subcategories: group.subcategories.filter((item) => item !== subcategory) }
+      : group));
+    this.transactions.update((items) => items.map((item) => item.category === category && item.subcategory === subcategory
+      ? { ...item, subcategory: '' }
+      : item));
+    this.expectedBills.update((items) => items.filter((bill) => !(bill.category === category && bill.subcategory === subcategory)));
+    this.persistCategories();
+    this.persist();
+    this.persistExpectedBills();
+    this.syncToApi();
+  }
+
   protected addExpectedBill(): void {
     const name = this.newBillName().trim();
     const amount = Number(this.newBillAmount());
