@@ -72,6 +72,7 @@ export class App {
   private readonly apiUrl = ['localhost', '127.0.0.1'].includes(window.location.hostname)
     ? 'http://localhost:3000/api/transactions'
     : this.googleSheetsUrl;
+  private readonly isHosted = this.apiUrl === this.googleSheetsUrl;
   protected readonly activeSection = signal('Overview');
   protected readonly mobileMenuOpen = signal(false);
   protected readonly selectedMonth = signal('2026-09');
@@ -95,6 +96,7 @@ export class App {
   protected get categories(): string[] { return this.categoryGroups().map((group) => group.name); }
   protected get savingsCategories(): string[] { return this.savingsCategoryGroups().map((group) => group.name); }
   protected readonly transactions = signal<Transaction[]>([]);
+  protected readonly cloudDataReady = signal(!this.isHosted);
   protected readonly regularTransactions = computed(() => this.transactions().filter((item) => !item.savings));
   protected readonly newTransaction = signal<NewTransaction>(this.emptyTransaction());
   protected readonly budget = signal(3800);
@@ -213,19 +215,21 @@ export class App {
   protected readonly newSavingsTransaction = signal<NewTransaction>(this.emptySavingsTransaction());
 
   constructor() {
-    const saved = localStorage.getItem('ledger-transactions');
-    if (saved) {
-      try { this.transactions.set(JSON.parse(saved)); } catch { localStorage.removeItem('ledger-transactions'); }
-    }
-    const savedBudget = localStorage.getItem('ledger-budget');
-    if (savedBudget !== null) {
-      const parsed = Number(savedBudget);
-      if (!Number.isNaN(parsed) && parsed >= 0) this.budget.set(parsed);
-    }
-    const savedTargetSavings = localStorage.getItem('ledger-target-savings');
-    if (savedTargetSavings !== null) {
-      const parsed = Number(savedTargetSavings);
-      if (!Number.isNaN(parsed) && parsed >= 0) this.targetSavingsGoal.set(parsed);
+    if (!this.isHosted) {
+      const saved = localStorage.getItem('ledger-transactions');
+      if (saved) {
+        try { this.transactions.set(JSON.parse(saved)); } catch { localStorage.removeItem('ledger-transactions'); }
+      }
+      const savedBudget = localStorage.getItem('ledger-budget');
+      if (savedBudget !== null) {
+        const parsed = Number(savedBudget);
+        if (!Number.isNaN(parsed) && parsed >= 0) this.budget.set(parsed);
+      }
+      const savedTargetSavings = localStorage.getItem('ledger-target-savings');
+      if (savedTargetSavings !== null) {
+        const parsed = Number(savedTargetSavings);
+        if (!Number.isNaN(parsed) && parsed >= 0) this.targetSavingsGoal.set(parsed);
+      }
     }
     const savedCategories = localStorage.getItem('ledger-categories');
     if (savedCategories) {
@@ -503,7 +507,8 @@ export class App {
         localStorage.setItem('ledger-target-savings', String(targetSavingsGoal));
       }
       this.persist();
-    }).catch(() => undefined);
+      this.cloudDataReady.set(true);
+    }).catch(() => this.cloudDataReady.set(true));
   }
   private syncToApi(): void {
     if (!this.apiUrl) return;

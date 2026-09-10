@@ -64,6 +64,7 @@
               <p class="muted">Your spending across categories</p>
             </div><button class="more-button" type="button">•••</button>
           </div>
+          @if (cloudDataReady()) {
           <div class="budget-total">
             <div><span>Monthly budget</span><button class="budget-edit" type="button" aria-label="Change monthly budget"
                 (click)="editBudget()">{{ budget() | currency:'PHP':'symbol':'1.2-2' }}</button></div>
@@ -73,6 +74,9 @@
           <div class="progress-track"><span [style.width.%]="budgetProgress()"></span></div>
           <p class="budget-foot"><span>{{ budgetProgress() | number:'1.0-0' }}% used</span><span>{{ budget() -
               totalSpent() | currency:'PHP':'symbol':'1.2-2' }} remaining</span></p>
+            } @else {
+            <div class="budget-total"><div><span>Monthly budget</span><strong>Loading...</strong></div></div>
+            }
           <div class="category-list">@for (category of categories; track category) {<div class="category-row"><span
                 class="category-dot" [class]="'dot-' + $index"></span><span class="category-name">{{ category
                 }}</span><span class="category-amount">{{ categoryTotal(category) | currency:'PHP':'symbol':'1.2-2'
