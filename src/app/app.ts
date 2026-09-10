@@ -251,6 +251,9 @@ export class App {
   protected readonly newCategorySubcategory = signal('');
   protected readonly selectedCategoryForSubcategory = signal('');
   protected readonly newSubcategoryName = signal('');
+  protected readonly categorySearch = signal('');
+  protected readonly filteredCategories = computed(() => this.filterCategoryGroups(this.categoryGroups()));
+  protected readonly filteredSavingsCategories = computed(() => this.filterCategoryGroups(this.savingsCategoryGroups()));
   protected readonly newSavingsTransaction = signal<NewTransaction>(this.emptySavingsTransaction());
   protected readonly editingExpenseId = signal<number | null>(null);
   protected readonly editingExpense = signal<NewTransaction | null>(null);
@@ -410,6 +413,17 @@ export class App {
   protected createSavingsSubcategory(): void {
     this.addSavingsSubcategory(this.selectedCategoryForSubcategory(), this.newSubcategoryName());
     this.newSubcategoryName.set('');
+  }
+
+  private filterCategoryGroups(groups: CategoryGroup[]): CategoryGroup[] {
+    const query = this.categorySearch().trim().toLowerCase();
+    if (!query) return groups;
+    return groups
+      .map((group) => ({
+        ...group,
+        subcategories: group.subcategories.filter((subcategory) => `${group.name} ${subcategory}`.toLowerCase().includes(query)),
+      }))
+      .filter((group) => group.name.toLowerCase().includes(query) || group.subcategories.length > 0);
   }
 
   protected isUserCategory(name: string, savings: boolean): boolean {

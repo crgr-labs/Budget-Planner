@@ -1412,10 +1412,46 @@ tbody tr:hover {
 
 .category-table-wrap {
   margin-top: 14px;
+  max-height: 390px;
+  overflow: auto;
 }
 
 .category-table {
   min-width: 680px;
+}
+
+.category-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8fafc;
+}
+
+.category-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 520px;
+}
+
+.category-search label {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.category-search input {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1d2d3e;
+  font: inherit;
+  font-size: 13px;
+  box-sizing: border-box;
 }
 
 .category-table th,
@@ -1458,6 +1494,18 @@ tbody tr:hover {
   display: inline-flex !important;
   align-items: center;
   gap: 6px;
+}
+
+.category-actions .icon-action {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  border-radius: 5px;
+  font-size: 14px;
+  line-height: 1;
 }
 
 .category-delete-button,
