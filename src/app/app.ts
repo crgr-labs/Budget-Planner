@@ -475,7 +475,6 @@ export class App {
   }
 
   protected deleteCategory(name: string, savings: boolean): void {
-    if (!window.confirm(`Delete the category "${name}"?`)) return;
     if (savings) {
       this.savingsCategoryGroups.update((items) => items.filter((group) => group.name !== name));
       this.persistSavingsCategories();
@@ -489,7 +488,6 @@ export class App {
   }
 
   protected deleteSubcategory(category: string, subcategory: string, savings: boolean): void {
-    if (!window.confirm(`Delete the sub-category "${subcategory}"?`)) return;
     if (savings) {
       this.savingsCategoryGroups.update((items) => items.map((group) => group.name === category
         ? { ...group, subcategories: group.subcategories.filter((item) => item !== subcategory) }
