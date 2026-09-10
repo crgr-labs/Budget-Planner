@@ -1410,6 +1410,24 @@ tbody tr:hover {
   margin-top: 14px;
 }
 
+.category-table-wrap {
+  margin-top: 14px;
+}
+
+.category-table {
+  min-width: 680px;
+}
+
+.category-table th,
+.category-table td {
+  vertical-align: middle;
+}
+
+.category-table .category-actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
 .category-directory-row {
   display: grid;
   grid-template-columns: 180px 1fr;
