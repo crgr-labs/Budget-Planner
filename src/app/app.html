@@ -363,11 +363,7 @@
               <div class="form-grid"><label>Category<select [ngModel]="newSavingsTransaction().category"
                 (ngModelChange)="updateSavingsField('category', $event)">@for (category of savingsCategories; track category) {<option
                   [value]="category">{{ category }}</option>}</select></label><label>Sub-category<select
-                [ngModel]="newSavingsTransaction().subcategory" (ngModelChange)="updateSavingsField('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of savingsSubcategoriesFor(newSavingsTransaction().category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label><label>Fund type<select [ngModel]="newSavingsTransaction().fundType"
-                (ngModelChange)="updateSavingsField('fundType', $event)">
-                <option value="Contribution">Contribution</option>
-                <option value="Withdrawal">Withdrawal</option>
-              </select></label><label>Account<input
+                [ngModel]="newSavingsTransaction().subcategory" (ngModelChange)="updateSavingsField('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of savingsSubcategoriesFor(newSavingsTransaction().category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label><label>Account<input
                 [ngModel]="newSavingsTransaction().account" (ngModelChange)="updateSavingsField('account', $event)"
                 placeholder="e.g. BPI or GCash" /></label><label>Amount<div class="amount-input"><span>₱</span><input type="number" min="0"
                 [ngModel]="newSavingsTransaction().amount" (ngModelChange)="updateSavingsField('amount', $event)"
@@ -386,19 +382,18 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Date</th><th>Category</th><th>Sub-category</th><th>Fund type</th><th>Transaction type</th><th class="align-right">Amount</th><th>Account</th><th>Notes</th><th></th></tr></thead>
+              <thead><tr><th>Date</th><th>Category</th><th>Sub-category</th><th>Transaction type</th><th class="align-right">Amount</th><th>Account</th><th>Notes</th><th></th></tr></thead>
               <tbody>@for (transaction of recentSavingsTransactions(); track transaction.id) {<tr>
                 <td class="muted">{{ transaction.date | date:'MMM d, y' }}</td>
                 <td><span class="category-pill">{{ transaction.category }}</span></td>
                 <td>{{ transaction.subcategory || 'No sub-category' }}</td>
-                <td><span class="category-pill">{{ transaction.fundType || (transaction.type === 'Income' ? 'Contribution' : 'Withdrawal') }}</span></td>
-                <td>{{ transaction.type === 'Income' ? 'Contribution' : 'Withdrawal' }}</td>
+                <td><span class="category-pill">{{ transaction.type === 'Income' ? 'Contribution' : 'Withdrawal' }}</span></td>
                 <td class="align-right" [class.income-text]="transaction.type === 'Income'"><strong>{{ transaction.type === 'Income' ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></td>
                 <td>{{ transaction.account }}</td>
                 <td>{{ transaction.description }}</td>
                 <td><button class="delete-button" type="button" aria-label="Delete savings transaction"
                     (click)="removeTransaction(transaction.id)">×</button></td>
-              </tr>} @if (!recentSavingsTransactions().length) {<tr><td colspan="9" class="muted">Add savings transactions to see savings activity.</td></tr>}</tbody>
+              </tr>} @if (!recentSavingsTransactions().length) {<tr><td colspan="8" class="muted">Add savings transactions to see savings activity.</td></tr>}</tbody>
             </table>
           </div>
         </section>
