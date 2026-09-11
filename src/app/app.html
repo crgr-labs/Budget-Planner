@@ -30,7 +30,7 @@
           (click)="exportWorkbook()">＋ Export .xlsx</button></div>
     </header>
     <div class="page-content">
-      @if (activeSection() !== 'Reports') {
+      @if (activeSection() !== 'Reports' && activeSection() !== 'Bills') {
       <div class="page-heading">
         <div>
           <p class="eyebrow">PERSONAL FINANCE</p>
