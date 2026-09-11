@@ -412,8 +412,7 @@
         <div class="reference-metrics">
           <article><span>Monthly spend</span><strong>{{ reportTotalSpent() | currency:'PHP':'symbol':'1.0-0'
               }}</strong><small>From expense transactions</small></article>
-          <article><span>Budget left</span><strong>{{ budgetLeft() | currency:'PHP':'symbol':'1.0-0'
-              }}</strong><small>Remaining from monthly budget</small></article>
+            <article><span>Budget left</span><strong>{{ cloudDataReady() ? (budgetLeft() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong><small>{{ cloudDataReady() ? 'Remaining from monthly budget' : 'Syncing with cloud storage' }}</small></article>
             <article><span>Current savings</span><strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Savings-only balance</small></article>
             <article><span>Target savings progress</span><strong>{{ savingsGoalProgress() | number:'1.0-0' }}%</strong><small>Based on current savings</small></article>
         </div>
