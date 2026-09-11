@@ -386,9 +386,11 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Date</th><th>Fund type</th><th>Transaction type</th><th class="align-right">Amount</th><th>Account</th><th>Notes</th><th></th></tr></thead>
+              <thead><tr><th>Date</th><th>Category</th><th>Sub-category</th><th>Fund type</th><th>Transaction type</th><th class="align-right">Amount</th><th>Account</th><th>Notes</th><th></th></tr></thead>
               <tbody>@for (transaction of recentSavingsTransactions(); track transaction.id) {<tr>
                 <td class="muted">{{ transaction.date | date:'MMM d, y' }}</td>
+                <td><span class="category-pill">{{ transaction.category }}</span></td>
+                <td>{{ transaction.subcategory || 'No sub-category' }}</td>
                 <td><span class="category-pill">{{ transaction.fundType || (transaction.type === 'Income' ? 'Contribution' : 'Withdrawal') }}</span></td>
                 <td>{{ transaction.type === 'Income' ? 'Contribution' : 'Withdrawal' }}</td>
                 <td class="align-right" [class.income-text]="transaction.type === 'Income'"><strong>{{ transaction.type === 'Income' ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></td>
@@ -396,7 +398,7 @@
                 <td>{{ transaction.description }}</td>
                 <td><button class="delete-button" type="button" aria-label="Delete savings transaction"
                     (click)="removeTransaction(transaction.id)">×</button></td>
-              </tr>} @if (!recentSavingsTransactions().length) {<tr><td colspan="7" class="muted">Add savings transactions to see savings activity.</td></tr>}</tbody>
+              </tr>} @if (!recentSavingsTransactions().length) {<tr><td colspan="9" class="muted">Add savings transactions to see savings activity.</td></tr>}</tbody>
             </table>
           </div>
         </section>
