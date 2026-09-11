@@ -9,14 +9,14 @@
         class="nav-icon">◈</span>Overview</a>
     <a class="nav-link" [class.active]="activeSection() === 'Transactions'"
       (click)="selectSection('Transactions')"><span class="nav-icon">↔</span>Regular spending</a>
-    <a class="nav-link" [class.active]="activeSection() === 'Categories'" (click)="selectSection('Categories')"><span
-        class="nav-icon">▤</span>Categories</a>
     <a class="nav-link" [class.active]="activeSection() === 'Bills'" (click)="selectSection('Bills')"><span
       class="nav-icon">▣</span>Expected bills</a>
     <a class="nav-link" [class.active]="activeSection() === 'Savings'" (click)="selectSection('Savings')"><span
       class="nav-icon">◎</span>Savings</a>
     <a class="nav-link" [class.active]="activeSection() === 'Reports'" (click)="selectSection('Reports')"><span
         class="nav-icon">⌁</span>Reports</a>
+    <a class="nav-link" [class.active]="activeSection() === 'Categories'" (click)="selectSection('Categories')"><span
+        class="nav-icon">▤</span>Categories</a>
     <div class="sidebar-bottom">
       <div class="profile"><span class="avatar">ES</span><span><strong>Eric Smith</strong><small>Personal
             account</small></span><span class="dots">•••</span></div>
