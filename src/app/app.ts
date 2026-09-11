@@ -308,7 +308,7 @@ export class App {
     const amount = Number(trimmed);
     if (!Number.isNaN(amount) && amount >= 0) {
       this.budget.set(amount);
-      localStorage.setItem('ledger-budget', String(amount));
+      if (!this.isHosted) localStorage.setItem('ledger-budget', String(amount));
       this.syncToApi();
     }
   }
@@ -320,7 +320,7 @@ export class App {
     const amount = Number(trimmed);
     if (!Number.isNaN(amount) && amount >= 0) {
       this.targetSavingsGoal.set(amount);
-      localStorage.setItem('ledger-target-savings', String(amount));
+      if (!this.isHosted) localStorage.setItem('ledger-target-savings', String(amount));
       this.syncToApi();
     }
   }
@@ -791,12 +791,12 @@ export class App {
       const monthlyBudget = cloudData.settings?.monthlyBudget;
       if (typeof monthlyBudget === 'number' && monthlyBudget >= 0) {
         this.budget.set(monthlyBudget);
-        localStorage.setItem('ledger-budget', String(monthlyBudget));
+        if (!this.isHosted) localStorage.setItem('ledger-budget', String(monthlyBudget));
       }
       const targetSavingsGoal = cloudData.settings?.targetSavingsGoal;
       if (typeof targetSavingsGoal === 'number' && targetSavingsGoal >= 0) {
         this.targetSavingsGoal.set(targetSavingsGoal);
-        localStorage.setItem('ledger-target-savings', String(targetSavingsGoal));
+        if (!this.isHosted) localStorage.setItem('ledger-target-savings', String(targetSavingsGoal));
       }
       if (Array.isArray(cloudData.expectedBills)) {
         this.expectedBills.set(cloudData.expectedBills.map((bill) => ({ ...bill, subcategory: String(bill.subcategory || '') })));
