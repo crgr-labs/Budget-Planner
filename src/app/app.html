@@ -500,6 +500,7 @@
               </div>}</div>} @else {<p class="empty-report">Add an expense to see your category breakdown.</p>}
           </section>
           <section class="panel report-health" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+            @if (cloudDataReady()) {
             <div class="panel-heading">
               <div>
                 <h2>Budget health</h2>
@@ -514,6 +515,15 @@
               reportTotalSpent() | currency:'PHP':'symbol':'1.2-2' }} remaining</span></p><button
               class="view-all report-link" type="button" (click)="selectSection('Overview')">Back to overview
               <span>→</span></button>
+            } @else {
+            <div class="panel-heading">
+              <div>
+                <h2>Budget health</h2>
+                <p class="muted">Syncing with cloud storage</p>
+              </div>
+            </div>
+            <p class="muted">Loading budget health...</p>
+            }
           </section>
         </div>
       </section>
