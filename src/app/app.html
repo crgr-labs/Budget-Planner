@@ -360,7 +360,10 @@
               (click)="updateSavingsField('type', 'Income')">Contribution</button><button type="button"
               [class.selected]="newSavingsTransaction().type === 'Expense'"
               (click)="updateSavingsField('type', 'Expense')">Withdrawal</button></div>
-              <div class="form-grid"><label>Fund type<select [ngModel]="newSavingsTransaction().fundType"
+              <div class="form-grid"><label>Category<select [ngModel]="newSavingsTransaction().category"
+                (ngModelChange)="updateSavingsField('category', $event)">@for (category of savingsCategories; track category) {<option
+                  [value]="category">{{ category }}</option>}</select></label><label>Sub-category<select
+                [ngModel]="newSavingsTransaction().subcategory" (ngModelChange)="updateSavingsField('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of savingsSubcategoriesFor(newSavingsTransaction().category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label><label>Fund type<select [ngModel]="newSavingsTransaction().fundType"
                 (ngModelChange)="updateSavingsField('fundType', $event)">
                 <option value="Contribution">Contribution</option>
                 <option value="Withdrawal">Withdrawal</option>

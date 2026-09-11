@@ -349,6 +349,10 @@ export class App {
 
   protected updateSavingsField(field: keyof NewTransaction, value: string | number | null): void {
     this.newSavingsTransaction.update((form) => {
+      if (field === 'category') {
+        const category = String(value);
+        return { ...form, category, subcategory: this.savingsSubcategoriesFor(category)[0] || '' };
+      }
       if (field === 'fundType') {
         const type: TransactionType = value === 'Withdrawal' ? 'Expense' : 'Income';
         const subcategory = value === 'Withdrawal' ? 'Withdrawal' : 'Contribution';
@@ -674,8 +678,6 @@ export class App {
     this.transactions.update((items) => [{
       ...entry,
       id: Date.now(),
-      category: 'Savings',
-      subcategory: entry.type === 'Income' ? 'Contribution' : 'Withdrawal',
       fundType,
       account,
       savings: true,
