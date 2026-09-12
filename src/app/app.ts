@@ -231,6 +231,10 @@ export class App {
     if (budgetAmount <= 0) return this.totalSpent() > 0 ? 100 : 0;
     return Math.min(100, Math.max(0, (this.totalSpent() / budgetAmount) * 100));
   });
+  protected readonly budgetCategories = computed(() => this.categories
+    .map((category) => ({ category, total: this.categoryTotal(category) }))
+    .filter((item) => item.total > 0)
+    .sort((first, second) => second.total - first.total));
   protected readonly reportCategories = computed(() => this.categories
     .map((category) => ({ category, total: this.categoryTotal(category) }))
     .filter((item) => item.total > 0)
@@ -873,6 +877,16 @@ export class App {
   protected categoryColor(index: number): string {
     const hue = (this.categoryColorSeed + (index * 137.508)) % 360;
     return `hsl(${hue} 65% 45%)`;
+  }
+
+  protected get hosted(): boolean {
+    return this.isHosted;
+  }
+
+  protected retryCloudData(): void {
+    this.cloudDataError.set(false);
+    this.cloudDataReady.set(false);
+    this.loadFromApi();
   }
 
   private persist(): void { if (!this.isHosted) localStorage.setItem('ledger-transactions', JSON.stringify(this.transactions())); }

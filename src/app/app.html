@@ -30,6 +30,11 @@
           (click)="exportWorkbook()">＋ Export .xlsx</button></div>
     </header>
     <div class="page-content">
+      @if (cloudDataError()) {
+      <div class="cloud-status cloud-status-error"><span>Cloud data could not be loaded.</span><button type="button" (click)="retryCloudData()">Retry sync</button></div>
+      } @else if (hosted && !cloudDataReady()) {
+      <div class="cloud-status"><span>Syncing with cloud storage...</span></div>
+      }
       @if (activeSection() !== 'Reports' && activeSection() !== 'Bills' && activeSection() !== 'Savings' && activeSection() !== 'Categories') {
       <div class="page-heading">
         <div>
@@ -79,11 +84,11 @@
             } @else {
             <div class="budget-total"><div><span>Monthly budget</span><strong>Loading...</strong></div></div>
             }
-          <div class="category-list">@for (category of categories; track category) {<div class="category-row"><span
-                class="category-dot" [style.background-color]="categoryColor($index)"></span><span class="category-name">{{ category
-                }}</span><span class="category-amount">{{ categoryTotal(category) | currency:'PHP':'symbol':'1.2-2'
+          <div class="category-list">@for (item of budgetCategories(); track item.category; let index = $index) {<div class="category-row"><span
+                class="category-dot" [style.background-color]="categoryColor(index)"></span><span class="category-name">{{ item.category
+                }}</span><span class="category-amount">{{ item.total | currency:'PHP':'symbol':'1.2-2'
                 }}</span><span class="category-bar"><i
-                  [style.width.%]="categoryTotal(category) > 0 ? 70 : 10"></i></span></div>}</div>
+                  [style.width.%]="budgetCategories()[0]?.total ? (item.total / budgetCategories()[0].total) * 100 : 0"></i></span></div>} @if (!budgetCategories().length && cloudDataReady()) {<p class="muted category-empty">No spending recorded for {{ monthLabel() }}.</p>}</div>
         </section>
         <div class="overview-side-column">
           <section class="panel subcategory-overview" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
