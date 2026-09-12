@@ -296,19 +296,41 @@
             <div>
               <p class="eyebrow">FROM SAVINGS PLAN</p>
               <h2>Balanced savings plan</h2>
-              <p class="muted">A twice-monthly allocation built around a 40% savings target.</p>
-            </div><span class="plus-badge">₱</span>
+              <p class="muted">A twice-monthly allocation built around a {{ savingsPlanSavingsRate() }}% savings target.</p>
+            </div>
+            <button class="plan-params-toggle" type="button" (click)="toggleEditingPlanParameters()">
+              {{ editingPlanParameters() ? 'Close parameters' : '✎ Edit plan parameters' }}
+            </button>
           </div>
+          @if (editingPlanParameters()) {
+          <div class="savings-plan-params-form">
+            <div class="form-grid">
+              <label>Monthly salary
+                <div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="savingsPlanSalary()" (ngModelChange)="updateSavingsPlanSalary($event)" /></div>
+              </label>
+              <label>Savings target
+                <div class="amount-input"><span>%</span><input type="number" min="1" max="100" [ngModel]="savingsPlanSavingsRate()" (ngModelChange)="updateSavingsPlanRate($event)" /></div>
+              </label>
+              <label>Minimum investment
+                <div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="savingsPlanInvestment()" (ngModelChange)="updateSavingsPlanInvestment($event)" /></div>
+              </label>
+            </div>
+            <div class="plan-params-actions">
+              <button class="reset-plan-button" type="button" (click)="resetSavingsPlanToDefaults()">Reset to default 40% plan</button>
+              <button class="done-plan-button" type="button" (click)="toggleEditingPlanParameters()">Done</button>
+            </div>
+          </div>
+          }
           <div class="reference-metrics">
-            <article><span>Combined monthly salary</span><strong>{{ savingsPlan.salary | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Two paychecks of {{ savingsPlan.salary / 2 | currency:'PHP':'symbol':'1.0-0' }}</small></article>
-            <article><span>Fixed needs</span><strong>{{ savingsPlan.fixedNeeds | currency:'PHP':'symbol':'1.0-0' }}</strong><small>{{ savingsPlan.fixedNeeds / savingsPlan.salary | percent:'1.0-0' }} of salary</small></article>
-            <article><span>Monthly savings target</span><strong>{{ savingsPlan.savingsGoal | currency:'PHP':'symbol':'1.0-0' }}</strong><small>{{ savingsPlan.savingsGoal / savingsPlan.salary | percent:'1.0-0' }} of salary</small></article>
-            <article><span>Variable allowance</span><strong>{{ savingsPlan.variableAllowance | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Available after savings and fixed needs</small></article>
+            <article><span>Combined monthly salary</span><strong>{{ savingsPlan().salary | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Two paychecks of {{ savingsPlan().salary / 2 | currency:'PHP':'symbol':'1.0-0' }}</small></article>
+            <article><span>Fixed needs</span><strong>{{ savingsPlan().fixedNeeds | currency:'PHP':'symbol':'1.0-0' }}</strong><small>{{ savingsPlan().fixedNeeds / (savingsPlan().salary || 1) | percent:'1.0-0' }} of salary</small></article>
+            <article><span>Monthly savings target</span><strong>{{ savingsPlan().savingsGoal | currency:'PHP':'symbol':'1.0-0' }}</strong><small>{{ savingsPlan().savingsGoal / (savingsPlan().salary || 1) | percent:'1.0-0' }} of salary</small></article>
+            <article><span>Variable allowance</span><strong>{{ savingsPlan().variableAllowance | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Available after savings and fixed needs</small></article>
           </div>
           <div class="table-wrap">
             <table>
               <thead><tr><th>Paycheck allocation</th><th class="align-right">Paycheck 1</th><th class="align-right">Paycheck 2</th><th class="align-right">Monthly total</th></tr></thead>
-              <tbody>@for (allocation of savingsPlanAllocations; track allocation.name) {<tr>
+              <tbody>@for (allocation of savingsPlanAllocations(); track allocation.name) {<tr>
                 <td><strong>{{ allocation.name }}</strong></td>
                 <td class="align-right">{{ allocation.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
                 <td class="align-right">{{ allocation.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
@@ -321,19 +343,52 @@
         <div class="reference-tiles">
           <section class="reference-tile">
             <div class="tile-heading"><div><h3>Savings allocation detail</h3><p>Move these amounts immediately after payday.</p></div><span>↗</span></div>
-            <div class="tile-bars">@for (bucket of savingsPlanBuckets; track bucket.name) {<div><label><span>{{ bucket.name }}</span><b>{{ bucket.monthly | currency:'PHP':'symbol':'1.0-0' }}</b></label><em><i [style.width.%]="(bucket.monthly / savingsPlan.savingsGoal) * 100"></i></em><small>{{ bucket.perPayday | currency:'PHP':'symbol':'1.0-0' }} per payday · {{ bucket.purpose }}</small></div>}</div>
+            <div class="tile-bars">@for (bucket of savingsPlanBuckets(); track bucket.name) {<div><label><span>{{ bucket.name }}</span><b>{{ bucket.monthly | currency:'PHP':'symbol':'1.0-0' }}</b></label><em><i [style.width.%]="(bucket.monthly / (savingsPlan().savingsGoal || 1)) * 100"></i></em><small>{{ bucket.perPayday | currency:'PHP':'symbol':'1.0-0' }} per payday · {{ bucket.purpose }}</small></div>}</div>
           </section>
           <section class="reference-tile">
             <div class="tile-heading"><div><h3>Emergency fund roadmap</h3><p>Build the safety net with the emergency reserve.</p></div><span>◎</span></div>
-            <div class="tile-bars">@for (milestone of savingsPlanRoadmap; track milestone.milestone) {<div><label><span>{{ milestone.milestone }}</span><b>{{ milestone.target | currency:'PHP':'symbol':'1.0-0' }}</b></label><em><i [style.width.%]="(savingsBalance() / milestone.target) * 100"></i></em><small>{{ milestone.monthlyContribution | currency:'PHP':'symbol':'1.0-0' }} monthly · estimated {{ milestone.estimatedMonths }} months</small></div>}</div>
+            <div class="tile-bars">@for (milestone of savingsPlanRoadmap(); track milestone.milestone) {<div><label><span>{{ milestone.milestone }}</span><b>{{ milestone.target | currency:'PHP':'symbol':'1.0-0' }}</b></label><em><i [style.width.%]="savingsBalance() > 0 ? (savingsBalance() / milestone.target) * 100 : 0"></i></em><small>{{ milestone.monthlyContribution | currency:'PHP':'symbol':'1.0-0' }} monthly · estimated {{ milestone.estimatedMonths }} months</small></div>}</div>
           </section>
         </div>
         <section class="panel savings-plan-panel">
-          <div class="panel-heading"><div><h2>Fixed needs and bills</h2><p class="muted">Monthly reserve split evenly across both paychecks.</p></div><strong>{{ savingsPlan.fixedNeeds | currency:'PHP':'symbol':'1.0-0' }}</strong></div>
+          <div class="panel-heading"><div><h2>Fixed needs and bills</h2><p class="muted">Monthly reserve split evenly across both paychecks.</p></div><strong>{{ savingsPlan().fixedNeeds | currency:'PHP':'symbol':'1.0-0' }}</strong></div>
           <div class="table-wrap"><table>
-            <thead><tr><th>Fixed need / bill</th><th class="align-right">Monthly</th><th class="align-right">Paycheck 1</th><th class="align-right">Paycheck 2</th></tr></thead>
-            <tbody>@for (bill of savingsPlanBills; track bill.name) {<tr><td>{{ bill.name }}</td><td class="align-right">{{ bill.monthly | currency:'PHP':'symbol':'1.0-0' }}</td><td class="align-right">{{ bill.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td><td class="align-right">{{ bill.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td></tr>}</tbody>
+            <thead><tr><th>Fixed need / bill</th><th class="align-right">Monthly</th><th class="align-right">Paycheck 1</th><th class="align-right">Paycheck 2</th><th></th></tr></thead>
+            <tbody>@for (bill of savingsPlanBills(); track bill.id) {
+              @if (editingSavingsBillId() === bill.id && editingSavingsBill(); as editBill) {
+                <tr class="editing-row">
+                  <td><input aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateEditingSavingsBill('name', $event)" /></td>
+                  <td class="align-right"><div class="amount-input"><span>₱</span><input aria-label="Edit monthly amount" type="number" min="0" [ngModel]="editBill.monthly" (ngModelChange)="updateEditingSavingsBill('monthly', $event)" /></div></td>
+                  <td class="align-right muted">{{ (editBill.monthly / 2) | currency:'PHP':'symbol':'1.0-0' }}</td>
+                  <td class="align-right muted">{{ (editBill.monthly / 2) | currency:'PHP':'symbol':'1.0-0' }}</td>
+                  <td>
+                    <div class="row-actions">
+                      <button class="save-row-button" type="button" (click)="saveEditingSavingsBill()">Save</button>
+                      <button class="cancel-row-button" type="button" (click)="cancelEditingSavingsBill()">Cancel</button>
+                    </div>
+                  </td>
+                </tr>
+              } @else {
+                <tr>
+                  <td>{{ bill.name }}</td>
+                  <td class="align-right">{{ bill.monthly | currency:'PHP':'symbol':'1.0-0' }}</td>
+                  <td class="align-right">{{ bill.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
+                  <td class="align-right">{{ bill.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
+                  <td>
+                    <div class="row-actions">
+                      <button class="edit-row-button icon-action" type="button" aria-label="Edit fixed need" (click)="startEditingSavingsBill(bill)">✎</button>
+                      <button class="delete-button" type="button" aria-label="Delete fixed need" (click)="removeSavingsPlanBill(bill.id)">×</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }</tbody>
           </table></div>
+          <div class="add-savings-bill-form">
+            <label>Bill name<input [ngModel]="newSavingsBillName()" (ngModelChange)="newSavingsBillName.set($event)" placeholder="e.g. Health Insurance" /></label>
+            <label>Monthly amount<div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="newSavingsBillAmount()" (ngModelChange)="newSavingsBillAmount.set($event)" placeholder="0.00" /></div></label>
+            <button class="add-bill-button" type="button" (click)="addSavingsPlanBill()">＋ Add fixed need</button>
+          </div>
         </section>
         }
         @if (savingsSubPage() === 'Plan') {

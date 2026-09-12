@@ -74,6 +74,7 @@ interface SavingsPlanBucket {
 }
 
 interface SavingsPlanBill {
+  id: number;
   name: string;
   monthly: number;
   paycheckOne: number;
@@ -95,7 +96,16 @@ interface SavingsTrendPoint {
 
 interface CloudData {
   transactions: Transaction[];
-  settings?: { monthlyBudget?: number; targetSavingsGoal?: number };
+  settings?: {
+    monthlyBudget?: number;
+    targetSavingsGoal?: number;
+    savingsPlan?: {
+      salary?: number;
+      savingsRate?: number;
+      investment?: number;
+      bills?: SavingsPlanBill[];
+    };
+  };
   expectedBills?: ExpectedBill[];
   categories?: CategoryGroup[];
   sharedSubcategories?: string[];
@@ -152,48 +162,104 @@ export class App {
     { name: 'Travel Fund', subcategories: ['Flights', 'Accommodation'] },
     { name: 'Other', subcategories: [] },
   ]);
-  protected readonly savingsPlan = {
-    salary: 192000,
-    fixedNeeds: 82358,
-    availableAfterFixedNeeds: 109642,
-    savingsGoal: 76800,
-    spendingCap: 115200,
-    variableAllowance: 32842,
-    threeMonthFund: 247074,
-    sixMonthFund: 494148,
-  };
-  protected readonly savingsPlanAllocations: SavingsPlanAllocation[] = [
-    { name: 'Combined salary received', paycheckOne: 96000, paycheckTwo: 96000, monthly: 192000 },
-    { name: 'Save first - 40%', paycheckOne: 38400, paycheckTwo: 38400, monthly: 76800 },
-    { name: 'Minimum investment', paycheckOne: 9100, paycheckTwo: 9100, monthly: 18200 },
-    { name: 'Emergency / savings reserve', paycheckOne: 29300, paycheckTwo: 29300, monthly: 58600 },
-    { name: 'Reserve for fixed needs', paycheckOne: 41179, paycheckTwo: 41179, monthly: 82358 },
-    { name: 'Variable spending allowance', paycheckOne: 16421, paycheckTwo: 16421, monthly: 32842 },
-    { name: 'Total spending cap', paycheckOne: 57600, paycheckTwo: 57600, monthly: 115200 },
+  private readonly defaultSavingsPlanBills: SavingsPlanBill[] = [
+    { id: 1, name: 'Condo Amortization', monthly: 6000, paycheckOne: 3000, paycheckTwo: 3000 },
+    { id: 2, name: 'Car Insurance', monthly: 2482, paycheckOne: 1241, paycheckTwo: 1241 },
+    { id: 3, name: 'Easycash (Car)', monthly: 13403, paycheckOne: 6701.5, paycheckTwo: 6701.5 },
+    { id: 4, name: 'Avida Investment', monthly: 11173, paycheckOne: 5586.5, paycheckTwo: 5586.5 },
+    { id: 5, name: 'Parking Rent', monthly: 4000, paycheckOne: 2000, paycheckTwo: 2000 },
+    { id: 6, name: 'Condo Dues', monthly: 5100, paycheckOne: 2550, paycheckTwo: 2550 },
+    { id: 7, name: 'Grocery', monthly: 15000, paycheckOne: 7500, paycheckTwo: 7500 },
+    { id: 8, name: 'Allowance (Shei)', monthly: 8000, paycheckOne: 4000, paycheckTwo: 4000 },
+    { id: 9, name: 'Gas', monthly: 5000, paycheckOne: 2500, paycheckTwo: 2500 },
+    { id: 10, name: 'Internet', monthly: 1800, paycheckOne: 900, paycheckTwo: 900 },
+    { id: 11, name: 'Electricity', monthly: 8000, paycheckOne: 4000, paycheckTwo: 4000 },
+    { id: 12, name: 'Anytime Fitness', monthly: 2400, paycheckOne: 1200, paycheckTwo: 1200 },
   ];
-  protected readonly savingsPlanBuckets: SavingsPlanBucket[] = [
-    { name: 'Minimum Investment', perPayday: 9100, monthly: 18200, purpose: 'Build long-term income-replacement assets.' },
-    { name: 'Emergency Fund', perPayday: 29300, monthly: 58600, purpose: 'Build the 3-6 month safety net first.' },
-    { name: 'Total Savings', perPayday: 38400, monthly: 76800, purpose: 'Automatic transfer immediately after payday.' },
-  ];
-  protected readonly savingsPlanBills: SavingsPlanBill[] = [
-    { name: 'Condo Amortization', monthly: 6000, paycheckOne: 3000, paycheckTwo: 3000 },
-    { name: 'Car Insurance', monthly: 2482, paycheckOne: 1241, paycheckTwo: 1241 },
-    { name: 'Easycash (Car)', monthly: 13403, paycheckOne: 6701.5, paycheckTwo: 6701.5 },
-    { name: 'Avida Investment', monthly: 11173, paycheckOne: 5586.5, paycheckTwo: 5586.5 },
-    { name: 'Parking Rent', monthly: 4000, paycheckOne: 2000, paycheckTwo: 2000 },
-    { name: 'Condo Dues', monthly: 5100, paycheckOne: 2550, paycheckTwo: 2550 },
-    { name: 'Grocery', monthly: 15000, paycheckOne: 7500, paycheckTwo: 7500 },
-    { name: 'Allowance (Shei)', monthly: 8000, paycheckOne: 4000, paycheckTwo: 4000 },
-    { name: 'Gas', monthly: 5000, paycheckOne: 2500, paycheckTwo: 2500 },
-    { name: 'Internet', monthly: 1800, paycheckOne: 900, paycheckTwo: 900 },
-    { name: 'Electricity', monthly: 8000, paycheckOne: 4000, paycheckTwo: 4000 },
-    { name: 'Anytime Fitness', monthly: 2400, paycheckOne: 1200, paycheckTwo: 1200 },
-  ];
-  protected readonly savingsPlanRoadmap: SavingsPlanRoadmap[] = [
-    { milestone: '3-month safety net', target: 247074, monthlyContribution: 58600, estimatedMonths: 2 },
-    { milestone: '6-month safety net', target: 494148, monthlyContribution: 58600, estimatedMonths: 6 },
-  ];
+
+  protected readonly savingsPlanSalary = signal(192000);
+  protected readonly savingsPlanSavingsRate = signal(40);
+  protected readonly savingsPlanInvestment = signal(18200);
+  protected readonly savingsPlanBills = signal<SavingsPlanBill[]>(this.defaultSavingsPlanBills);
+  protected readonly editingPlanParameters = signal(false);
+  protected readonly editingSavingsBillId = signal<number | null>(null);
+  protected readonly editingSavingsBill = signal<{ name: string; monthly: number } | null>(null);
+  protected readonly newSavingsBillName = signal('');
+  protected readonly newSavingsBillAmount = signal<number | null>(null);
+
+  protected readonly savingsPlanFixedNeeds = computed(() =>
+    this.savingsPlanBills().reduce((sum, bill) => sum + bill.monthly, 0)
+  );
+  protected readonly savingsPlanGoal = computed(() =>
+    Math.round(this.savingsPlanSalary() * (this.savingsPlanSavingsRate() / 100))
+  );
+  protected readonly savingsPlanEmergencyReserve = computed(() =>
+    Math.max(0, this.savingsPlanGoal() - this.savingsPlanInvestment())
+  );
+  protected readonly savingsPlanAvailableAfterFixed = computed(() =>
+    this.savingsPlanSalary() - this.savingsPlanFixedNeeds()
+  );
+  protected readonly savingsPlanVariableAllowance = computed(() =>
+    this.savingsPlanSalary() - this.savingsPlanFixedNeeds() - this.savingsPlanGoal()
+  );
+  protected readonly savingsPlanSpendingCap = computed(() =>
+    this.savingsPlanFixedNeeds() + this.savingsPlanVariableAllowance()
+  );
+
+  protected readonly savingsPlan = computed(() => ({
+    salary: this.savingsPlanSalary(),
+    fixedNeeds: this.savingsPlanFixedNeeds(),
+    availableAfterFixedNeeds: this.savingsPlanAvailableAfterFixed(),
+    savingsGoal: this.savingsPlanGoal(),
+    spendingCap: this.savingsPlanSpendingCap(),
+    variableAllowance: this.savingsPlanVariableAllowance(),
+    threeMonthFund: this.savingsPlanFixedNeeds() * 3,
+    sixMonthFund: this.savingsPlanFixedNeeds() * 6,
+  }));
+
+  protected readonly savingsPlanAllocations = computed<SavingsPlanAllocation[]>(() => {
+    const salary = this.savingsPlanSalary();
+    const savingsGoal = this.savingsPlanGoal();
+    const investment = this.savingsPlanInvestment();
+    const emergency = this.savingsPlanEmergencyReserve();
+    const fixedNeeds = this.savingsPlanFixedNeeds();
+    const variableAllowance = this.savingsPlanVariableAllowance();
+    const spendingCap = this.savingsPlanSpendingCap();
+    return [
+      { name: 'Combined salary received', paycheckOne: salary / 2, paycheckTwo: salary / 2, monthly: salary },
+      { name: `Save first - ${this.savingsPlanSavingsRate()}%`, paycheckOne: savingsGoal / 2, paycheckTwo: savingsGoal / 2, monthly: savingsGoal },
+      { name: 'Minimum investment', paycheckOne: investment / 2, paycheckTwo: investment / 2, monthly: investment },
+      { name: 'Emergency / savings reserve', paycheckOne: emergency / 2, paycheckTwo: emergency / 2, monthly: emergency },
+      { name: 'Reserve for fixed needs', paycheckOne: fixedNeeds / 2, paycheckTwo: fixedNeeds / 2, monthly: fixedNeeds },
+      { name: 'Variable spending allowance', paycheckOne: variableAllowance / 2, paycheckTwo: variableAllowance / 2, monthly: variableAllowance },
+      { name: 'Total spending cap', paycheckOne: spendingCap / 2, paycheckTwo: spendingCap / 2, monthly: spendingCap },
+    ];
+  });
+
+  protected readonly savingsPlanBuckets = computed<SavingsPlanBucket[]>(() => {
+    const investment = this.savingsPlanInvestment();
+    const emergency = this.savingsPlanEmergencyReserve();
+    const total = this.savingsPlanGoal();
+    return [
+      { name: 'Minimum Investment', perPayday: investment / 2, monthly: investment, purpose: 'Build long-term income-replacement assets.' },
+      { name: 'Emergency Fund', perPayday: emergency / 2, monthly: emergency, purpose: 'Build the 3-6 month safety net first.' },
+      { name: 'Total Savings', perPayday: total / 2, monthly: total, purpose: 'Automatic transfer immediately after payday.' },
+    ];
+  });
+
+  protected readonly savingsPlanRoadmap = computed<SavingsPlanRoadmap[]>(() => {
+    const fixed = this.savingsPlanFixedNeeds();
+    const monthlyContribution = this.savingsPlanEmergencyReserve();
+    const threeMonth = fixed * 3;
+    const sixMonth = fixed * 6;
+    const current = this.savingsBalance();
+    const estThree = monthlyContribution > 0 ? Math.max(1, Math.ceil(Math.max(0, threeMonth - current) / monthlyContribution)) : 0;
+    const estSix = monthlyContribution > 0 ? Math.max(1, Math.ceil(Math.max(0, sixMonth - current) / monthlyContribution)) : 0;
+    return [
+      { milestone: '3-month safety net', target: threeMonth, monthlyContribution, estimatedMonths: estThree },
+      { milestone: '6-month safety net', target: sixMonth, monthlyContribution, estimatedMonths: estSix },
+    ];
+  });
   protected get categories(): string[] { return this.categoryGroups().map((group) => group.name); }
   protected get savingsCategories(): string[] { return this.savingsCategoryGroups().map((group) => group.name); }
   protected readonly transactions = signal<Transaction[]>([]);
@@ -385,6 +451,28 @@ export class App {
       if (savedBills) {
         try { this.expectedBills.set(JSON.parse(savedBills)); } catch { localStorage.removeItem('ledger-expected-bills'); }
       }
+    }
+    const savedPlanSalary = localStorage.getItem('ledger-plan-salary');
+    if (savedPlanSalary !== null) {
+      const parsed = Number(savedPlanSalary);
+      if (!Number.isNaN(parsed) && parsed >= 0) this.savingsPlanSalary.set(parsed);
+    }
+    const savedPlanRate = localStorage.getItem('ledger-plan-rate');
+    if (savedPlanRate !== null) {
+      const parsed = Number(savedPlanRate);
+      if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 100) this.savingsPlanSavingsRate.set(parsed);
+    }
+    const savedPlanInv = localStorage.getItem('ledger-plan-investment');
+    if (savedPlanInv !== null) {
+      const parsed = Number(savedPlanInv);
+      if (!Number.isNaN(parsed) && parsed >= 0) this.savingsPlanInvestment.set(parsed);
+    }
+    const savedPlanBills = localStorage.getItem('ledger-plan-bills');
+    if (savedPlanBills) {
+      try {
+        const parsed = JSON.parse(savedPlanBills);
+        if (Array.isArray(parsed) && parsed.length) this.savingsPlanBills.set(parsed);
+      } catch { localStorage.removeItem('ledger-plan-bills'); }
     }
     this.loadFromApi();
   }
@@ -717,6 +805,99 @@ export class App {
     this.savingsDetailsOpen.update((isOpen) => !isOpen);
   }
 
+  protected toggleEditingPlanParameters(): void {
+    this.editingPlanParameters.update((isOpen) => !isOpen);
+  }
+
+  protected updateSavingsPlanSalary(value: string | number | null): void {
+    const amount = Number(value);
+    if (!Number.isFinite(amount) || amount < 0) return;
+    this.savingsPlanSalary.set(amount);
+    this.persistSavingsPlan();
+    this.syncToApi();
+  }
+
+  protected updateSavingsPlanRate(value: string | number | null): void {
+    const rate = Number(value);
+    if (!Number.isFinite(rate) || rate < 0 || rate > 100) return;
+    this.savingsPlanSavingsRate.set(rate);
+    this.persistSavingsPlan();
+    this.syncToApi();
+  }
+
+  protected updateSavingsPlanInvestment(value: string | number | null): void {
+    const amount = Number(value);
+    if (!Number.isFinite(amount) || amount < 0) return;
+    this.savingsPlanInvestment.set(amount);
+    this.persistSavingsPlan();
+    this.syncToApi();
+  }
+
+  protected resetSavingsPlanToDefaults(): void {
+    this.savingsPlanSalary.set(192000);
+    this.savingsPlanSavingsRate.set(40);
+    this.savingsPlanInvestment.set(18200);
+    this.savingsPlanBills.set(this.defaultSavingsPlanBills);
+    this.persistSavingsPlan();
+    this.syncToApi();
+  }
+
+  protected startEditingSavingsBill(bill: SavingsPlanBill): void {
+    this.editingSavingsBillId.set(bill.id);
+    this.editingSavingsBill.set({ name: bill.name, monthly: bill.monthly });
+  }
+
+  protected cancelEditingSavingsBill(): void {
+    this.editingSavingsBillId.set(null);
+    this.editingSavingsBill.set(null);
+  }
+
+  protected updateEditingSavingsBill(field: 'name' | 'monthly', value: string | number): void {
+    this.editingSavingsBill.update((b) => b ? { ...b, [field]: value } : b);
+  }
+
+  protected saveEditingSavingsBill(): void {
+    const id = this.editingSavingsBillId();
+    const bill = this.editingSavingsBill();
+    if (id === null || !bill || !bill.name.trim()) return;
+    const monthly = Number(bill.monthly);
+    if (!Number.isFinite(monthly) || monthly < 0) return;
+    this.savingsPlanBills.update((bills) => bills.map((b) => b.id === id ? {
+      ...b,
+      name: bill.name.trim(),
+      monthly,
+      paycheckOne: monthly / 2,
+      paycheckTwo: monthly / 2,
+    } : b));
+    this.persistSavingsPlan();
+    this.syncToApi();
+    this.cancelEditingSavingsBill();
+  }
+
+  protected removeSavingsPlanBill(id: number): void {
+    this.savingsPlanBills.update((bills) => bills.filter((b) => b.id !== id));
+    this.persistSavingsPlan();
+    this.syncToApi();
+  }
+
+  protected addSavingsPlanBill(): void {
+    const name = this.newSavingsBillName().trim();
+    const monthly = Number(this.newSavingsBillAmount());
+    if (!name || !Number.isFinite(monthly) || monthly <= 0) return;
+    const newBill: SavingsPlanBill = {
+      id: Date.now(),
+      name,
+      monthly,
+      paycheckOne: monthly / 2,
+      paycheckTwo: monthly / 2,
+    };
+    this.savingsPlanBills.update((bills) => [...bills, newBill]);
+    this.newSavingsBillName.set('');
+    this.newSavingsBillAmount.set(null);
+    this.persistSavingsPlan();
+    this.syncToApi();
+  }
+
   protected toggleTransactionForm(): void {
     this.transactionFormOpen.update((isOpen) => !isOpen);
   }
@@ -935,6 +1116,14 @@ export class App {
   private persistSavingsCategories(): void {
     try { localStorage.setItem('ledger-savings-categories', JSON.stringify(this.savingsCategoryGroups())); } catch {}
   }
+  private persistSavingsPlan(): void {
+    try {
+      localStorage.setItem('ledger-plan-salary', String(this.savingsPlanSalary()));
+      localStorage.setItem('ledger-plan-rate', String(this.savingsPlanSavingsRate()));
+      localStorage.setItem('ledger-plan-investment', String(this.savingsPlanInvestment()));
+      localStorage.setItem('ledger-plan-bills', JSON.stringify(this.savingsPlanBills()));
+    } catch {}
+  }
   private loadFromApi(): void {
     if (!this.apiUrl) return;
     const requestUrl = this.isHosted ? `${this.apiUrl}&cacheBust=${Date.now()}` : this.apiUrl;
@@ -950,6 +1139,14 @@ export class App {
       if (typeof targetSavingsGoal === 'number' && targetSavingsGoal >= 0) {
         this.targetSavingsGoal.set(targetSavingsGoal);
         try { localStorage.setItem('ledger-target-savings', String(targetSavingsGoal)); } catch {}
+      }
+      const plan = cloudData.settings?.savingsPlan;
+      if (plan) {
+        if (typeof plan.salary === 'number' && plan.salary >= 0) this.savingsPlanSalary.set(plan.salary);
+        if (typeof plan.savingsRate === 'number' && plan.savingsRate >= 0 && plan.savingsRate <= 100) this.savingsPlanSavingsRate.set(plan.savingsRate);
+        if (typeof plan.investment === 'number' && plan.investment >= 0) this.savingsPlanInvestment.set(plan.investment);
+        if (Array.isArray(plan.bills) && plan.bills.length) this.savingsPlanBills.set(plan.bills);
+        this.persistSavingsPlan();
       }
       if (Array.isArray(cloudData.expectedBills)) {
         this.expectedBills.set(cloudData.expectedBills.map((bill) => ({ ...bill, subcategory: String(bill.subcategory || '') })));
@@ -995,7 +1192,16 @@ export class App {
       categories: this.categoryGroups(),
       sharedSubcategories: this.sharedSubcategories(),
       savingsCategories: this.savingsCategoryGroups(),
-      settings: { monthlyBudget: this.budget(), targetSavingsGoal: this.targetSavingsGoal() },
+      settings: {
+        monthlyBudget: this.budget(),
+        targetSavingsGoal: this.targetSavingsGoal(),
+        savingsPlan: {
+          salary: this.savingsPlanSalary(),
+          savingsRate: this.savingsPlanSavingsRate(),
+          investment: this.savingsPlanInvestment(),
+          bills: this.savingsPlanBills(),
+        },
+      },
     } : this.transactions());
     void fetch(this.apiUrl, {
       method: isGoogleSheets ? 'POST' : 'PUT',
