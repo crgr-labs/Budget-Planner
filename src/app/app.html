@@ -116,6 +116,7 @@
               (click)="selectTransactionMode('Expense')">Expense</button><button type="button"
               [class.selected]="newTransaction().savings"
               (click)="selectTransactionMode('Savings')">Savings</button></div>
+          @if (cloudDataReady()) {
           <div class="form-grid"><label>Description<input [ngModel]="newTransaction().description"
                 (ngModelChange)="updateField('description', $event)"
                 placeholder="e.g. Coffee with friends" /></label><label>Amount<div class="amount-input">
@@ -131,7 +132,10 @@
                   subcategory }}</option>}
               </select></label><label>Date<input type="date" [ngModel]="newTransaction().date"
                 (ngModelChange)="updateField('date', $event)" /></label></div><button class="add-button" type="button"
-            (click)="addTransaction()">Add transaction <span>→</span></button>
+              (click)="addTransaction()">Add transaction <span>→</span></button>
+            } @else {
+            <p class="muted">Loading categories and sub-categories from cloud storage...</p>
+            }
           </section>
         </div>
       </div>
