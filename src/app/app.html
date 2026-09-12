@@ -79,12 +79,31 @@
             </div><button class="more-button" type="button">•••</button>
           </div>
           @if (cloudDataReady()) {
+          @if (editingBudget()) {
+          <div class="inline-budget-edit-form">
+            <span class="inline-budget-label">Set monthly budget</span>
+            <div class="inline-budget-input-row">
+              <div class="amount-input">
+                <span>₱</span>
+                <input type="number" min="0" [ngModel]="budgetDraft()" (ngModelChange)="budgetDraft.set($event)" (keydown.enter)="saveBudget()" placeholder="0.00" />
+              </div>
+              <button class="save-row-button" type="button" (click)="saveBudget()">Save</button>
+              <button class="cancel-row-button" type="button" (click)="cancelEditingBudget()">Cancel</button>
+            </div>
+            @if (savingsPlan().variableAllowance > 0) {
+            <button class="link-plan-allowance-btn" type="button" (click)="useAllowanceAsBudget()">
+              ⚡ Use Savings Plan Allowance ({{ savingsPlan().variableAllowance | currency:'PHP':'symbol':'1.0-0' }})
+            </button>
+            }
+          </div>
+          } @else {
           <div class="budget-total">
-            <div><span>Monthly budget</span><button class="budget-edit" type="button" aria-label="Change monthly budget"
-                (click)="editBudget()">{{ budget() | currency:'PHP':'symbol':'1.2-2' }}</button></div>
+            <div><span>Monthly budget</span><button class="budget-edit" type="button" aria-label="Change monthly budget" title="Click to edit budget"
+                (click)="startEditingBudget()">{{ budget() | currency:'PHP':'symbol':'1.2-2' }} <span class="edit-hint">✎</span></button></div>
             <div class="spent-copy"><span>Spent</span><strong>{{ totalSpent() | currency:'PHP':'symbol':'1.2-2'
                 }}</strong></div>
           </div>
+          }
           <div class="progress-track"><span [style.width.%]="budgetProgress()"></span></div>
           <p class="budget-foot"><span>{{ budgetProgress() | number:'1.0-0' }}% used</span><span>{{ budget() -
               totalSpent() | currency:'PHP':'symbol':'1.2-2' }} remaining</span></p>
