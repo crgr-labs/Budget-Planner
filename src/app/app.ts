@@ -467,6 +467,10 @@ export class App {
     const subcategoryName = subcategory.trim();
     if (!subcategoryName || this.sharedSubcategories().some((item) => item.toLowerCase() === subcategoryName.toLowerCase())) return;
     this.sharedSubcategories.update((items) => [...items, subcategoryName]);
+    this.categoryGroups.update((groups) => groups.map((group) => group.subcategories.some((item) => item.toLowerCase() === subcategoryName.toLowerCase())
+      ? group
+      : { ...group, subcategories: [...group.subcategories, subcategoryName] }));
+    this.persistCategories();
     this.persistSharedSubcategories();
     this.syncToApi();
   }
@@ -864,9 +868,9 @@ export class App {
     return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${month}-01T00:00:00Z`));
   }
 
-  private persist(): void { localStorage.setItem('ledger-transactions', JSON.stringify(this.transactions())); }
-  private persistCategories(): void { localStorage.setItem('ledger-categories', JSON.stringify(this.categoryGroups())); }
-  private persistSavingsCategories(): void { localStorage.setItem('ledger-savings-categories', JSON.stringify(this.savingsCategoryGroups())); }
+  private persist(): void { if (!this.isHosted) localStorage.setItem('ledger-transactions', JSON.stringify(this.transactions())); }
+  private persistCategories(): void { if (!this.isHosted) localStorage.setItem('ledger-categories', JSON.stringify(this.categoryGroups())); }
+  private persistSavingsCategories(): void { if (!this.isHosted) localStorage.setItem('ledger-savings-categories', JSON.stringify(this.savingsCategoryGroups())); }
   private loadFromApi(): void {
     if (!this.apiUrl) return;
     const requestUrl = this.isHosted ? `${this.apiUrl}&cacheBust=${Date.now()}` : this.apiUrl;
@@ -885,19 +889,19 @@ export class App {
       }
       if (Array.isArray(cloudData.expectedBills)) {
         this.expectedBills.set(cloudData.expectedBills.map((bill) => ({ ...bill, subcategory: String(bill.subcategory || '') })));
-        this.persistExpectedBills();
+        if (!this.isHosted) this.persistExpectedBills();
       }
       if (Array.isArray(cloudData.categories)) {
         this.categoryGroups.set(cloudData.categories);
-        this.persistCategories();
+        if (!this.isHosted) this.persistCategories();
       }
       if (Array.isArray(cloudData.sharedSubcategories)) {
         this.sharedSubcategories.set(cloudData.sharedSubcategories);
-        this.persistSharedSubcategories();
+        if (!this.isHosted) this.persistSharedSubcategories();
       }
       if (Array.isArray(cloudData.savingsCategories)) {
         this.savingsCategoryGroups.set(cloudData.savingsCategories);
-        this.persistSavingsCategories();
+        if (!this.isHosted) this.persistSavingsCategories();
       }
       this.persist();
       this.cloudDataReady.set(true);
@@ -920,8 +924,8 @@ export class App {
       } : this.transactions()),
     }).catch(() => undefined);
   }
-  private persistExpectedBills(): void { localStorage.setItem('ledger-expected-bills', JSON.stringify(this.expectedBills())); }
-  private persistSharedSubcategories(): void { localStorage.setItem('ledger-shared-subcategories', JSON.stringify(this.sharedSubcategories())); }
+  private persistExpectedBills(): void { if (!this.isHosted) localStorage.setItem('ledger-expected-bills', JSON.stringify(this.expectedBills())); }
+  private persistSharedSubcategories(): void { if (!this.isHosted) localStorage.setItem('ledger-shared-subcategories', JSON.stringify(this.sharedSubcategories())); }
   private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null, savings: false }; }
   private emptySavingsTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Savings', subcategory: 'Contribution', type: 'Income', amount: null, fundType: 'Contribution', account: '' }; }
 }
