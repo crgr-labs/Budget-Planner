@@ -221,6 +221,8 @@ export class App {
   protected readonly billsOverspentCount = computed(() => this.billTracking().filter((bill) => bill.overspent).length);
   protected readonly totalIncome = computed(() => this.selectedTransactions().filter((item) => item.type === 'Income').reduce((sum, item) => sum + item.amount, 0));
   protected readonly totalSpent = computed(() => this.selectedTransactions().filter((item) => item.type === 'Expense').reduce((sum, item) => sum + item.amount, 0));
+  protected readonly regularExpenseCount = computed(() => this.selectedTransactions().filter((item) => item.type === 'Expense').length);
+  protected readonly regularIncomeCount = computed(() => this.selectedTransactions().filter((item) => item.type === 'Income').length);
   protected readonly balance = computed(() => this.totalIncome() - this.totalSpent());
   protected readonly availableBalance = computed(() => {
     const monthlyRegularSpending = this.selectedTransactions().filter((item) => item.type === 'Expense' && !item.savings).reduce((sum, item) => sum + item.amount, 0);

@@ -620,6 +620,49 @@
   padding-top: 14px;
 }
 
+.spending-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.spending-summary article {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px 16px;
+  border: 1px solid #dbe5f0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(30, 64, 96, 0.05);
+}
+
+.spending-summary span,
+.spending-summary small {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.spending-summary span {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.spending-summary strong {
+  color: #1d2d3e;
+  font-size: 21px;
+  font-variant-numeric: tabular-nums;
+}
+
+.transaction-empty {
+  padding: 28px 14px !important;
+  color: #64748b;
+  text-align: center;
+}
+
 .category-empty {
   margin: 8px 0 2px;
   font-size: 12px;
@@ -1888,6 +1931,7 @@ tbody tr:hover {
    -------------------------------------------------------------------------- */
 @media (max-width: 1024px) {
   .metric-grid,
+  .spending-summary,
   .reference-metrics,
   .report-metrics {
     grid-template-columns: repeat(2, 1fr);
