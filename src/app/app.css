@@ -180,7 +180,7 @@
 
 .dots {
   margin-left: auto;
-  color: #94a3b8;
+  color: #64748b;
   letter-spacing: 2px;
   font-size: 13px;
   cursor: pointer;
@@ -315,7 +315,7 @@
 
 .import-button:hover {
   background: #f8fafc;
-  border-color: #94a3b8;
+  border-color: #64748b;
 }
 
 .import-button input {
@@ -523,6 +523,7 @@
 
 [draggable="true"] {
   cursor: grab;
+  touch-action: pan-y;
 }
 
 .tile-dragging {
@@ -850,7 +851,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  color: #94a3b8;
+  color: #64748b;
   font-size: 10px;
   font-weight: 500;
   padding-bottom: 18px;
@@ -1192,7 +1193,7 @@
 
 .preset-chip:hover {
   background: #f1f5f9;
-  border-color: #94a3b8;
+  border-color: #64748b;
 }
 
 .preset-chip.plan-chip {
@@ -1396,7 +1397,7 @@ tbody tr:hover {
   border-radius: 4px;
   border: 1px solid transparent;
   background: transparent;
-  color: #94a3b8;
+  color: #64748b;
   font-size: 16px;
   cursor: pointer;
   display: inline-grid;
@@ -1463,7 +1464,7 @@ tbody tr:hover {
 .reference-metrics small {
   display: block;
   font-size: 11px;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .reports-overview .reference-metrics article {
@@ -1681,7 +1682,7 @@ tbody tr:hover {
 }
 
 .bill-summary-item small {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 11px;
 }
 
@@ -2021,7 +2022,7 @@ tbody tr:hover {
 }
 
 .reset-plan-button:hover {
-  border-color: #94a3b8;
+  border-color: #64748b;
   color: #334155;
   background: #ffffff;
 }
@@ -2167,7 +2168,7 @@ tbody tr:hover {
 }
 
 .optional {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 10px;
   font-weight: 400;
   text-transform: none;
@@ -2332,7 +2333,7 @@ tbody tr:hover {
 }
 
 .category-directory-row .empty-category {
-  color: #94a3b8;
+  color: #64748b;
   background: transparent;
   border: none;
   font-style: italic;
@@ -2399,7 +2400,7 @@ tbody tr:hover {
 .report-card small {
   display: block;
   font-size: 12px;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .report-card.report-expense strong { color: #b00020; }
@@ -2483,7 +2484,7 @@ tbody tr:hover {
 }
 
 .empty-report {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 12px;
   margin-top: 16px;
 }
@@ -2547,7 +2548,7 @@ tbody tr:hover {
    -------------------------------------------------------------------------- */
 .sync-note {
   font-size: 12px;
-  color: #94a3b8;
+  color: #64748b;
   text-align: center;
   margin: 28px 0 0;
   display: flex;
@@ -2601,6 +2602,13 @@ tbody tr:hover {
     min-width: 0;
     width: 100%;
     overflow: hidden;
+  }
+
+  [draggable="true"] {
+    /* Disable drag-and-drop to fix mobile scroll hijacking */
+    user-drag: none;
+    -webkit-user-drag: none;
+    pointer-events: auto;
   }
 
   /* Sticky Mobile Top Header */
