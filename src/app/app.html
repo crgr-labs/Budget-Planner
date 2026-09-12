@@ -310,6 +310,7 @@
             </table>
           </div>
         </section>
+        @if (savingsSubPage() === 'Plan') {
         <div class="reference-tiles">
           <section class="reference-tile">
             <div class="tile-heading"><div><h3>Savings allocation detail</h3><p>Move these amounts immediately after payday.</p></div><span>↗</span></div>
@@ -328,6 +329,7 @@
           </table></div>
         </section>
         }
+        @if (savingsSubPage() === 'Plan') {
         <div class="reference-tiles">
           <section class="reference-tile trend-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
             <div class="tile-heading">
@@ -374,6 +376,8 @@
             <div class="tile-foot"><span>{{ savingsGoalProgress() | number:'1.0-0' }}% complete</span><span>{{ amountRemaining() | currency:'PHP':'symbol':'1.0-0' }} to go</span></div>
           </section>
         </div>
+        }
+        }
         @if (savingsSubPage() === 'AddTransaction') {
         <div class="savings-action-grid">
         <section class="panel target-savings-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
