@@ -1285,6 +1285,22 @@ tbody tr:hover {
   color: #94a3b8;
 }
 
+.reports-overview .reference-metrics article {
+  border-top: 3px solid #0070f2;
+}
+
+.reports-overview .reference-metrics article:nth-child(2) {
+  border-top-color: #e9730c;
+}
+
+.reports-overview .reference-metrics article:nth-child(3) {
+  border-top-color: #107e3e;
+}
+
+.reports-overview .reference-metrics article:nth-child(4) {
+  border-top-color: #8e44ad;
+}
+
 .bills-layout {
   display: grid;
   grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.6fr);
@@ -1895,14 +1911,43 @@ tbody tr:hover {
 .report-category-label {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 12px;
   color: #334155;
   margin-bottom: 4px;
 }
 
+.report-category-label > span,
+.tile-bars label > span {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.report-category-label > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-category-label .category-dot,
+.tile-bars label .category-dot {
+  flex: 0 0 8px;
+  margin: 0;
+}
+
 .report-category-label strong {
   color: #1d2d3e;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.report-category-label strong small,
+.tile-bars label b small {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .report-bar {

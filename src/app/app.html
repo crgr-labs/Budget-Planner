@@ -467,7 +467,7 @@
       </section>
       }
       @if (activeSection() === 'Reports') {
-      <section class="reference-reports">
+      <section class="reference-reports reports-overview">
         <div class="report-page-heading">
           <div>
             <p class="eyebrow">PERSONAL FINANCE</p>
@@ -503,7 +503,7 @@
             </div>
             <div class="tile-bars">@for (item of reportCategories(); track item.category; let index = $index) {<div>
                 <label><span><i class="category-dot" [style.background-color]="categoryColor(index)"></i>{{ item.category }}</span><b>{{
-                    item.total | currency:'PHP':'symbol':'0.0-0' }}</b></label><em><i
+                  item.total | currency:'PHP':'symbol':'0.0-0' }} <small>{{ (item.total / reportTotalSpent()) * 100 | number:'1.0-0' }}%</small></b></label><em><i
                     [style.width.%]="(item.total / reportTotalSpent()) * 100"></i></em></div>} @if
               (!reportCategories().length) {<p class="empty-report">Add expenses to see categories.</p>}</div>
           </section>
@@ -562,7 +562,7 @@
             </div>@if (reportCategories().length) {<div class="report-category-list">@for (item of reportCategories();
               track item.category; let index = $index) {<div class="report-category">
                 <div class="report-category-label"><span><i class="category-dot" [style.background-color]="categoryColor(index)"></i>{{
-                    item.category }}</span><strong>{{ item.total | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
+                  item.category }}</span><strong>{{ item.total | currency:'PHP':'symbol':'1.2-2' }} <small>{{ (item.total / reportTotalSpent()) * 100 | number:'1.0-0' }}%</small></strong></div>
                 <div class="report-bar"><i [style.width.%]="(item.total / totalSpent()) * 100"></i></div>
               </div>}</div>} @else {<p class="empty-report">Add an expense to see your category breakdown.</p>}
           </section>
