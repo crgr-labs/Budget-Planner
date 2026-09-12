@@ -593,6 +593,11 @@
       </section>
       }
       @if (activeSection() === 'Transactions') {
+      <div class="spending-summary" aria-label="Regular spending summary">
+        <article><span>Spent this month</span><strong>{{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ regularExpenseCount() }} expense transactions</small></article>
+        <article><span>Income recorded</span><strong class="income-text">{{ totalIncome() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ regularIncomeCount() }} income transactions</small></article>
+        <article><span>Net balance</span><strong>{{ balance() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>Income minus spending</small></article>
+      </div>
       <section class="panel transaction-entry-panel">
         <div class="panel-heading">
           <div>
@@ -660,7 +665,7 @@
                 <td><div class="row-actions">@if (transaction.type === 'Expense') {<button class="edit-row-button" type="button" aria-label="Edit expense" (click)="startEditingExpense(transaction)">Edit</button>}<button class="delete-button" type="button" aria-label="Delete transaction"
                   (click)="removeTransaction(transaction.id)">×</button></div></td>
                 }
-              </tr>}</tbody>
+              </tr>} @if (!regularTransactions().length) {<tr><td colspan="6" class="transaction-empty">No regular transactions recorded yet.</td></tr>}</tbody>
           </table>
         </div>
         <div class="mobile-transaction-list">@for (transaction of regularTransactions(); track transaction.id) {<article class="mobile-transaction-card">
