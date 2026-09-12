@@ -427,7 +427,7 @@
    -------------------------------------------------------------------------- */
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 20px;
 }
@@ -449,6 +449,15 @@
 .balance-card {
   background: #f8fafc;
   border-color: #bfdbfe;
+}
+
+.savings-card {
+  background: #f0faf2;
+  border-color: #bbf7d0;
+}
+
+.savings-card strong {
+  color: #107e3e;
 }
 
 .metric-top {

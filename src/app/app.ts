@@ -397,13 +397,16 @@ export class App {
   protected readonly monthlySavingsSubtext = computed(() => {
     const withdrawals = this.monthlySavingsWithdrawals();
     const contributions = this.monthlySavingsContributions();
+    if (contributions === 0 && withdrawals === 0) {
+      return `No activity in ${this.monthLabel()}`;
+    }
     if (withdrawals > 0 && contributions > 0) {
-      return `+₱${Math.round(contributions).toLocaleString('en-US')} in · −₱${Math.round(withdrawals).toLocaleString('en-US')} out`;
+      return `+₱${Math.round(contributions).toLocaleString('en-US')} in · −₱${Math.round(withdrawals).toLocaleString('en-US')} out this month`;
     }
     if (withdrawals > 0 && contributions === 0) {
-      return `−₱${Math.round(withdrawals).toLocaleString('en-US')} withdrawn`;
+      return `−₱${Math.round(withdrawals).toLocaleString('en-US')} withdrawn in ${this.monthLabel()}`;
     }
-    return `For ${this.monthLabel()}`;
+    return `+₱${Math.round(contributions).toLocaleString('en-US')} saved in ${this.monthLabel()}`;
   });
   protected readonly budgetProgress = computed(() => {
     const budgetAmount = this.budget();
