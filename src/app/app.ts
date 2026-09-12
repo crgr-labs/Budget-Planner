@@ -59,6 +59,34 @@ interface SubcategoryTrend {
   points: number[];
 }
 
+interface SavingsPlanAllocation {
+  name: string;
+  paycheckOne: number;
+  paycheckTwo: number;
+  monthly: number;
+}
+
+interface SavingsPlanBucket {
+  name: string;
+  perPayday: number;
+  monthly: number;
+  purpose: string;
+}
+
+interface SavingsPlanBill {
+  name: string;
+  monthly: number;
+  paycheckOne: number;
+  paycheckTwo: number;
+}
+
+interface SavingsPlanRoadmap {
+  milestone: string;
+  target: number;
+  monthlyContribution: number;
+  estimatedMonths: number;
+}
+
 interface SavingsTrendPoint {
   month: string;
   amount: number;
@@ -118,6 +146,48 @@ export class App {
     { name: 'Travel Fund', subcategories: ['Flights', 'Accommodation'] },
     { name: 'Other', subcategories: [] },
   ]);
+  protected readonly savingsPlan = {
+    salary: 192000,
+    fixedNeeds: 82358,
+    availableAfterFixedNeeds: 109642,
+    savingsGoal: 76800,
+    spendingCap: 115200,
+    variableAllowance: 32842,
+    threeMonthFund: 247074,
+    sixMonthFund: 494148,
+  };
+  protected readonly savingsPlanAllocations: SavingsPlanAllocation[] = [
+    { name: 'Combined salary received', paycheckOne: 96000, paycheckTwo: 96000, monthly: 192000 },
+    { name: 'Save first - 40%', paycheckOne: 38400, paycheckTwo: 38400, monthly: 76800 },
+    { name: 'Minimum investment', paycheckOne: 9100, paycheckTwo: 9100, monthly: 18200 },
+    { name: 'Emergency / savings reserve', paycheckOne: 29300, paycheckTwo: 29300, monthly: 58600 },
+    { name: 'Reserve for fixed needs', paycheckOne: 41179, paycheckTwo: 41179, monthly: 82358 },
+    { name: 'Variable spending allowance', paycheckOne: 16421, paycheckTwo: 16421, monthly: 32842 },
+    { name: 'Total spending cap', paycheckOne: 57600, paycheckTwo: 57600, monthly: 115200 },
+  ];
+  protected readonly savingsPlanBuckets: SavingsPlanBucket[] = [
+    { name: 'Minimum Investment', perPayday: 9100, monthly: 18200, purpose: 'Build long-term income-replacement assets.' },
+    { name: 'Emergency Fund', perPayday: 29300, monthly: 58600, purpose: 'Build the 3-6 month safety net first.' },
+    { name: 'Total Savings', perPayday: 38400, monthly: 76800, purpose: 'Automatic transfer immediately after payday.' },
+  ];
+  protected readonly savingsPlanBills: SavingsPlanBill[] = [
+    { name: 'Condo Amortization', monthly: 6000, paycheckOne: 3000, paycheckTwo: 3000 },
+    { name: 'Car Insurance', monthly: 2482, paycheckOne: 1241, paycheckTwo: 1241 },
+    { name: 'Easycash (Car)', monthly: 13403, paycheckOne: 6701.5, paycheckTwo: 6701.5 },
+    { name: 'Avida Investment', monthly: 11173, paycheckOne: 5586.5, paycheckTwo: 5586.5 },
+    { name: 'Parking Rent', monthly: 4000, paycheckOne: 2000, paycheckTwo: 2000 },
+    { name: 'Condo Dues', monthly: 5100, paycheckOne: 2550, paycheckTwo: 2550 },
+    { name: 'Grocery', monthly: 15000, paycheckOne: 7500, paycheckTwo: 7500 },
+    { name: 'Allowance (Shei)', monthly: 8000, paycheckOne: 4000, paycheckTwo: 4000 },
+    { name: 'Gas', monthly: 5000, paycheckOne: 2500, paycheckTwo: 2500 },
+    { name: 'Internet', monthly: 1800, paycheckOne: 900, paycheckTwo: 900 },
+    { name: 'Electricity', monthly: 8000, paycheckOne: 4000, paycheckTwo: 4000 },
+    { name: 'Anytime Fitness', monthly: 2400, paycheckOne: 1200, paycheckTwo: 1200 },
+  ];
+  protected readonly savingsPlanRoadmap: SavingsPlanRoadmap[] = [
+    { milestone: '3-month safety net', target: 247074, monthlyContribution: 58600, estimatedMonths: 2 },
+    { milestone: '6-month safety net', target: 494148, monthlyContribution: 58600, estimatedMonths: 6 },
+  ];
   protected get categories(): string[] { return this.categoryGroups().map((group) => group.name); }
   protected get savingsCategories(): string[] { return this.savingsCategoryGroups().map((group) => group.name); }
   protected readonly transactions = signal<Transaction[]>([]);
