@@ -126,6 +126,7 @@ export class App {
     : this.googleSheetsUrl;
   private readonly isHosted = this.apiUrl === this.googleSheetsUrl;
   protected readonly activeSection = signal('Overview');
+  protected readonly savingsSubPage = signal<'Plan' | 'AddTransaction'>('Plan');
   protected readonly mobileMenuOpen = signal(false);
   protected readonly selectedMonth = signal('2026-09');
   protected readonly monthOptions = computed(() => [...new Set(this.transactions().map((item) => item.date.slice(0, 7)))].sort().reverse());
@@ -692,6 +693,10 @@ export class App {
   protected selectSection(section: string): void {
     this.activeSection.set(section);
     this.mobileMenuOpen.set(false);
+  }
+
+  protected selectSavingsSubPage(page: 'Plan' | 'AddTransaction'): void {
+    this.savingsSubPage.set(page);
   }
 
   protected toggleMobileMenu(): void {

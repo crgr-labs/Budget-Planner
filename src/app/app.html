@@ -267,6 +267,9 @@
             <p class="muted">Track your current savings and progress toward your target savings.</p>
           </div>
         </div>
+        <div class="type-toggle savings-subpage-tabs"><button type="button" [class.selected]="savingsSubPage() === 'Plan'"
+            (click)="selectSavingsSubPage('Plan')">Savings plan</button><button type="button"
+            [class.selected]="savingsSubPage() === 'AddTransaction'" (click)="selectSavingsSubPage('AddTransaction')">Add transaction</button></div>
         <div class="reference-metrics">
           <article><span>Current savings</span><strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>Savings-only balance</small></article>
           <article><span>Target savings goal</span><strong>{{ cloudDataReady() ? (targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong><small>{{ cloudDataReady() ? (savingsGoalProgress() | number:'1.0-0') + '% complete' : 'Syncing with Google Sheets' }}</small></article>
@@ -362,6 +365,7 @@
             <div class="tile-foot"><span>{{ savingsGoalProgress() | number:'1.0-0' }}% complete</span><span>{{ amountRemaining() | currency:'PHP':'symbol':'1.0-0' }} to go</span></div>
           </section>
         </div>
+        @if (savingsSubPage() === 'AddTransaction') {
         <section class="panel target-savings-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="panel-heading">
             <div>
@@ -372,6 +376,7 @@
           <div class="form-grid"><label>Target amount<input type="number" min="1" [ngModel]="targetSavingsGoal()"
                 (ngModelChange)="updateTargetSavingsGoal($event)" /></label></div>
         </section>
+          }
         <section class="panel savings-summary-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="panel-heading">
             <div>
@@ -392,6 +397,7 @@
             </table>
           </div>
         </section>
+        @if (savingsSubPage() === 'AddTransaction') {
         <section class="panel savings-entry-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="panel-heading">
             <div>
@@ -416,6 +422,7 @@
                 placeholder="e.g. Monthly transfer" /></label></div><button class="add-button"
             type="button" (click)="addSavingsTransaction()">Add savings transaction <span>→</span></button>
         </section>
+          }
         <section class="panel savings-transactions-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="panel-heading">
             <div>
