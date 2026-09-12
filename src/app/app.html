@@ -281,6 +281,9 @@
           <article><span>Monthly contribution</span><strong>{{ monthlyContribution() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>For {{ monthLabel() }}</small></article>
         </div>
         @if (savingsSubPage() === 'Plan') {
+        <button class="savings-details-toggle" type="button" [attr.aria-expanded]="savingsDetailsOpen()" (click)="toggleSavingsDetails()"><span>{{ savingsDetailsOpen() ? 'Hide plan details' : 'Show plan details' }}</span><span aria-hidden="true">{{ savingsDetailsOpen() ? '−' : '+' }}</span></button>
+        }
+        @if (savingsSubPage() === 'Plan' && savingsDetailsOpen()) {
         <section class="panel savings-plan-panel">
           <div class="panel-heading">
             <div>
