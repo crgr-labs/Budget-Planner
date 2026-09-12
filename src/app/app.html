@@ -602,9 +602,12 @@
         <div class="panel-heading">
           <div>
             <h2>Add transaction</h2>
-            <p class="muted">Keep your ledger up to date</p>
-          </div><span class="plus-badge">＋</span>
+            <p class="muted">{{ transactionFormOpen() ? 'Keep your ledger up to date' : 'Add a new expense or income entry' }}</p>
+          </div><button class="transaction-form-toggle" type="button" [attr.aria-expanded]="transactionFormOpen()"
+            (click)="toggleTransactionForm()"><span>{{ transactionFormOpen() ? 'Close form' : 'Add transaction' }}</span><span
+              class="plus-badge" [class.form-open]="transactionFormOpen()">＋</span></button>
         </div>
+        @if (transactionFormOpen()) {
         <div class="type-toggle"><button type="button" [class.selected]="newTransaction().type === 'Expense'"
             (click)="updateField('type', 'Expense')">Expense</button><button type="button"
             [class.selected]="newTransaction().type === 'Income'"
@@ -624,6 +627,7 @@
             </select></label><label>Date<input type="date" [ngModel]="newTransaction().date"
               (ngModelChange)="updateField('date', $event)" /></label></div><button class="add-button" type="button"
           (click)="addTransaction()">Add transaction <span>→</span></button>
+        }
       </section>
       }
       @if (activeSection() !== 'Savings' && activeSection() !== 'Categories') {

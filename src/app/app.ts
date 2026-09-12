@@ -127,6 +127,7 @@ export class App {
     : this.googleSheetsUrl;
   private readonly isHosted = this.apiUrl === this.googleSheetsUrl;
   protected readonly activeSection = signal('Overview');
+  protected readonly transactionFormOpen = signal(false);
   protected readonly savingsSubPage = signal<'Plan' | 'AddTransaction'>('Plan');
   protected readonly mobileMenuOpen = signal(false);
   private readonly categoryColorSeed = Math.random() * 360;
@@ -717,6 +718,10 @@ export class App {
 
   protected selectSavingsSubPage(page: 'Plan' | 'AddTransaction'): void {
     this.savingsSubPage.set(page);
+  }
+
+  protected toggleTransactionForm(): void {
+    this.transactionFormOpen.update((isOpen) => !isOpen);
   }
 
   protected toggleMobileMenu(): void {
