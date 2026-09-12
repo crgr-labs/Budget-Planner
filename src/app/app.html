@@ -30,8 +30,10 @@
           (click)="exportWorkbook()">＋ Export .xlsx</button></div>
     </header>
     <div class="page-content">
-      @if (cloudDataError()) {
-      <div class="cloud-status cloud-status-error"><span>Cloud data could not be loaded.</span><button type="button" (click)="retryCloudData()">Retry sync</button></div>
+      @if (cloudDataError() || syncError()) {
+      <div class="cloud-status cloud-status-error"><span>{{ syncError() ? 'Could not save changes to cloud.' : 'Cloud data could not be loaded.' }}</span><button type="button" (click)="retryCloudData()">Retry sync</button></div>
+      } @else if (syncPending()) {
+      <div class="cloud-status cloud-status-syncing"><span>Saving changes to cloud...</span></div>
       } @else if (hosted && !cloudDataReady()) {
       <div class="cloud-status"><span>Syncing with cloud storage...</span></div>
       }
@@ -142,7 +144,7 @@
                   subcategory }}</option>}
               </select></label><label>Date<input type="date" [ngModel]="newTransaction().date"
                 (ngModelChange)="updateField('date', $event)" /></label></div><button class="add-button" type="button"
-              (click)="addTransaction()">Add transaction <span>→</span></button>
+              [disabled]="syncPending()" (click)="addTransaction()">{{ syncPending() ? 'Saving to cloud...' : 'Add transaction' }} <span>→</span></button>
             } @else {
             <p class="muted">Loading categories and sub-categories from cloud storage...</p>
             }
@@ -415,7 +417,7 @@
             <label>Date<input type="date" [ngModel]="newSavingsTransaction().date" (ngModelChange)="updateSavingsField('date', $event)" /></label>
             <label>Notes<input [ngModel]="newSavingsTransaction().description" (ngModelChange)="updateSavingsField('description', $event)" placeholder="e.g. Monthly transfer" /></label>
           </div>
-          <button class="add-button" type="button" (click)="addSavingsTransaction()">Add savings transaction <span>→</span></button>
+          <button class="add-button" type="button" [disabled]="syncPending()" (click)="addSavingsTransaction()">{{ syncPending() ? 'Saving to cloud...' : 'Add savings transaction' }} <span>→</span></button>
         </section>
         </div>
         }
@@ -609,7 +611,7 @@
                 subcategory }}</option>}
             </select></label><label>Date<input type="date" [ngModel]="newTransaction().date"
               (ngModelChange)="updateField('date', $event)" /></label></div><button class="add-button" type="button"
-          (click)="addTransaction()">Add transaction <span>→</span></button>
+          [disabled]="syncPending()" (click)="addTransaction()">{{ syncPending() ? 'Saving to cloud...' : 'Add transaction' }} <span>→</span></button>
         }
       </section>
       }

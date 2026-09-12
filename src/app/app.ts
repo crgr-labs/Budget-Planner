@@ -199,6 +199,8 @@ export class App {
   protected readonly transactions = signal<Transaction[]>([]);
   protected readonly cloudDataReady = signal(!this.isHosted);
   protected readonly cloudDataError = signal(false);
+  protected readonly syncPending = signal(false);
+  protected readonly syncError = signal(false);
   protected readonly regularTransactions = computed(() => this.transactions().filter((item) => !item.savings));
   protected readonly newTransaction = signal<NewTransaction>(this.emptyTransaction());
   protected readonly budget = signal(3800);
@@ -763,15 +765,21 @@ export class App {
 
   protected addTransaction(): void {
     const entry = this.newTransaction();
-    if (!entry.description.trim() || !entry.date || !entry.category || !entry.amount || entry.amount <= 0) return;
+    const amount = Number(entry.amount);
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    const category = entry.category || (entry.savings ? (this.savingsCategories[0] || 'Emergency Fund') : (this.categories[0] || 'Food'));
+    const description = entry.description?.trim() || entry.subcategory || category;
+    const date = entry.date || new Date().toISOString().slice(0, 10);
     this.transactions.update((items) => [{
       ...entry,
       id: Date.now(),
       type: entry.savings ? 'Income' : 'Expense',
       fundType: entry.savings ? 'Contribution' : undefined,
       savings: entry.savings ?? false,
-      description: entry.description.trim(),
-      amount: Number(entry.amount),
+      description,
+      category,
+      date,
+      amount,
     }, ...items]);
     this.persist();
     this.syncToApi();
@@ -780,9 +788,12 @@ export class App {
 
   protected addSavingsTransaction(): void {
     const entry = this.newSavingsTransaction();
+    const amount = Number(entry.amount);
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    const category = entry.category || this.savingsCategories[0] || 'Emergency Fund';
     const account = entry.account?.trim() ?? '';
-    const description = entry.description?.trim() ?? '';
-    if (!entry.date || !entry.amount || entry.amount <= 0 || !entry.category) return;
+    const description = entry.description?.trim() || entry.subcategory || category;
+    const date = entry.date || new Date().toISOString().slice(0, 10);
     this.transactions.update((items) => [{
       ...entry,
       id: Date.now(),
@@ -790,7 +801,9 @@ export class App {
       account,
       savings: true,
       description,
-      amount: Number(entry.amount),
+      category,
+      date,
+      amount,
     }, ...items]);
     this.persist();
     this.syncToApi();
@@ -900,13 +913,28 @@ export class App {
 
   protected retryCloudData(): void {
     this.cloudDataError.set(false);
-    this.cloudDataReady.set(false);
-    this.loadFromApi();
+    this.syncError.set(false);
+    if (!this.cloudDataReady()) {
+      this.cloudDataReady.set(false);
+      this.loadFromApi();
+    } else {
+      this.syncToApi();
+    }
   }
 
-  private persist(): void { if (!this.isHosted) localStorage.setItem('ledger-transactions', JSON.stringify(this.transactions())); }
-  private persistCategories(): void { if (!this.isHosted) localStorage.setItem('ledger-categories', JSON.stringify(this.categoryGroups())); }
-  private persistSavingsCategories(): void { if (!this.isHosted) localStorage.setItem('ledger-savings-categories', JSON.stringify(this.savingsCategoryGroups())); }
+  private persist(): void {
+    try {
+      localStorage.setItem('ledger-transactions', JSON.stringify(this.transactions()));
+    } catch {
+      // quota or private browsing mode
+    }
+  }
+  private persistCategories(): void {
+    try { localStorage.setItem('ledger-categories', JSON.stringify(this.categoryGroups())); } catch {}
+  }
+  private persistSavingsCategories(): void {
+    try { localStorage.setItem('ledger-savings-categories', JSON.stringify(this.savingsCategoryGroups())); } catch {}
+  }
   private loadFromApi(): void {
     if (!this.apiUrl) return;
     const requestUrl = this.isHosted ? `${this.apiUrl}&cacheBust=${Date.now()}` : this.apiUrl;
@@ -916,49 +944,77 @@ export class App {
       const monthlyBudget = cloudData.settings?.monthlyBudget;
       if (typeof monthlyBudget === 'number' && monthlyBudget >= 0) {
         this.budget.set(monthlyBudget);
-        if (!this.isHosted) localStorage.setItem('ledger-budget', String(monthlyBudget));
+        try { localStorage.setItem('ledger-budget', String(monthlyBudget)); } catch {}
       }
       const targetSavingsGoal = cloudData.settings?.targetSavingsGoal;
       if (typeof targetSavingsGoal === 'number' && targetSavingsGoal >= 0) {
         this.targetSavingsGoal.set(targetSavingsGoal);
-        if (!this.isHosted) localStorage.setItem('ledger-target-savings', String(targetSavingsGoal));
+        try { localStorage.setItem('ledger-target-savings', String(targetSavingsGoal)); } catch {}
       }
       if (Array.isArray(cloudData.expectedBills)) {
         this.expectedBills.set(cloudData.expectedBills.map((bill) => ({ ...bill, subcategory: String(bill.subcategory || '') })));
-        if (!this.isHosted) this.persistExpectedBills();
+        this.persistExpectedBills();
       }
       if (Array.isArray(cloudData.categories)) {
         this.categoryGroups.set(cloudData.categories);
-        if (!this.isHosted) this.persistCategories();
+        this.persistCategories();
       }
       if (Array.isArray(cloudData.sharedSubcategories)) {
         this.sharedSubcategories.set(cloudData.sharedSubcategories);
-        if (!this.isHosted) this.persistSharedSubcategories();
+        this.persistSharedSubcategories();
       }
       if (Array.isArray(cloudData.savingsCategories)) {
         this.savingsCategoryGroups.set(cloudData.savingsCategories);
-        if (!this.isHosted) this.persistSavingsCategories();
+        this.persistSavingsCategories();
       }
       this.persist();
       this.cloudDataReady.set(true);
-    }).catch(() => this.cloudDataError.set(true));
+    }).catch(() => {
+      try {
+        const saved = localStorage.getItem('ledger-transactions');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length) {
+            this.transactions.set(parsed);
+            this.cloudDataReady.set(true);
+          }
+        }
+      } catch {}
+      this.cloudDataError.set(true);
+    });
   }
   private syncToApi(): void {
     if (!this.apiUrl) return;
+    this.syncPending.set(true);
+    this.syncError.set(false);
     const isGoogleSheets = this.apiUrl === this.googleSheetsUrl;
+    const payload = JSON.stringify(isGoogleSheets ? {
+      action: 'replace',
+      transactions: this.transactions(),
+      expectedBills: this.expectedBills(),
+      categories: this.categoryGroups(),
+      sharedSubcategories: this.sharedSubcategories(),
+      savingsCategories: this.savingsCategoryGroups(),
+      settings: { monthlyBudget: this.budget(), targetSavingsGoal: this.targetSavingsGoal() },
+    } : this.transactions());
     void fetch(this.apiUrl, {
       method: isGoogleSheets ? 'POST' : 'PUT',
       headers: { 'Content-Type': isGoogleSheets ? 'text/plain;charset=utf-8' : 'application/json' },
-      body: JSON.stringify(isGoogleSheets ? {
-        action: 'replace',
-        transactions: this.transactions(),
-        expectedBills: this.expectedBills(),
-        categories: this.categoryGroups(),
-        sharedSubcategories: this.sharedSubcategories(),
-        savingsCategories: this.savingsCategoryGroups(),
-        settings: { monthlyBudget: this.budget(), targetSavingsGoal: this.targetSavingsGoal() },
-      } : this.transactions()),
-    }).catch(() => undefined);
+      body: payload,
+      keepalive: true,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json().catch(() => ({}));
+      })
+      .then(() => {
+        this.syncPending.set(false);
+      })
+      .catch((error) => {
+        console.error('Failed to sync with API:', error);
+        this.syncPending.set(false);
+        this.syncError.set(true);
+      });
   }
   private persistExpectedBills(): void { if (!this.isHosted) localStorage.setItem('ledger-expected-bills', JSON.stringify(this.expectedBills())); }
   private persistSharedSubcategories(): void { if (!this.isHosted) localStorage.setItem('ledger-shared-subcategories', JSON.stringify(this.sharedSubcategories())); }
