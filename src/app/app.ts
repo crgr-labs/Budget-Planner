@@ -143,7 +143,46 @@ export class App {
   protected readonly mobileMenuOpen = signal(false);
   private readonly categoryColorSeed = Math.random() * 360;
   protected readonly selectedMonth = signal('2026-09');
-  protected readonly monthOptions = computed(() => [...new Set(this.transactions().map((item) => item.date.slice(0, 7)))].sort().reverse());
+
+  protected getTransactionMonth(dateStr: string): string {
+    if (!dateStr) return '';
+    if (/^\d{4}-\d{2}/.test(dateStr)) return dateStr.slice(0, 7);
+    const parsed = new Date(dateStr);
+    if (!isNaN(parsed.getTime())) {
+      const y = parsed.getFullYear();
+      const m = String(parsed.getMonth() + 1).padStart(2, '0');
+      return `${y}-${m}`;
+    }
+    return dateStr.slice(0, 7);
+  }
+
+  protected matchesMonth(dateStr: string, targetMonth: string): boolean {
+    if (!dateStr || !targetMonth) return false;
+    return this.getTransactionMonth(dateStr) === targetMonth;
+  }
+
+  protected isBeforeOrSameMonth(dateStr: string, targetMonth: string): boolean {
+    const month = this.getTransactionMonth(dateStr);
+    return !!month && month <= targetMonth;
+  }
+
+  protected isSavingsContribution(item: Transaction): boolean {
+    if (!item.savings) return false;
+    const fundType = String(item.fundType || '').toLowerCase();
+    if (fundType === 'contribution') return true;
+    if (fundType === 'withdrawal') return false;
+    return item.type === 'Income';
+  }
+
+  protected isSavingsWithdrawal(item: Transaction): boolean {
+    if (!item.savings) return false;
+    const fundType = String(item.fundType || '').toLowerCase();
+    if (fundType === 'withdrawal') return true;
+    if (fundType === 'contribution') return false;
+    return item.type === 'Expense';
+  }
+
+  protected readonly monthOptions = computed(() => [...new Set(this.transactions().map((item) => this.getTransactionMonth(item.date)).filter(Boolean))].sort().reverse());
   protected readonly monthLabel = computed(() => this.formatMonth(this.selectedMonth()));
   protected readonly categoryGroups = signal<CategoryGroup[]>([
     { name: 'Housing', subcategories: ['Rent', 'Utilities', 'Repairs'] },
@@ -292,7 +331,7 @@ export class App {
   }
 
   protected readonly budget = signal(this.getInitialBudget());
-  protected readonly selectedTransactions = computed(() => this.regularTransactions().filter((item) => item.date.startsWith(this.selectedMonth())));
+  protected readonly selectedTransactions = computed(() => this.regularTransactions().filter((item) => this.matchesMonth(item.date, this.selectedMonth())));
   protected readonly expectedBills = signal<ExpectedBill[]>([]);
   protected readonly newBillName = signal('');
   protected readonly newBillCategory = signal('Expected Bills');
@@ -321,8 +360,51 @@ export class App {
     this.selectedTransactions().filter((item) => item.type === 'Expense' && !item.savings).reduce((sum, item) => sum + item.amount, 0)
   );
   protected readonly monthlySavingsContributions = computed(() =>
-    this.savingsTransactions().filter((item) => item.type === 'Income' && item.date.startsWith(this.selectedMonth())).reduce((sum, item) => sum + item.amount, 0)
+    this.savingsTransactions()
+      .filter((item) => this.isSavingsContribution(item) && this.matchesMonth(item.date, this.selectedMonth()))
+      .reduce((sum, item) => sum + item.amount, 0)
   );
+  protected readonly monthlySavingsWithdrawals = computed(() =>
+    this.savingsTransactions()
+      .filter((item) => this.isSavingsWithdrawal(item) && this.matchesMonth(item.date, this.selectedMonth()))
+      .reduce((sum, item) => sum + item.amount, 0)
+  );
+  protected readonly monthlyNetSavings = computed(() =>
+    this.monthlySavingsContributions() - this.monthlySavingsWithdrawals()
+  );
+  protected readonly monthlySavingsSubtitle = computed(() => {
+    const withdrawals = this.monthlySavingsWithdrawals();
+    const contributions = this.monthlySavingsContributions();
+    if (withdrawals > 0 && contributions > 0) {
+      return `Net saved in ${this.monthLabel()} (+₱${Math.round(contributions).toLocaleString('en-US')} · −₱${Math.round(withdrawals).toLocaleString('en-US')})`;
+    }
+    if (withdrawals > 0 && contributions === 0) {
+      return `Net withdrawal in ${this.monthLabel()} (−₱${Math.round(withdrawals).toLocaleString('en-US')})`;
+    }
+    return `Savings contributed in ${this.monthLabel()}`;
+  });
+  protected readonly monthlySavingsReportSubtitle = computed(() => {
+    const withdrawals = this.monthlySavingsWithdrawals();
+    const contributions = this.monthlySavingsContributions();
+    if (withdrawals > 0 && contributions > 0) {
+      return `Net saved (+₱${Math.round(contributions).toLocaleString('en-US')} · −₱${Math.round(withdrawals).toLocaleString('en-US')})`;
+    }
+    if (withdrawals > 0 && contributions === 0) {
+      return `Net withdrawal (−₱${Math.round(withdrawals).toLocaleString('en-US')})`;
+    }
+    return `Saved in ${this.monthLabel()}`;
+  });
+  protected readonly monthlySavingsSubtext = computed(() => {
+    const withdrawals = this.monthlySavingsWithdrawals();
+    const contributions = this.monthlySavingsContributions();
+    if (withdrawals > 0 && contributions > 0) {
+      return `+₱${Math.round(contributions).toLocaleString('en-US')} in · −₱${Math.round(withdrawals).toLocaleString('en-US')} out`;
+    }
+    if (withdrawals > 0 && contributions === 0) {
+      return `−₱${Math.round(withdrawals).toLocaleString('en-US')} withdrawn`;
+    }
+    return `For ${this.monthLabel()}`;
+  });
   protected readonly budgetProgress = computed(() => {
     const budgetAmount = this.budget();
     if (budgetAmount <= 0) return this.totalSpent() > 0 ? 100 : 0;
@@ -352,7 +434,13 @@ export class App {
     return Math.min(100, Math.max(0, (this.savingsBalance() / goal) * 100));
   });
   protected readonly savingsTransactions = computed(() => this.transactions().filter((item) => item.savings));
-  protected readonly savingsBalance = computed(() => this.savingsTransactions().reduce((sum, item) => sum + (item.type === 'Income' ? item.amount : -item.amount), 0));
+  protected readonly savingsBalance = computed(() =>
+    this.savingsTransactions().reduce((sum, item) => {
+      if (this.isSavingsContribution(item)) return sum + item.amount;
+      if (this.isSavingsWithdrawal(item)) return sum - item.amount;
+      return sum;
+    }, 0)
+  );
   protected readonly savingsGoalProgress = computed(() => {
     const goal = this.targetSavingsGoal();
     if (goal <= 0) return this.savingsBalance() > 0 ? 100 : 0;
@@ -360,26 +448,46 @@ export class App {
   });
   protected readonly amountRemaining = computed(() => Math.max(0, this.targetSavingsGoal() - this.savingsBalance()));
   protected readonly savingsSummary = computed<SavingsMonthlySummary[]>(() => {
-    const months = [...new Set(this.savingsTransactions().map((item) => item.date.slice(0, 7)))].sort();
+    const months = [...new Set(this.savingsTransactions().map((item) => this.getTransactionMonth(item.date)).filter(Boolean))].sort();
     let runningBalance = 0;
     return months.map((month) => {
-      const monthTransactions = this.savingsTransactions().filter((item) => item.date.startsWith(month));
-      const contributions = monthTransactions.filter((item) => item.type === 'Income').reduce((sum, item) => sum + item.amount, 0);
-      const withdrawals = monthTransactions.filter((item) => item.type === 'Expense').reduce((sum, item) => sum + item.amount, 0);
+      const monthTransactions = this.savingsTransactions().filter((item) => this.matchesMonth(item.date, month));
+      const contributions = monthTransactions.filter((item) => this.isSavingsContribution(item)).reduce((sum, item) => sum + item.amount, 0);
+      const withdrawals = monthTransactions.filter((item) => this.isSavingsWithdrawal(item)).reduce((sum, item) => sum + item.amount, 0);
       const netSavings = contributions - withdrawals;
       runningBalance += netSavings;
       return { month, contributions, withdrawals, netSavings, runningBalance };
     }).reverse();
   });
-  protected readonly currentSavingsSummary = computed(() => this.savingsSummary().find((item) => item.month === this.selectedMonth()) ?? {
-    month: this.selectedMonth(), contributions: 0, withdrawals: 0, netSavings: 0, runningBalance: this.savingsBalance(),
+  protected readonly currentSavingsSummary = computed(() => {
+    const found = this.savingsSummary().find((item) => item.month === this.selectedMonth());
+    if (found) return found;
+    const runningBalance = this.savingsTransactions()
+      .filter((item) => this.isBeforeOrSameMonth(item.date, this.selectedMonth()))
+      .reduce((sum, item) => {
+        if (this.isSavingsContribution(item)) return sum + item.amount;
+        if (this.isSavingsWithdrawal(item)) return sum - item.amount;
+        return sum;
+      }, 0);
+    return {
+      month: this.selectedMonth(),
+      contributions: 0,
+      withdrawals: 0,
+      netSavings: 0,
+      runningBalance,
+    };
   });
-  protected readonly monthlyContribution = computed(() => this.savingsSummary().find((item) => item.month === this.selectedMonth())?.contributions ?? 0);
+  protected readonly monthlyContribution = computed(() => this.currentSavingsSummary().contributions);
+  protected readonly effectiveMonthlySavings = computed(() => {
+    const net = this.monthlyNetSavings();
+    return net > 0 ? net : this.monthlySavingsContributions();
+  });
   protected readonly targetDate = computed(() => {
     if (this.amountRemaining() === 0) return 'Goal reached';
-    if (this.monthlyContribution() === 0) return 'Add monthly savings';
+    const rate = this.effectiveMonthlySavings();
+    if (rate <= 0) return 'Add monthly savings';
     const target = new Date();
-    target.setMonth(target.getMonth() + Math.ceil(this.amountRemaining() / this.monthlyContribution()));
+    target.setMonth(target.getMonth() + Math.ceil(this.amountRemaining() / rate));
     return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(target);
   });
   protected readonly recentSavingsTransactions = computed(() => this.transactions()
@@ -392,8 +500,12 @@ export class App {
   protected readonly savingsTrendData = computed<SavingsTrendPoint[]>(() => {
     const months = this.monthOptions().slice(0, 6).reverse();
     const amounts = months.map((month) => this.savingsTransactions()
-      .filter((item) => item.date.startsWith(month))
-      .reduce((sum, item) => sum + (item.type === 'Income' ? item.amount : -item.amount), 0));
+      .filter((item) => this.matchesMonth(item.date, month))
+      .reduce((sum, item) => {
+        if (this.isSavingsContribution(item)) return sum + item.amount;
+        if (this.isSavingsWithdrawal(item)) return sum - item.amount;
+        return sum;
+      }, 0));
     const maximum = Math.max(...amounts, 1);
     return months.map((month, index) => ({
       month: new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(new Date(`${month}-01T00:00:00Z`)),
@@ -403,14 +515,15 @@ export class App {
   });
   protected readonly trendData = computed(() => this.monthOptions().slice(0, 6).reverse().map((month) => ({
     month: new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(new Date(`${month}-01T00:00:00Z`)),
-    amount: this.transactions().filter((item) => item.type === 'Expense' && item.date.startsWith(month)).reduce((sum, item) => sum + item.amount, 0),
+    amount: this.transactions().filter((item) => item.type === 'Expense' && !item.savings && this.matchesMonth(item.date, month)).reduce((sum, item) => sum + item.amount, 0),
   })));
   protected readonly subcategoryTrends = computed<SubcategoryTrend[]>(() => {
     const months = this.monthOptions().slice(0, 6).reverse();
     const totals = new Map<string, number[]>();
-    this.transactions().filter((item) => item.type === 'Expense' && item.subcategory).forEach((item) => {
+    this.transactions().filter((item) => item.type === 'Expense' && !item.savings && item.subcategory).forEach((item) => {
       const points = totals.get(item.subcategory) ?? months.map(() => 0);
-      const monthIndex = months.indexOf(item.date.slice(0, 7));
+      const month = this.getTransactionMonth(item.date);
+      const monthIndex = months.indexOf(month);
       if (monthIndex >= 0) points[monthIndex] += item.amount;
       totals.set(item.subcategory, points);
     });
