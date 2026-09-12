@@ -1043,6 +1043,64 @@
   box-shadow: none;
 }
 
+.add-button.just-added {
+  background: #107e3e !important;
+  border-color: #107e3e !important;
+  box-shadow: 0 1px 3px rgba(16, 126, 62, 0.3) !important;
+}
+
+.quick-presets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.presets-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.preset-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.preset-chip {
+  padding: 4px 10px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1d2d3e;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.preset-chip:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.preset-chip.plan-chip {
+  background: #eef5fc;
+  border-color: #bfdbfe;
+  color: #0070f2;
+}
+
+.preset-chip.plan-chip:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
 .plus-badge {
   display: grid;
   place-items: center;

@@ -130,10 +130,10 @@
               (click)="selectTransactionMode('Savings')">Savings</button></div>
           @if (cloudDataReady()) {
           <div class="form-grid"><label>Description<input [ngModel]="newTransaction().description"
-                (ngModelChange)="updateField('description', $event)"
+                (ngModelChange)="updateField('description', $event)" (keydown.enter)="addTransaction()"
                 placeholder="e.g. Coffee with friends" /></label><label>Amount<div class="amount-input">
                 <span>₱</span><input type="number" min="0" [ngModel]="newTransaction().amount"
-                  (ngModelChange)="updateField('amount', $event)" placeholder="0.00" /></div>
+                  (ngModelChange)="updateField('amount', $event)" (keydown.enter)="addTransaction()" placeholder="0.00" /></div>
               </label><label>{{ newTransaction().savings ? 'Savings category' : 'Category' }}<select [ngModel]="newTransaction().category"
                 (ngModelChange)="updateField('category', $event)">@if (newTransaction().savings) {@for (category of savingsCategories; track category) {<option
                   [value]="category">{{ category }}</option>}} @else {@for (category of categories; track category) {<option
@@ -143,8 +143,8 @@
                 (newTransaction().savings ? savingsSubcategoriesFor(newTransaction().category) : subcategoriesFor(newTransaction().category)); track subcategory) {<option [value]="subcategory">{{
                   subcategory }}</option>}
               </select></label><label>Date<input type="date" [ngModel]="newTransaction().date"
-                (ngModelChange)="updateField('date', $event)" /></label></div><button class="add-button" type="button"
-              [disabled]="syncPending()" (click)="addTransaction()">{{ syncPending() ? 'Saving to cloud...' : 'Add transaction' }} <span>→</span></button>
+                (ngModelChange)="updateField('date', $event)" (keydown.enter)="addTransaction()" /></label></div><button class="add-button" type="button"
+              [class.just-added]="recentlyAddedRegular()" (click)="addTransaction()">{{ recentlyAddedRegular() ? '✓ Added!' : 'Add transaction' }} <span>→</span></button>
             } @else {
             <p class="muted">Loading categories and sub-categories from cloud storage...</p>
             }
@@ -464,15 +464,27 @@
             <button type="button" [class.selected]="newSavingsTransaction().type === 'Income'" (click)="updateSavingsField('type', 'Income')">Contribution</button>
             <button type="button" [class.selected]="newSavingsTransaction().type === 'Expense'" (click)="updateSavingsField('type', 'Expense')">Withdrawal</button>
           </div>
+          <div class="quick-presets">
+            <span class="presets-label">Quick amount:</span>
+            <div class="preset-chips">
+              <button type="button" class="preset-chip" (click)="setSavingsAmount(1000)">₱1,000</button>
+              <button type="button" class="preset-chip" (click)="setSavingsAmount(5000)">₱5,000</button>
+              <button type="button" class="preset-chip" (click)="setSavingsAmount(10000)">₱10,000</button>
+              <button type="button" class="preset-chip" (click)="setSavingsAmount(20000)">₱20,000</button>
+              @if (savingsPlan().savingsGoal > 0) {
+              <button type="button" class="preset-chip plan-chip" (click)="setSavingsAmount(savingsPlan().savingsGoal / 2)">Paycheck target ({{ savingsPlan().savingsGoal / 2 | currency:'PHP':'symbol':'1.0-0' }})</button>
+              }
+            </div>
+          </div>
           <div class="form-grid">
             <label>Category<select [ngModel]="newSavingsTransaction().category" (ngModelChange)="updateSavingsField('category', $event)">@for (category of savingsCategories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
             <label>Sub-category<select [ngModel]="newSavingsTransaction().subcategory" (ngModelChange)="updateSavingsField('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of savingsSubcategoriesFor(newSavingsTransaction().category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label>
-            <label>Account<input [ngModel]="newSavingsTransaction().account" (ngModelChange)="updateSavingsField('account', $event)" placeholder="e.g. BPI or GCash" /></label>
-            <label>Amount<div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="newSavingsTransaction().amount" (ngModelChange)="updateSavingsField('amount', $event)" placeholder="0.00" /></div></label>
-            <label>Date<input type="date" [ngModel]="newSavingsTransaction().date" (ngModelChange)="updateSavingsField('date', $event)" /></label>
-            <label>Notes<input [ngModel]="newSavingsTransaction().description" (ngModelChange)="updateSavingsField('description', $event)" placeholder="e.g. Monthly transfer" /></label>
+            <label>Account<input [ngModel]="newSavingsTransaction().account" (ngModelChange)="updateSavingsField('account', $event)" (keydown.enter)="addSavingsTransaction()" placeholder="e.g. BPI or GCash" /></label>
+            <label>Amount<div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="newSavingsTransaction().amount" (ngModelChange)="updateSavingsField('amount', $event)" (keydown.enter)="addSavingsTransaction()" placeholder="0.00" /></div></label>
+            <label>Date<input type="date" [ngModel]="newSavingsTransaction().date" (ngModelChange)="updateSavingsField('date', $event)" (keydown.enter)="addSavingsTransaction()" /></label>
+            <label>Notes<input [ngModel]="newSavingsTransaction().description" (ngModelChange)="updateSavingsField('description', $event)" (keydown.enter)="addSavingsTransaction()" placeholder="e.g. Monthly transfer" /></label>
           </div>
-          <button class="add-button" type="button" [disabled]="syncPending()" (click)="addSavingsTransaction()">{{ syncPending() ? 'Saving to cloud...' : 'Add savings transaction' }} <span>→</span></button>
+          <button class="add-button" type="button" [class.just-added]="recentlyAddedSavings()" (click)="addSavingsTransaction()">{{ recentlyAddedSavings() ? '✓ Added!' : 'Add savings transaction' }} <span>→</span></button>
         </section>
         </div>
         }
@@ -654,9 +666,9 @@
         </div>
         @if (transactionFormOpen()) {
         <div class="form-grid"><label>Description<input [ngModel]="newTransaction().description"
-              (ngModelChange)="updateField('description', $event)" placeholder="e.g. Coffee with friends" /></label><label
+              (ngModelChange)="updateField('description', $event)" (keydown.enter)="addTransaction()" placeholder="e.g. Coffee with friends" /></label><label
             >Amount<div class="amount-input"><span>₱</span><input type="number" min="0"
-                [ngModel]="newTransaction().amount" (ngModelChange)="updateField('amount', $event)"
+                [ngModel]="newTransaction().amount" (ngModelChange)="updateField('amount', $event)" (keydown.enter)="addTransaction()"
                 placeholder="0.00" /></div></label><label>Category<select [ngModel]="newTransaction().category"
               (ngModelChange)="updateField('category', $event)">@for (category of categories; track category) {<option
                 [value]="category">{{ category }}</option>}</select></label><label>Sub-category<select
@@ -665,8 +677,8 @@
               subcategoriesFor(newTransaction().category); track subcategory) {<option [value]="subcategory">{{
                 subcategory }}</option>}
             </select></label><label>Date<input type="date" [ngModel]="newTransaction().date"
-              (ngModelChange)="updateField('date', $event)" /></label></div><button class="add-button" type="button"
-          [disabled]="syncPending()" (click)="addTransaction()">{{ syncPending() ? 'Saving to cloud...' : 'Add transaction' }} <span>→</span></button>
+              (ngModelChange)="updateField('date', $event)" (keydown.enter)="addTransaction()" /></label></div><button class="add-button" type="button"
+          [class.just-added]="recentlyAddedRegular()" (click)="addTransaction()">{{ recentlyAddedRegular() ? '✓ Added!' : 'Add transaction' }} <span>→</span></button>
         }
       </section>
       }
