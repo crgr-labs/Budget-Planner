@@ -295,11 +295,22 @@
         <div class="type-toggle savings-subpage-tabs"><button type="button" [class.selected]="savingsSubPage() === 'Plan'"
             (click)="selectSavingsSubPage('Plan')">Savings plan</button><button type="button"
             [class.selected]="savingsSubPage() === 'AddTransaction'" (click)="selectSavingsSubPage('AddTransaction')">Add transaction</button></div>
-        <div class="reference-metrics">
-          <article><span>Current savings</span><strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>Savings-only balance</small></article>
-          <article><span>Target savings goal</span><strong>{{ cloudDataReady() ? (targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong><small>{{ cloudDataReady() ? (savingsGoalProgress() | number:'1.0-0') + '% complete' : 'Syncing with Google Sheets' }}</small></article>
-          <article><span>Amount remaining</span><strong>{{ cloudDataReady() ? (amountRemaining() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong><small>Until the goal is reached</small></article>
-          <article><span>Monthly savings</span><strong>{{ monthlyNetSavings() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>{{ monthlySavingsSubtext() }}</small></article>
+        <div class="reference-metrics savings-metrics">
+          <article class="savings-balance-article">
+            <span>Total savings</span>
+            <strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+            <small>{{ monthlySavingsSubtext() }}</small>
+          </article>
+          <article>
+            <span>Target savings goal</span>
+            <strong>{{ cloudDataReady() ? (targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong>
+            <small>{{ cloudDataReady() ? (savingsGoalProgress() | number:'1.0-0') + '% complete' : 'Syncing...' }}</small>
+          </article>
+          <article>
+            <span>Amount remaining</span>
+            <strong>{{ cloudDataReady() ? (amountRemaining() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong>
+            <small>Until the goal is reached</small>
+          </article>
         </div>
         @if (savingsSubPage() === 'Plan') {
         <button class="savings-details-toggle" type="button" [attr.aria-expanded]="savingsDetailsOpen()" (click)="toggleSavingsDetails()"><span>{{ savingsDetailsOpen() ? 'Hide plan details' : 'Show plan details' }}</span><span aria-hidden="true">{{ savingsDetailsOpen() ? '−' : '+' }}</span></button>
@@ -406,50 +417,54 @@
         </section>
         }
         @if (savingsSubPage() === 'Plan') {
-        <div class="reference-tiles">
+        <div class="reference-tiles savings-tiles-3col">
+          <!-- Left: savings trend chart -->
           <section class="reference-tile trend-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
             <div class="tile-heading">
               <div>
-                <h3>Savings progress chart</h3>
-                <p>Monthly net savings</p>
+                <h3>Monthly net savings</h3>
+                <p>Contributions minus withdrawals · last 6 months</p>
               </div><span>↗</span>
             </div>
             <div class="trend-chart">@for (point of savingsTrendData(); track point.month) {<div class="trend-column"><i
                   [style.height.%]="point.height" [title]="(point.amount | currency:'PHP':'symbol':'1.0-0')"></i><small>{{ point.month }}</small></div>}</div>
           </section>
-          <section class="reference-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+
+          <!-- Middle: this-month breakdown -->
+          <section class="reference-tile savings-month-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
             <div class="tile-heading">
               <div>
-                <h3>Monthly savings summary</h3>
-                <p>Selected month: {{ monthLabel() }}</p>
+                <h3>{{ monthLabel() }}</h3>
+                <p>This month's savings activity</p>
               </div><span>₱</span>
             </div>
             <div class="tile-bars">
-              <div><label><span>Contributions</span><b>{{ currentSavingsSummary().contributions | currency:'PHP':'symbol':'1.0-0' }}</b></label></div>
-              <div><label><span>Withdrawals</span><b>{{ currentSavingsSummary().withdrawals | currency:'PHP':'symbol':'1.0-0' }}</b></label></div>
-              <div><label><span>Net savings</span><b>{{ currentSavingsSummary().netSavings | currency:'PHP':'symbol':'1.0-0' }}</b></label></div>
-              <div><label><span>Running balance</span><b>{{ currentSavingsSummary().runningBalance | currency:'PHP':'symbol':'1.0-0' }}</b></label></div>
+              <div><label><span>Contributions</span><b class="savings-amount">{{ currentSavingsSummary().contributions | currency:'PHP':'symbol':'1.0-0' }}</b></label></div>
+              <div><label><span>Withdrawals</span><b class="withdrawal-amount">{{ currentSavingsSummary().withdrawals > 0 ? ('−' + (currentSavingsSummary().withdrawals | currency:'PHP':'symbol':'1.0-0')) : '₱0' }}</b></label></div>
+              <div><label><span>Net saved</span><b>{{ currentSavingsSummary().netSavings | currency:'PHP':'symbol':'1.0-0' }}</b></label></div>
+            </div>
+            <div class="savings-month-divider"></div>
+            <div class="savings-month-footer">
+              <span>Running balance as of {{ monthLabel() }}</span>
+              <b>{{ currentSavingsSummary().runningBalance | currency:'PHP':'symbol':'1.0-0' }}</b>
             </div>
           </section>
-          <section class="reference-tile fund-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-            <div class="tile-heading">
-              <div>
-                <h3>Balance by fund</h3>
-                <p>Current allocation across savings funds</p>
-              </div><span>◎</span>
-            </div>
-            <div class="tile-bars">@for (fund of savingsBalances(); track fund.name) {<div><label><span>{{ fund.name }}</span><b>{{ fund.amount | currency:'PHP':'symbol':'1.0-0' }}</b></label><em><i [style.width.%]="savingsBalance() > 0 ? (fund.amount / savingsBalance()) * 100 : 0"></i></em></div>}</div>
-          </section>
+
+          <!-- Right: target goal progress -->
           <section class="reference-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
             <div class="tile-heading">
               <div>
-                <h3>Target date</h3>
-                <p>Estimated target-savings milestone</p>
+                <h3>Goal progress</h3>
+                <p>Estimated milestone · {{ targetDate() }}</p>
               </div><span>◎</span>
             </div>
-            <div class="savings-number"><strong>{{ targetDate() }}</strong></div>
+            <div class="savings-goal-big">
+              <strong>{{ savingsGoalProgress() | number:'1.0-0' }}<small>%</small></strong>
+              <span>of target</span>
+            </div>
             <div class="reference-progress"><i [style.width.%]="savingsGoalProgress()"></i></div>
-            <div class="tile-foot"><span>{{ savingsGoalProgress() | number:'1.0-0' }}% complete</span><span>{{ amountRemaining() | currency:'PHP':'symbol':'1.0-0' }} to go</span></div>
+            <div class="tile-foot"><span>{{ savingsBalance() | currency:'PHP':'symbol':'1.0-0' }} saved</span><span>{{ amountRemaining() | currency:'PHP':'symbol':'1.0-0' }} to go</span></div>
+            <div class="tile-bars" style="margin-top:16px">@for (fund of savingsBalances(); track fund.name) {<div><label><span>{{ fund.name }}</span><b>{{ fund.amount | currency:'PHP':'symbol':'1.0-0' }}</b></label><em><i [style.width.%]="savingsBalance() > 0 ? (fund.amount / savingsBalance()) * 100 : 0"></i></em></div>}</div>
           </section>
         </div>
         }
