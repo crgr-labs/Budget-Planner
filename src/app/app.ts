@@ -440,15 +440,8 @@ export class App {
         const category = String(value);
         return { ...form, category, subcategory: this.savingsSubcategoriesFor(category)[0] || '' };
       }
-      if (field === 'fundType') {
-        const type: TransactionType = value === 'Withdrawal' ? 'Expense' : 'Income';
-        const subcategory = value === 'Withdrawal' ? 'Withdrawal' : 'Contribution';
-        return { ...form, fundType: String(value), type, subcategory };
-      }
       if (field === 'type') {
-        const fundType = value === 'Expense' ? 'Withdrawal' : 'Contribution';
-        const subcategory = value === 'Expense' ? 'Withdrawal' : 'Contribution';
-        return { ...form, type: value as TransactionType, fundType, subcategory };
+        return { ...form, type: value as TransactionType, fundType: value === 'Expense' ? 'Withdrawal' : 'Contribution' };
       }
       return { ...form, [field]: value };
     });
@@ -782,16 +775,16 @@ export class App {
 
   protected addSavingsTransaction(): void {
     const entry = this.newSavingsTransaction();
-    const fundType = entry.fundType?.trim() ?? '';
     const account = entry.account?.trim() ?? '';
-    if (!entry.description.trim() || !entry.date || !entry.amount || entry.amount <= 0 || !fundType || !account) return;
+    const description = entry.description?.trim() ?? '';
+    if (!entry.date || !entry.amount || entry.amount <= 0 || !entry.category) return;
     this.transactions.update((items) => [{
       ...entry,
       id: Date.now(),
-      fundType,
+      fundType: entry.type === 'Expense' ? 'Withdrawal' : 'Contribution',
       account,
       savings: true,
-      description: entry.description.trim(),
+      description,
       amount: Number(entry.amount),
     }, ...items]);
     this.persist();
@@ -965,5 +958,8 @@ export class App {
   private persistExpectedBills(): void { if (!this.isHosted) localStorage.setItem('ledger-expected-bills', JSON.stringify(this.expectedBills())); }
   private persistSharedSubcategories(): void { if (!this.isHosted) localStorage.setItem('ledger-shared-subcategories', JSON.stringify(this.sharedSubcategories())); }
   private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null, savings: false }; }
-  private emptySavingsTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Savings', subcategory: 'Contribution', type: 'Income', amount: null, fundType: 'Contribution', account: '' }; }
+  private emptySavingsTransaction(): NewTransaction {
+    const firstCategory = this.savingsCategoryGroups()[0]?.name ?? 'Emergency Fund';
+    return { date: new Date().toISOString().slice(0, 10), description: '', category: firstCategory, subcategory: '', type: 'Income', amount: null, fundType: 'Contribution', account: '' };
+  }
 }

@@ -398,22 +398,19 @@
               <p class="muted">Record a contribution or withdrawal separately from daily spending.</p>
             </div><span class="plus-badge">＋</span>
           </div>
-          <div class="type-toggle"><button type="button" [class.selected]="newSavingsTransaction().type === 'Income'"
-              (click)="updateSavingsField('type', 'Income')">Contribution</button><button type="button"
-              [class.selected]="newSavingsTransaction().type === 'Expense'"
-              (click)="updateSavingsField('type', 'Expense')">Withdrawal</button></div>
-              <div class="form-grid"><label>Category<select [ngModel]="newSavingsTransaction().category"
-                (ngModelChange)="updateSavingsField('category', $event)">@for (category of savingsCategories; track category) {<option
-                  [value]="category">{{ category }}</option>}</select></label><label>Sub-category<select
-                [ngModel]="newSavingsTransaction().subcategory" (ngModelChange)="updateSavingsField('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of savingsSubcategoriesFor(newSavingsTransaction().category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label><label>Account<input
-                [ngModel]="newSavingsTransaction().account" (ngModelChange)="updateSavingsField('account', $event)"
-                placeholder="e.g. BPI or GCash" /></label><label>Amount<div class="amount-input"><span>₱</span><input type="number" min="0"
-                [ngModel]="newSavingsTransaction().amount" (ngModelChange)="updateSavingsField('amount', $event)"
-                placeholder="0.00" /></div></label><label>Date<input type="date" [ngModel]="newSavingsTransaction().date"
-                (ngModelChange)="updateSavingsField('date', $event)" /></label><label>Notes<input
-                [ngModel]="newSavingsTransaction().description" (ngModelChange)="updateSavingsField('description', $event)"
-                placeholder="e.g. Monthly transfer" /></label></div><button class="add-button"
-            type="button" (click)="addSavingsTransaction()">Add savings transaction <span>→</span></button>
+          <div class="type-toggle">
+            <button type="button" [class.selected]="newSavingsTransaction().type === 'Income'" (click)="updateSavingsField('type', 'Income')">Contribution</button>
+            <button type="button" [class.selected]="newSavingsTransaction().type === 'Expense'" (click)="updateSavingsField('type', 'Expense')">Withdrawal</button>
+          </div>
+          <div class="form-grid">
+            <label>Category<select [ngModel]="newSavingsTransaction().category" (ngModelChange)="updateSavingsField('category', $event)">@for (category of savingsCategories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
+            <label>Sub-category<select [ngModel]="newSavingsTransaction().subcategory" (ngModelChange)="updateSavingsField('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of savingsSubcategoriesFor(newSavingsTransaction().category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label>
+            <label>Account<input [ngModel]="newSavingsTransaction().account" (ngModelChange)="updateSavingsField('account', $event)" placeholder="e.g. BPI or GCash" /></label>
+            <label>Amount<div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="newSavingsTransaction().amount" (ngModelChange)="updateSavingsField('amount', $event)" placeholder="0.00" /></div></label>
+            <label>Date<input type="date" [ngModel]="newSavingsTransaction().date" (ngModelChange)="updateSavingsField('date', $event)" /></label>
+            <label>Notes<input [ngModel]="newSavingsTransaction().description" (ngModelChange)="updateSavingsField('description', $event)" placeholder="e.g. Monthly transfer" /></label>
+          </div>
+          <button class="add-button" type="button" (click)="addSavingsTransaction()">Add savings transaction <span>→</span></button>
         </section>
         </div>
         }
