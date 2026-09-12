@@ -1408,6 +1408,11 @@ tbody tr:hover {
   gap: 16px;
 }
 
+/* 3-column variant used on savings page */
+.reference-metrics.savings-metrics {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .reference-metrics article {
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -1455,6 +1460,85 @@ tbody tr:hover {
 
 .reports-overview .reference-metrics article:nth-child(4) {
   border-top-color: #8e44ad;
+}
+
+/* Savings page — green-accented balance article */
+.savings-balance-article {
+  background: #f0faf2;
+  border-color: #bbf7d0;
+}
+
+.savings-balance-article strong {
+  color: #107e3e;
+}
+
+/* Savings page — 3-column tile grid */
+.savings-tiles-3col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+/* Middle tile: this-month breakdown */
+.savings-month-tile {
+  background: #fafbfc;
+}
+
+.savings-amount {
+  color: #107e3e;
+}
+
+.withdrawal-amount {
+  color: #c5221f;
+}
+
+.savings-month-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 16px 0 12px;
+}
+
+.savings-month-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.savings-month-footer b {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1d2d3e;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Goal progress big number */
+.savings-goal-big {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 14px 0 10px;
+}
+
+.savings-goal-big strong {
+  font-size: 40px;
+  font-weight: 800;
+  color: #107e3e;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.savings-goal-big strong small {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.savings-goal-big > span {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .bills-layout {
@@ -2391,6 +2475,11 @@ tbody tr:hover {
   .reference-metrics,
   .report-metrics {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .reference-metrics.savings-metrics,
+  .savings-tiles-3col {
+    grid-template-columns: 1fr;
   }
 
   .dashboard-grid {
