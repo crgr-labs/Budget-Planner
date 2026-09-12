@@ -992,6 +992,28 @@
   font-weight: 700;
 }
 
+.transaction-form-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #0070f2;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.transaction-form-toggle .plus-badge {
+  transition: transform 0.15s ease;
+}
+
+.transaction-form-toggle .plus-badge.form-open {
+  transform: rotate(45deg);
+}
+
 /* --------------------------------------------------------------------------
    SAP Fiori Responsive Tables
    -------------------------------------------------------------------------- */
