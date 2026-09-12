@@ -268,23 +268,32 @@
         <div class="type-toggle savings-subpage-tabs"><button type="button" [class.selected]="savingsSubPage() === 'Plan'"
             (click)="selectSavingsSubPage('Plan')">Savings plan</button><button type="button"
             [class.selected]="savingsSubPage() === 'AddTransaction'" (click)="selectSavingsSubPage('AddTransaction')">Add transaction</button></div>
-        <div class="reference-metrics savings-metrics">
-          <article class="savings-balance-article">
-            <span>Total savings</span>
-            <strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
-            <small>{{ monthlySavingsSubtext() }}</small>
-          </article>
-          <article>
-            <span>Target savings goal</span>
-            <strong>{{ cloudDataReady() ? (targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong>
-            <small>{{ cloudDataReady() ? (savingsGoalProgress() | number:'1.0-0') + '% complete' : 'Syncing...' }}</small>
-          </article>
-          <article>
-            <span>Amount remaining</span>
-            <strong>{{ cloudDataReady() ? (amountRemaining() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong>
-            <small>Until the goal is reached</small>
-          </article>
-        </div>
+        <section class="panel savings-overview-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+          <div class="savings-overview-metrics">
+            <div class="savings-overview-item primary">
+              <span class="savings-overview-label">Total savings</span>
+              <strong class="savings-overview-value total-val">{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+              <small class="savings-overview-sub">{{ monthlySavingsSubtext() }}</small>
+            </div>
+            <div class="savings-overview-divider"></div>
+            <div class="savings-overview-item">
+              <span class="savings-overview-label">Target savings goal</span>
+              <strong class="savings-overview-value">{{ cloudDataReady() ? (targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong>
+              <small class="savings-overview-sub">{{ cloudDataReady() ? (savingsGoalProgress() | number:'1.0-0') + '% complete' : 'Syncing...' }}</small>
+            </div>
+            <div class="savings-overview-divider"></div>
+            <div class="savings-overview-item">
+              <span class="savings-overview-label">Amount remaining</span>
+              <strong class="savings-overview-value">{{ cloudDataReady() ? (amountRemaining() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong>
+              <small class="savings-overview-sub">Until the goal is reached</small>
+            </div>
+          </div>
+          <div class="savings-overview-progress">
+            <div class="savings-progress-bar">
+              <span [style.width.%]="savingsGoalProgress()"></span>
+            </div>
+          </div>
+        </section>
         @if (savingsSubPage() === 'Plan') {
         <button class="savings-details-toggle" type="button" [attr.aria-expanded]="savingsDetailsOpen()" (click)="toggleSavingsDetails()"><span>{{ savingsDetailsOpen() ? 'Hide plan details' : 'Show plan details' }}</span><span aria-hidden="true">{{ savingsDetailsOpen() ? '−' : '+' }}</span></button>
         }
