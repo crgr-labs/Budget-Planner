@@ -870,10 +870,7 @@ export class App {
   private loadFromApi(): void {
     if (!this.apiUrl) return;
     const requestUrl = this.isHosted ? `${this.apiUrl}&cacheBust=${Date.now()}` : this.apiUrl;
-    void fetch(requestUrl, {
-      cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache, no-store, max-age=0', Pragma: 'no-cache' },
-    }).then((response) => response.ok ? response.json() : Promise.reject()).then((data: Transaction[] | CloudData) => {
+    void fetch(requestUrl, { cache: 'no-store' }).then((response) => response.ok ? response.json() : Promise.reject()).then((data: Transaction[] | CloudData) => {
       const cloudData = Array.isArray(data) ? { transactions: data } : data;
       this.transactions.set(cloudData.transactions);
       const monthlyBudget = cloudData.settings?.monthlyBudget;
