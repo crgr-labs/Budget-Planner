@@ -884,6 +884,33 @@
   background: #eff6ff;
 }
 
+.savings-action-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.75fr) minmax(0, 1.75fr);
+  align-items: start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.savings-action-grid .panel {
+  min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.savings-action-grid .target-savings-panel {
+  background: #f8fbff;
+  border-color: #bfdbfe;
+}
+
+.savings-action-grid .target-savings-panel .form-grid {
+  grid-template-columns: 1fr;
+}
+
+.savings-action-grid .savings-entry-panel .type-toggle {
+  max-width: 300px;
+}
+
 .cloud-status {
   display: flex;
   align-items: center;
@@ -1976,6 +2003,7 @@ tbody tr:hover {
 @media (max-width: 1024px) {
   .metric-grid,
   .spending-summary,
+  .savings-action-grid,
   .reference-metrics,
   .report-metrics {
     grid-template-columns: repeat(2, 1fr);

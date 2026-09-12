@@ -375,6 +375,7 @@
           </section>
         </div>
         @if (savingsSubPage() === 'AddTransaction') {
+        <div class="savings-action-grid">
         <section class="panel target-savings-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="panel-heading">
             <div>
@@ -385,7 +386,6 @@
           <div class="form-grid"><label>Target amount<input type="number" min="1" [ngModel]="targetSavingsGoal()"
                 (ngModelChange)="updateTargetSavingsGoal($event)" /></label></div>
         </section>
-          }
         @if (savingsSubPage() === 'Plan') {
         <section class="panel savings-summary-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="panel-heading">
@@ -408,7 +408,6 @@
           </div>
         </section>
         }
-        @if (savingsSubPage() === 'AddTransaction') {
         <section class="panel savings-entry-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="panel-heading">
             <div>
@@ -433,7 +432,8 @@
                 placeholder="e.g. Monthly transfer" /></label></div><button class="add-button"
             type="button" (click)="addSavingsTransaction()">Add savings transaction <span>→</span></button>
         </section>
-          }
+        </div>
+        }
         @if (savingsSubPage() === 'Plan') {
         <section class="panel savings-transactions-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="panel-heading">
