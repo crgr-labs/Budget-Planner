@@ -129,6 +129,7 @@ export class App {
   protected readonly activeSection = signal('Overview');
   protected readonly savingsSubPage = signal<'Plan' | 'AddTransaction'>('Plan');
   protected readonly mobileMenuOpen = signal(false);
+  private readonly categoryColorSeed = Math.random() * 360;
   protected readonly selectedMonth = signal('2026-09');
   protected readonly monthOptions = computed(() => [...new Set(this.transactions().map((item) => item.date.slice(0, 7)))].sort().reverse());
   protected readonly monthLabel = computed(() => this.formatMonth(this.selectedMonth()));
@@ -867,6 +868,11 @@ export class App {
 
   protected formatMonth(month: string): string {
     return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${month}-01T00:00:00Z`));
+  }
+
+  protected categoryColor(index: number): string {
+    const hue = (this.categoryColorSeed + (index * 137.508)) % 360;
+    return `hsl(${hue} 65% 45%)`;
   }
 
   private persist(): void { if (!this.isHosted) localStorage.setItem('ledger-transactions', JSON.stringify(this.transactions())); }
