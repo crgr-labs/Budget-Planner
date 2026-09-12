@@ -59,15 +59,10 @@
           <strong>{{ monthlyExpenses() | currency:'PHP':'symbol':'1.2-2' }}</strong>
           <p class="muted">Regular spending for {{ monthLabel() }}</p>
         </article>
-        <article class="metric-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="metric-top"><span>Monthly savings</span><span class="metric-icon" [class.income]="monthlyNetSavings() >= 0" [class.expense]="monthlyNetSavings() < 0">{{ monthlyNetSavings() >= 0 ? '↗' : '↘' }}</span></div>
-          <strong>{{ monthlyNetSavings() | currency:'PHP':'symbol':'1.2-2' }}</strong>
-          <p class="muted">{{ monthlySavingsSubtitle() }}</p>
-        </article>
-        <article class="metric-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+        <article class="metric-card savings-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="metric-top"><span>Total savings balance</span><span class="metric-icon income">↗</span></div>
           <strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
-          <p class="muted">All-time savings balance</p>
+          <p class="muted">{{ monthlySavingsSubtext() }}</p>
         </article>
       </div>
       <div class="dashboard-grid">
