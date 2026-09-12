@@ -418,8 +418,6 @@ export class App {
 
   protected updateField(field: keyof NewTransaction, value: string | number | null): void {
     this.newTransaction.update((form) => {
-      if (field === 'type' && value === 'Income') return { ...form, type: 'Income', category: 'Income' };
-      if (field === 'type' && value === 'Expense') return { ...form, type: 'Expense', category: form.category === 'Income' ? this.categories[0] : form.category, subcategory: form.subcategory || this.subcategoriesFor(form.category === 'Income' ? this.categories[0] : form.category)[0] || '' };
       if (field === 'category') return form.savings
         ? { ...form, category: String(value), subcategory: this.savingsSubcategoriesFor(String(value))[0] || '' }
         : { ...form, category: String(value), subcategory: this.subcategoriesFor(String(value))[0] || '' };
@@ -429,8 +427,8 @@ export class App {
 
   protected selectTransactionMode(mode: 'Expense' | 'Savings'): void {
     this.newTransaction.update((form) => mode === 'Savings'
-      ? { ...form, type: 'Income', savings: true, category: this.savingsCategories[0], subcategory: 'Contribution' }
-      : { ...form, type: 'Expense', savings: false, category: form.savings ? this.categories[0] : form.category, subcategory: form.savings ? this.subcategoriesFor(this.categories[0])[0] || '' : form.subcategory });
+      ? { ...form, type: 'Income', savings: true, category: this.savingsCategories[0] || 'Emergency Fund', subcategory: this.savingsSubcategoriesFor(this.savingsCategories[0] || 'Emergency Fund')[0] || '' }
+      : { ...form, type: 'Expense', savings: false, category: form.savings ? (this.categories[0] || 'Food') : form.category, subcategory: form.savings ? (this.subcategoriesFor(this.categories[0] || 'Food')[0] || '') : form.subcategory });
   }
 
   protected updateSavingsField(field: keyof NewTransaction, value: string | number | null): void {
@@ -766,7 +764,15 @@ export class App {
   protected addTransaction(): void {
     const entry = this.newTransaction();
     if (!entry.description.trim() || !entry.date || !entry.category || !entry.amount || entry.amount <= 0) return;
-    this.transactions.update((items) => [{ ...entry, id: Date.now(), savings: entry.savings ?? false, description: entry.description.trim(), amount: Number(entry.amount) }, ...items]);
+    this.transactions.update((items) => [{
+      ...entry,
+      id: Date.now(),
+      type: entry.savings ? 'Income' : 'Expense',
+      fundType: entry.savings ? 'Contribution' : undefined,
+      savings: entry.savings ?? false,
+      description: entry.description.trim(),
+      amount: Number(entry.amount),
+    }, ...items]);
     this.persist();
     this.syncToApi();
     this.newTransaction.set(this.emptyTransaction());
@@ -802,7 +808,7 @@ export class App {
   }
 
   protected startEditingExpense(transaction: Transaction): void {
-    if (transaction.type !== 'Expense' || transaction.savings) return;
+    if (transaction.savings) return;
     this.editingExpenseId.set(transaction.id);
     this.editingExpense.set({
       date: transaction.date,
@@ -854,7 +860,7 @@ export class App {
         date: String(row['Date'] ?? new Date().toISOString().slice(0, 10)),
         description: String(row['Description'] ?? 'Imported transaction'),
         category: String(row['Category'] ?? 'Other'),
-        type: String(row['Type'] ?? 'Expense') === 'Income' ? 'Income' as TransactionType : 'Expense' as TransactionType,
+        type: 'Expense' as TransactionType,
         subcategory: String(row['Subcategory'] ?? ''),
         amount: Number(row['Amount'] ?? 0),
         savings: false,

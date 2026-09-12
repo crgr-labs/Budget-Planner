@@ -496,7 +496,7 @@
             <div class="tile-heading">
               <div>
                 <h3>Savings progress</h3>
-                <p>Income kept after spending</p>
+                <p>Progress toward your target savings</p>
               </div><span>↗</span>
             </div>
             <div class="savings-number"><strong>{{ savingsGoalProgress() | number:'1.0-0' }}%</strong><small>of target savings</small></div>
@@ -524,18 +524,19 @@
           <div>
             <p class="eyebrow">FINANCIAL REPORT</p>
             <h2>Where your money goes</h2>
-            <p class="muted">A clear view of your income, spending, and savings.</p>
+            <p class="muted">A clear view of your spending, budget, and savings.</p>
           </div><button class="export-button" type="button" (click)="exportWorkbook()">↧ Export report</button>
         </div>
         <div class="report-metrics">
-          <article class="report-card report-income"><span>Income</span><strong>{{ reportTotalIncome() |
-              currency:'PHP':'symbol':'1.2-2' }}</strong><small>Money received</small></article>
-          <article class="report-card report-expense"><span>Expenses</span><strong>{{ reportTotalSpent() |
+          <article class="report-card report-expense"><span>Monthly expenses</span><strong>{{ reportTotalSpent() |
               currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ reportExpenseCount() }} transactions</small>
           </article>
-          <article class="report-card report-savings"><span>Net savings</span><strong>{{ reportBalance() |
-              currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ reportSavingsRate() | number:'1.0-0' }}% of
-              income</small></article>
+          <article class="report-card report-budget"><span>Budget remaining</span><strong>{{ budgetLeft() |
+              currency:'PHP':'symbol':'1.2-2' }}</strong><small>Remaining from monthly budget</small>
+          </article>
+          <article class="report-card report-savings"><span>Monthly savings</span><strong>{{ monthlySavingsContributions() |
+              currency:'PHP':'symbol':'1.2-2' }}</strong><small>Saved in {{ monthLabel() }}</small>
+          </article>
         </div>
         <div class="report-grid">
           <section class="panel report-breakdown" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
@@ -583,30 +584,24 @@
       @if (activeSection() === 'Transactions') {
       <div class="spending-summary" aria-label="Regular spending summary">
         <article><span>Spent this month</span><strong>{{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ regularExpenseCount() }} expense transactions</small></article>
-        <article><span>Income recorded</span><strong class="income-text">{{ totalIncome() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ regularIncomeCount() }} income transactions</small></article>
-        <article><span>Net balance</span><strong>{{ balance() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>Income minus spending</small></article>
+        <article><span>Budget remaining</span><strong>{{ budgetLeft() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>From monthly budget</small></article>
       </div>
       <section class="panel transaction-entry-panel" id="transaction-entry-panel">
         <div class="panel-heading">
           <div>
             <h2>Add transaction</h2>
-            <p class="muted">{{ transactionFormOpen() ? 'Keep your ledger up to date' : 'Add a new expense or income entry' }}</p>
+            <p class="muted">{{ transactionFormOpen() ? 'Keep your ledger up to date' : 'Record a new expense' }}</p>
           </div><button class="transaction-form-toggle" type="button" [attr.aria-expanded]="transactionFormOpen()"
             (click)="toggleTransactionForm()"><span>{{ transactionFormOpen() ? 'Close form' : 'Add transaction' }}</span><span
               class="plus-badge" [class.form-open]="transactionFormOpen()">＋</span></button>
         </div>
         @if (transactionFormOpen()) {
-        <div class="type-toggle"><button type="button" [class.selected]="newTransaction().type === 'Expense'"
-            (click)="updateField('type', 'Expense')">Expense</button><button type="button"
-            [class.selected]="newTransaction().type === 'Income'"
-            (click)="updateField('type', 'Income')">Income</button></div>
         <div class="form-grid"><label>Description<input [ngModel]="newTransaction().description"
               (ngModelChange)="updateField('description', $event)" placeholder="e.g. Coffee with friends" /></label><label
             >Amount<div class="amount-input"><span>₱</span><input type="number" min="0"
                 [ngModel]="newTransaction().amount" (ngModelChange)="updateField('amount', $event)"
                 placeholder="0.00" /></div></label><label>Category<select [ngModel]="newTransaction().category"
-              (ngModelChange)="updateField('category', $event)">@if (newTransaction().type === 'Income') {<option
-                value="Income">Income</option>} @for (category of categories; track category) {<option
+              (ngModelChange)="updateField('category', $event)">@for (category of categories; track category) {<option
                 [value]="category">{{ category }}</option>}</select></label><label>Sub-category<select
               [ngModel]="newTransaction().subcategory" (ngModelChange)="updateField('subcategory', $event)">
               <option value="">No sub-category</option>@for (subcategory of
@@ -646,23 +641,21 @@
                 <td class="align-right"><div class="amount-input expense-edit-amount"><span>₱</span><input aria-label="Edit amount" type="number" min="0" [ngModel]="expense.amount" (ngModelChange)="updateExpenseEdit('amount', $event)" /></div></td>
                 <td><div class="row-actions"><button class="save-row-button" type="button" (click)="saveEditingExpense()">Save</button><button class="cancel-row-button" type="button" (click)="cancelEditingExpense()">Cancel</button></div></td>
                 } @else {
-                  <td><span class="transaction-icon" [class.income-icon]="transaction.type === 'Income'">{{
-                  transaction.type === 'Income' ? '↗' : '↘' }}</span><strong>{{ transaction.description }}</strong>
+                  <td><span class="transaction-icon">↘</span><strong>{{ transaction.description }}</strong>
                 </td>
                 <td><span class="category-pill">{{ transaction.category }}</span></td>
                 <td class="subcategory-cell">{{ transaction.subcategory || '—' }}</td>
                 <td class="muted">{{ transaction.date | date:'MMM d, y' }}</td>
-                <td class="align-right" [class.income-text]="transaction.type === 'Income'"><strong>{{ transaction.type
-                    === 'Income' ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></td>
-                <td><div class="row-actions">@if (transaction.type === 'Expense') {<button class="edit-row-button" type="button" aria-label="Edit expense" (click)="startEditingExpense(transaction)">Edit</button>}<button class="delete-button" type="button" aria-label="Delete transaction"
+                <td class="align-right"><strong>-{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></td>
+                <td><div class="row-actions"><button class="edit-row-button" type="button" aria-label="Edit expense" (click)="startEditingExpense(transaction)">Edit</button><button class="delete-button" type="button" aria-label="Delete transaction"
                   (click)="removeTransaction(transaction.id)">×</button></div></td>
                 }
               </tr>} @if (!regularTransactions().length) {<tr><td colspan="6" class="transaction-empty">No regular transactions recorded yet.</td></tr>}</tbody>
           </table>
         </div>
         <div class="mobile-transaction-list">@for (transaction of regularTransactions(); track transaction.id) {<article class="mobile-transaction-card">
-          <div class="mobile-transaction-top"><span class="transaction-icon" [class.income-icon]="transaction.type === 'Income'">{{ transaction.type === 'Income' ? '↗' : '↘' }}</span><div><strong>{{ transaction.description }}</strong><small>{{ transaction.date | date:'MMM d, y' }}</small></div><strong class="mobile-transaction-amount" [class.income-text]="transaction.type === 'Income'">{{ transaction.type === 'Income' ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
-          <div class="mobile-transaction-meta"><span class="category-pill">{{ transaction.category }}</span><span>{{ transaction.subcategory || 'No sub-category' }}</span><div class="row-actions">@if (transaction.type === 'Expense') {<button class="edit-row-button" type="button" aria-label="Edit expense" (click)="startEditingExpense(transaction)">Edit</button>}<button class="delete-button" type="button" aria-label="Delete transaction" (click)="removeTransaction(transaction.id)">×</button></div></div>
+          <div class="mobile-transaction-top"><span class="transaction-icon">↘</span><div><strong>{{ transaction.description }}</strong><small>{{ transaction.date | date:'MMM d, y' }}</small></div><strong class="mobile-transaction-amount">-{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
+          <div class="mobile-transaction-meta"><span class="category-pill">{{ transaction.category }}</span><span>{{ transaction.subcategory || 'No sub-category' }}</span><div class="row-actions"><button class="edit-row-button" type="button" aria-label="Edit expense" (click)="startEditingExpense(transaction)">Edit</button><button class="delete-button" type="button" aria-label="Delete transaction" (click)="removeTransaction(transaction.id)">×</button></div></div>
         </article>}</div>
       </section>
       }
