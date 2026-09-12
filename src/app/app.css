@@ -642,6 +642,12 @@
 .dot-3, .bar-3 { background: #e9730c; }
 .dot-4, .bar-4 { background: #8e44ad; }
 .dot-5, .bar-5 { background: #df3d82; }
+.dot-6, .bar-6 { background: #c0392b; }
+.dot-7, .bar-7 { background: #16a085; }
+.dot-8, .bar-8 { background: #d4a017; }
+.dot-9, .bar-9 { background: #34495e; }
+.dot-10, .bar-10 { background: #7f8c8d; }
+.dot-11, .bar-11 { background: #6c5ce7; }
 
 .category-name {
   color: #334155;

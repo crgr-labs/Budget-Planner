@@ -80,7 +80,7 @@
             <div class="budget-total"><div><span>Monthly budget</span><strong>Loading...</strong></div></div>
             }
           <div class="category-list">@for (category of categories; track category) {<div class="category-row"><span
-                class="category-dot" [class]="'dot-' + $index"></span><span class="category-name">{{ category
+                class="category-dot" [style.background-color]="categoryColor($index)"></span><span class="category-name">{{ category
                 }}</span><span class="category-amount">{{ categoryTotal(category) | currency:'PHP':'symbol':'1.2-2'
                 }}</span><span class="category-bar"><i
                   [style.width.%]="categoryTotal(category) > 0 ? 70 : 10"></i></span></div>}</div>
@@ -490,7 +490,7 @@
               </div><span>≡</span>
             </div>
             <div class="tile-bars">@for (item of reportCategories(); track item.category; let index = $index) {<div>
-                <label><span><i class="category-dot" [class]="'dot-' + index"></i>{{ item.category }}</span><b>{{
+                <label><span><i class="category-dot" [style.background-color]="categoryColor(index)"></i>{{ item.category }}</span><b>{{
                     item.total | currency:'PHP':'symbol':'0.0-0' }}</b></label><em><i
                     [style.width.%]="(item.total / reportTotalSpent()) * 100"></i></em></div>} @if
               (!reportCategories().length) {<p class="empty-report">Add expenses to see categories.</p>}</div>
@@ -549,7 +549,7 @@
               </div><span class="report-icon">⌁</span>
             </div>@if (reportCategories().length) {<div class="report-category-list">@for (item of reportCategories();
               track item.category; let index = $index) {<div class="report-category">
-                <div class="report-category-label"><span><i class="category-dot" [class]="'dot-' + index"></i>{{
+                <div class="report-category-label"><span><i class="category-dot" [style.background-color]="categoryColor(index)"></i>{{
                     item.category }}</span><strong>{{ item.total | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
                 <div class="report-bar"><i [style.width.%]="(item.total / totalSpent()) * 100"></i></div>
               </div>}</div>} @else {<p class="empty-report">Add an expense to see your category breakdown.</p>}
