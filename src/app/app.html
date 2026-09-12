@@ -41,8 +41,8 @@
           <p class="eyebrow">PERSONAL FINANCE</p>
           <h1>Good morning, Eric</h1>
           <p class="muted">Here is your financial snapshot for {{ monthLabel() }}.</p>
-        </div><select class="month-button" [ngModel]="selectedMonth()" (ngModelChange)="selectMonth($event)">@for (month
-          of monthOptions(); track month) {<option [value]="month">{{ formatMonth(month) }}</option>}</select>
+        </div><div class="page-heading-actions">@if (activeSection() === 'Transactions') {<button class="mobile-quick-add" type="button" (click)="openTransactionForm()">＋ Add transaction</button>}<select class="month-button" [ngModel]="selectedMonth()" (ngModelChange)="selectMonth($event)">@for (month
+          of monthOptions(); track month) {<option [value]="month">{{ formatMonth(month) }}</option>}</select></div>
       </div>
       }
       @if (activeSection() === 'Overview') {
@@ -601,7 +601,7 @@
         <article><span>Income recorded</span><strong class="income-text">{{ totalIncome() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ regularIncomeCount() }} income transactions</small></article>
         <article><span>Net balance</span><strong>{{ balance() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>Income minus spending</small></article>
       </div>
-      <section class="panel transaction-entry-panel">
+      <section class="panel transaction-entry-panel" id="transaction-entry-panel">
         <div class="panel-heading">
           <div>
             <h2>Add transaction</h2>
