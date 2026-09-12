@@ -411,6 +411,14 @@ export class App {
   protected readonly newSavingsTransaction = signal<NewTransaction>(this.emptySavingsTransaction());
   protected readonly editingExpenseId = signal<number | null>(null);
   protected readonly editingExpense = signal<NewTransaction | null>(null);
+  protected readonly recentlyAddedRegular = signal(false);
+  protected readonly recentlyAddedSavings = signal(false);
+  private regularAddedTimer: ReturnType<typeof setTimeout> | null = null;
+  private savingsAddedTimer: ReturnType<typeof setTimeout> | null = null;
+
+  protected setSavingsAmount(amount: number): void {
+    this.updateSavingsField('amount', Math.round(amount));
+  }
 
   constructor() {
     if (!this.isHosted) {
@@ -963,6 +971,9 @@ export class App {
       amount,
     }, ...items]);
     this.persist();
+    if (this.regularAddedTimer) clearTimeout(this.regularAddedTimer);
+    this.recentlyAddedRegular.set(true);
+    this.regularAddedTimer = setTimeout(() => this.recentlyAddedRegular.set(false), 1600);
     this.syncToApi();
     this.newTransaction.set(this.emptyTransaction());
   }
@@ -975,6 +986,9 @@ export class App {
     const account = entry.account?.trim() ?? '';
     const description = entry.description?.trim() || entry.subcategory || category;
     const date = entry.date || new Date().toISOString().slice(0, 10);
+    if (account) {
+      try { localStorage.setItem('ledger-last-savings-account', account); } catch {}
+    }
     this.transactions.update((items) => [{
       ...entry,
       id: Date.now(),
@@ -987,6 +1001,9 @@ export class App {
       amount,
     }, ...items]);
     this.persist();
+    if (this.savingsAddedTimer) clearTimeout(this.savingsAddedTimer);
+    this.recentlyAddedSavings.set(true);
+    this.savingsAddedTimer = setTimeout(() => this.recentlyAddedSavings.set(false), 1600);
     this.syncToApi();
     this.newSavingsTransaction.set(this.emptySavingsTransaction());
   }
@@ -1180,8 +1197,33 @@ export class App {
       this.cloudDataError.set(true);
     });
   }
-  private syncToApi(): void {
+  private syncTimeout: ReturnType<typeof setTimeout> | null = null;
+  private syncInProgress = false;
+  private syncQueued = false;
+
+  private syncToApi(immediate = false): void {
     if (!this.apiUrl) return;
+    if (this.syncTimeout) {
+      clearTimeout(this.syncTimeout);
+      this.syncTimeout = null;
+    }
+    if (immediate) {
+      this.executeSyncToApi();
+      return;
+    }
+    this.syncTimeout = setTimeout(() => {
+      this.syncTimeout = null;
+      this.executeSyncToApi();
+    }, 400);
+  }
+
+  private executeSyncToApi(): void {
+    if (!this.apiUrl) return;
+    if (this.syncInProgress) {
+      this.syncQueued = true;
+      return;
+    }
+    this.syncInProgress = true;
     this.syncPending.set(true);
     this.syncError.set(false);
     const isGoogleSheets = this.apiUrl === this.googleSheetsUrl;
@@ -1214,12 +1256,22 @@ export class App {
         return response.json().catch(() => ({}));
       })
       .then(() => {
-        this.syncPending.set(false);
+        this.syncInProgress = false;
+        if (this.syncQueued) {
+          this.syncQueued = false;
+          this.executeSyncToApi();
+        } else {
+          this.syncPending.set(false);
+        }
       })
       .catch((error) => {
         console.error('Failed to sync with API:', error);
+        this.syncInProgress = false;
         this.syncPending.set(false);
         this.syncError.set(true);
+        if (this.syncQueued) {
+          this.syncQueued = false;
+        }
       });
   }
   private persistExpectedBills(): void { if (!this.isHosted) localStorage.setItem('ledger-expected-bills', JSON.stringify(this.expectedBills())); }
@@ -1227,6 +1279,10 @@ export class App {
   private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null, savings: false }; }
   private emptySavingsTransaction(): NewTransaction {
     const firstCategory = this.savingsCategoryGroups()[0]?.name ?? 'Emergency Fund';
-    return { date: new Date().toISOString().slice(0, 10), description: '', category: firstCategory, subcategory: '', type: 'Income', amount: null, fundType: 'Contribution', account: '' };
+    let lastAccount = '';
+    try {
+      lastAccount = localStorage.getItem('ledger-last-savings-account') || '';
+    } catch {}
+    return { date: new Date().toISOString().slice(0, 10), description: '', category: firstCategory, subcategory: '', type: 'Income', amount: null, fundType: 'Contribution', account: lastAccount };
   }
 }
