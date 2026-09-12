@@ -98,6 +98,7 @@ interface CloudData {
   settings?: { monthlyBudget?: number; targetSavingsGoal?: number };
   expectedBills?: ExpectedBill[];
   categories?: CategoryGroup[];
+  sharedSubcategories?: string[];
   savingsCategories?: CategoryGroup[];
 }
 
@@ -140,6 +141,7 @@ export class App {
     { name: 'Expected Bills', subcategories: ['Globe', 'Condo'] },
     { name: 'Health', subcategories: ['Medicine', 'Appointments', 'Fitness'] },
   ]);
+  protected readonly sharedSubcategories = signal<string[]>([]);
   protected readonly savingsCategoryGroups = signal<CategoryGroup[]>([
     { name: 'Emergency Fund', subcategories: ['Short-term buffer', 'Medical reserve'] },
     { name: 'General Savings', subcategories: ['Monthly savings', 'Long-term savings'] },
@@ -355,6 +357,10 @@ export class App {
       if (savedCategories) {
         try { this.categoryGroups.set(JSON.parse(savedCategories)); } catch { localStorage.removeItem('ledger-categories'); }
       }
+      const savedSharedSubcategories = localStorage.getItem('ledger-shared-subcategories');
+      if (savedSharedSubcategories) {
+        try { this.sharedSubcategories.set(JSON.parse(savedSharedSubcategories)); } catch { localStorage.removeItem('ledger-shared-subcategories'); }
+      }
     }
     this.ensureExpectedBillsCategory();
     if (!this.isHosted) {
@@ -439,7 +445,8 @@ export class App {
   }
 
   protected subcategoriesFor(category: string): string[] {
-    return this.categoryGroups().find((group) => group.name === category)?.subcategories ?? [];
+    const categorySubcategories = this.categoryGroups().find((group) => group.name === category)?.subcategories ?? [];
+    return [...new Set([...categorySubcategories, ...this.sharedSubcategories()])];
   }
 
   protected savingsSubcategoriesFor(category: string): string[] {
@@ -455,11 +462,11 @@ export class App {
     this.syncToApi();
   }
 
-  protected addSubcategory(category: string, subcategory: string): void {
+  protected addSubcategory(subcategory: string): void {
     const subcategoryName = subcategory.trim();
-    if (!category || !subcategoryName) return;
-    this.categoryGroups.update((groups) => groups.map((group) => group.name === category && !group.subcategories.some((item) => item.toLowerCase() === subcategoryName.toLowerCase()) ? { ...group, subcategories: [...group.subcategories, subcategoryName] } : group));
-    this.persistCategories();
+    if (!subcategoryName || this.sharedSubcategories().some((item) => item.toLowerCase() === subcategoryName.toLowerCase())) return;
+    this.sharedSubcategories.update((items) => [...items, subcategoryName]);
+    this.persistSharedSubcategories();
     this.syncToApi();
   }
 
@@ -487,7 +494,7 @@ export class App {
   }
 
   protected createSubcategory(): void {
-    this.addSubcategory(this.selectedCategoryForSubcategory(), this.newSubcategoryName());
+    this.addSubcategory(this.newSubcategoryName());
     this.newSubcategoryName.set('');
   }
 
@@ -883,6 +890,10 @@ export class App {
         this.categoryGroups.set(cloudData.categories);
         this.persistCategories();
       }
+      if (Array.isArray(cloudData.sharedSubcategories)) {
+        this.sharedSubcategories.set(cloudData.sharedSubcategories);
+        this.persistSharedSubcategories();
+      }
       if (Array.isArray(cloudData.savingsCategories)) {
         this.savingsCategoryGroups.set(cloudData.savingsCategories);
         this.persistSavingsCategories();
@@ -902,12 +913,14 @@ export class App {
         transactions: this.transactions(),
         expectedBills: this.expectedBills(),
         categories: this.categoryGroups(),
+        sharedSubcategories: this.sharedSubcategories(),
         savingsCategories: this.savingsCategoryGroups(),
         settings: { monthlyBudget: this.budget(), targetSavingsGoal: this.targetSavingsGoal() },
       } : this.transactions()),
     }).catch(() => undefined);
   }
   private persistExpectedBills(): void { localStorage.setItem('ledger-expected-bills', JSON.stringify(this.expectedBills())); }
+  private persistSharedSubcategories(): void { localStorage.setItem('ledger-shared-subcategories', JSON.stringify(this.sharedSubcategories())); }
   private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null, savings: false }; }
   private emptySavingsTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Savings', subcategory: 'Contribution', type: 'Income', amount: null, fundType: 'Contribution', account: '' }; }
 }

@@ -205,12 +205,7 @@
           </section>
           <section class="panel category-form-panel">
             <h3>Add sub-category</h3>
-            <p class="muted">Add an option to an existing category.</p><label>Category<select
-                [ngModel]="selectedCategoryForSubcategory()"
-                (ngModelChange)="selectedCategoryForSubcategory.set($event)">
-                <option value="">Choose a category</option>@for (category of categories; track category) {<option
-                  [value]="category">{{ category }}</option>}
-              </select></label><label>Sub-category name<input [ngModel]="newSubcategoryName()"
+            <p class="muted">Add an option shared by every expense category.</p><label>Sub-category name<input [ngModel]="newSubcategoryName()"
                 (ngModelChange)="newSubcategoryName.set($event)" placeholder="e.g. School supplies" /></label><button
               class="add-button" type="button" (click)="createSubcategory()">Add sub-category <span>→</span></button>
           </section>
