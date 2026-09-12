@@ -157,12 +157,14 @@
           <section class="panel category-form-panel">
             <h3>Add expected bill</h3>
             <p class="muted">Set a reference amount before recording expenses.</p>
-            <label>Bill name<input [ngModel]="newBillName()" (ngModelChange)="newBillName.set($event)" placeholder="e.g. Internet" /></label>
-            <label>Category<select [ngModel]="newBillCategory()" (ngModelChange)="updateBillCategory($event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
-            <label>Sub-category<select [ngModel]="newBillSubcategory()" (ngModelChange)="newBillSubcategory.set($event)"><option value="">Choose a sub-category</option>@for (subcategory of subcategoriesFor(newBillCategory()); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label>
-            <label>Expected amount<div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="newBillAmount()" (ngModelChange)="newBillAmount.set($event)" placeholder="0.00" /></div></label>
-            <label>Due day <span class="optional">1-31</span><input type="number" min="1" max="31" [ngModel]="newBillDueDay()" (ngModelChange)="newBillDueDay.set($event)" /></label>
-            <button class="add-button" type="button" (click)="addExpectedBill()">Add expected bill <span>→</span></button>
+            <form (submit)="addExpectedBill(); $event.preventDefault()">
+              <label>Bill name<input required [ngModel]="newBillName()" name="billname" (ngModelChange)="newBillName.set($event)" placeholder="e.g. Internet" /></label>
+              <label>Category<select required [ngModel]="newBillCategory()" name="billcat" (ngModelChange)="updateBillCategory($event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
+              <label>Sub-category<select required [ngModel]="newBillSubcategory()" name="billsub" (ngModelChange)="newBillSubcategory.set($event)"><option value="">Choose a sub-category</option>@for (subcategory of subcategoriesFor(newBillCategory()); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label>
+              <label>Expected amount<div class="amount-input"><span>₱</span><input required min="0.01" step="0.01" type="number" [ngModel]="newBillAmount()" name="billamt" (ngModelChange)="newBillAmount.set($event)" placeholder="0.00" /></div></label>
+              <label>Due day <span class="optional">1-31</span><input type="number" min="1" max="31" [ngModel]="newBillDueDay()" name="billdue" (ngModelChange)="newBillDueDay.set($event)" /></label>
+              <button class="add-button" type="submit">Add expected bill <span>→</span></button>
+            </form>
           </section>
           <section class="panel bill-list-panel">
             <div class="panel-heading"><div><h3>Bill tracking</h3><p class="muted">Actual sub-category spending versus your plan.</p></div><span class="report-icon">▣</span></div>
@@ -391,11 +393,11 @@
               }
             }</tbody>
           </table></div>
-          <div class="add-savings-bill-form">
-            <label>Bill name<input [ngModel]="newSavingsBillName()" (ngModelChange)="newSavingsBillName.set($event)" placeholder="e.g. Health Insurance" /></label>
-            <label>Monthly amount<div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="newSavingsBillAmount()" (ngModelChange)="newSavingsBillAmount.set($event)" placeholder="0.00" /></div></label>
-            <button class="add-bill-button" type="button" (click)="addSavingsPlanBill()">＋ Add fixed need</button>
-          </div>
+          <form class="add-savings-bill-form" (submit)="addSavingsPlanBill(); $event.preventDefault()">
+            <label>Bill name<input required [ngModel]="newSavingsBillName()" name="bname" (ngModelChange)="newSavingsBillName.set($event)" placeholder="e.g. Health Insurance" /></label>
+            <label>Monthly amount<div class="amount-input"><span>₱</span><input required min="0.01" step="0.01" type="number" [ngModel]="newSavingsBillAmount()" name="bamt" (ngModelChange)="newSavingsBillAmount.set($event)" placeholder="0.00" /></div></label>
+            <button class="add-bill-button" type="submit">＋ Add fixed need</button>
+          </form>
         </section>
         }
         @if (savingsSubPage() === 'Plan') {
@@ -487,15 +489,17 @@
               }
             </div>
           </div>
-          <div class="form-grid">
-            <label>Category<select [ngModel]="newSavingsTransaction().category" (ngModelChange)="updateSavingsField('category', $event)">@for (category of savingsCategories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
-            <label>Sub-category<select [ngModel]="newSavingsTransaction().subcategory" (ngModelChange)="updateSavingsField('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of savingsSubcategoriesFor(newSavingsTransaction().category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label>
-            <label>Account<input [ngModel]="newSavingsTransaction().account" (ngModelChange)="updateSavingsField('account', $event)" (keydown.enter)="addSavingsTransaction()" placeholder="e.g. BPI or GCash" /></label>
-            <label>Amount<div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="newSavingsTransaction().amount" (ngModelChange)="updateSavingsField('amount', $event)" (keydown.enter)="addSavingsTransaction()" placeholder="0.00" /></div></label>
-            <label>Date<input type="date" [ngModel]="newSavingsTransaction().date" (ngModelChange)="updateSavingsField('date', $event)" (keydown.enter)="addSavingsTransaction()" /></label>
-            <label>Notes<input [ngModel]="newSavingsTransaction().description" (ngModelChange)="updateSavingsField('description', $event)" (keydown.enter)="addSavingsTransaction()" placeholder="e.g. Monthly transfer" /></label>
-          </div>
-          <button class="add-button" type="button" [class.just-added]="recentlyAddedSavings()" (click)="addSavingsTransaction()">{{ recentlyAddedSavings() ? '✓ Added!' : 'Add savings transaction' }} <span>→</span></button>
+          <form (submit)="addSavingsTransaction(); $event.preventDefault()">
+            <div class="form-grid">
+              <label>Category<select [ngModel]="newSavingsTransaction().category" name="cat" (ngModelChange)="updateSavingsField('category', $event)">@for (category of savingsCategories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
+              <label>Sub-category<select [ngModel]="newSavingsTransaction().subcategory" name="subcat" (ngModelChange)="updateSavingsField('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of savingsSubcategoriesFor(newSavingsTransaction().category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label>
+              <label>Account<input [ngModel]="newSavingsTransaction().account" name="acc" (ngModelChange)="updateSavingsField('account', $event)" placeholder="e.g. BPI or GCash" /></label>
+              <label>Amount<div class="amount-input"><span>₱</span><input type="number" min="0.01" step="0.01" required [ngModel]="newSavingsTransaction().amount" name="amt" (ngModelChange)="updateSavingsField('amount', $event)" placeholder="0.00" /></div></label>
+              <label>Date<input type="date" [ngModel]="newSavingsTransaction().date" name="dt" (ngModelChange)="updateSavingsField('date', $event)" required /></label>
+              <label>Notes<input [ngModel]="newSavingsTransaction().description" name="desc" (ngModelChange)="updateSavingsField('description', $event)" placeholder="e.g. Monthly transfer" /></label>
+            </div>
+            <button class="add-button" type="submit" [class.just-added]="recentlyAddedSavings()">{{ recentlyAddedSavings() ? '✓ Added!' : 'Add savings transaction' }} <span>→</span></button>
+          </form>
         </section>
         </div>
         }
@@ -670,20 +674,27 @@
               class="plus-badge" [class.form-open]="transactionFormOpen()">＋</span></button>
         </div>
         @if (transactionFormOpen()) {
-        <div class="form-grid"><label>Description<input [ngModel]="newTransaction().description"
-              (ngModelChange)="updateField('description', $event)" (keydown.enter)="addTransaction()" placeholder="e.g. Coffee with friends" /></label><label
-            >Amount<div class="amount-input"><span>₱</span><input type="number" min="0"
-                [ngModel]="newTransaction().amount" (ngModelChange)="updateField('amount', $event)" (keydown.enter)="addTransaction()"
-                placeholder="0.00" /></div></label><label>Category<select [ngModel]="newTransaction().category"
-              (ngModelChange)="updateField('category', $event)">@for (category of categories; track category) {<option
-                [value]="category">{{ category }}</option>}</select></label><label>Sub-category<select
-              [ngModel]="newTransaction().subcategory" (ngModelChange)="updateField('subcategory', $event)">
-              <option value="">No sub-category</option>@for (subcategory of
-              subcategoriesFor(newTransaction().category); track subcategory) {<option [value]="subcategory">{{
-                subcategory }}</option>}
-            </select></label><label>Date<input type="date" [ngModel]="newTransaction().date"
-              (ngModelChange)="updateField('date', $event)" (keydown.enter)="addTransaction()" /></label></div><button class="add-button" type="button"
-          [class.just-added]="recentlyAddedRegular()" (click)="addTransaction()">{{ recentlyAddedRegular() ? '✓ Added!' : 'Add transaction' }} <span>→</span></button>
+        <form (submit)="addTransaction(); $event.preventDefault()">
+          <div class="form-grid">
+            <label>Description<input [ngModel]="newTransaction().description" name="desc"
+                (ngModelChange)="updateField('description', $event)" placeholder="e.g. Coffee with friends" /></label>
+            <label>Amount<div class="amount-input"><span>₱</span><input type="number" min="0.01" step="0.01" required
+                  [ngModel]="newTransaction().amount" name="amt" (ngModelChange)="updateField('amount', $event)"
+                  placeholder="0.00" /></div></label>
+            <label>Category<select [ngModel]="newTransaction().category" name="cat"
+                (ngModelChange)="updateField('category', $event)">@for (category of categories; track category) {<option
+                  [value]="category">{{ category }}</option>}</select></label>
+            <label>Sub-category<select [ngModel]="newTransaction().subcategory" name="subcat" (ngModelChange)="updateField('subcategory', $event)">
+                <option value="">No sub-category</option>@for (subcategory of
+                subcategoriesFor(newTransaction().category); track subcategory) {<option [value]="subcategory">{{
+                  subcategory }}</option>}
+              </select></label>
+            <label>Date<input type="date" [ngModel]="newTransaction().date" name="dt"
+                (ngModelChange)="updateField('date', $event)" required /></label>
+          </div>
+          <button class="add-button" type="submit"
+            [class.just-added]="recentlyAddedRegular()">{{ recentlyAddedRegular() ? '✓ Added!' : 'Add transaction' }} <span>→</span></button>
+        </form>
         }
       </section>
       }
