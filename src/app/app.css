@@ -620,6 +620,11 @@
   padding-top: 14px;
 }
 
+.category-empty {
+  margin: 8px 0 2px;
+  font-size: 12px;
+}
+
 .category-row {
   display: grid;
   grid-template-columns: 8px 1fr auto 64px;
@@ -802,6 +807,47 @@
   color: #0070f2;
   font-weight: 600;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.savings-subpage-tabs {
+  width: min(360px, 100%);
+  margin: 0 0 20px;
+}
+
+.savings-subpage-tabs button {
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+.cloud-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #1e40af;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cloud-status-error {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.cloud-status button {
+  padding: 6px 10px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 }
 
 .form-grid {
