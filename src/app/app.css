@@ -1636,6 +1636,188 @@ tbody tr:hover {
 }
 
 /* --------------------------------------------------------------------------
+   Savings Plan Editing & Forms
+   -------------------------------------------------------------------------- */
+.plan-params-toggle {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #bfdbfe;
+  background: #eef5fc;
+  color: #0070f2;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.plan-params-toggle:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.savings-plan-params-form {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.savings-plan-params-form .form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.savings-plan-params-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.plan-params-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+  gap: 10px;
+}
+
+.reset-plan-button {
+  background: transparent;
+  border: 1px dashed #cbd5e1;
+  color: #64748b;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.reset-plan-button:hover {
+  border-color: #94a3b8;
+  color: #334155;
+  background: #ffffff;
+}
+
+.done-plan-button {
+  background: #0070f2;
+  border: 1px solid #0070f2;
+  color: #ffffff;
+  padding: 6px 20px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.done-plan-button:hover {
+  background: #0057be;
+  border-color: #0057be;
+}
+
+.savings-plan-panel tr.editing-row td input {
+  width: 100%;
+  height: 32px;
+  padding: 4px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.savings-plan-panel tr.editing-row td input:focus {
+  outline: none;
+  border-color: #0070f2;
+  box-shadow: 0 0 0 2px rgba(0, 112, 242, 0.15);
+}
+
+.savings-plan-panel tr.editing-row td .amount-input input {
+  padding-left: 20px;
+}
+
+.savings-plan-panel .table-wrap table th:last-child,
+.savings-plan-panel .table-wrap table td:last-child {
+  width: 90px;
+  text-align: right;
+}
+
+.add-savings-bill-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  margin-top: 14px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 0 0 8px 8px;
+}
+
+.add-savings-bill-form label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.add-savings-bill-form input {
+  height: 38px;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1d2d3e;
+  background: #ffffff;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.add-savings-bill-form input:focus {
+  outline: none;
+  border-color: #0070f2;
+  box-shadow: 0 0 0 3px rgba(0, 112, 242, 0.15);
+}
+
+.add-savings-bill-form .amount-input input {
+  padding-left: 24px;
+}
+
+.add-bill-button {
+  height: 38px;
+  padding: 0 18px;
+  background: #0070f2;
+  color: #ffffff;
+  border: 1px solid #0070f2;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 112, 242, 0.2);
+}
+
+.add-bill-button:hover {
+  background: #0057be;
+  border-color: #0057be;
+}
+
+/* --------------------------------------------------------------------------
    Categories Manager
    -------------------------------------------------------------------------- */
 .category-manager {
@@ -2530,6 +2712,27 @@ tbody tr:hover {
   .bill-list-panel .bill-list {
     flex: 1 1 auto;
     min-height: 0;
+  }
+
+  .add-savings-bill-form {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 12px;
+  }
+
+  .add-bill-button {
+    width: 100%;
+    min-height: 40px;
+  }
+
+  .plan-params-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .plan-params-actions button {
+    width: 100%;
+    min-height: 40px;
   }
 }
 
