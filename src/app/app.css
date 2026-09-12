@@ -862,6 +862,28 @@
   font-size: 13px;
 }
 
+.savings-details-toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid #dbe5f0;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #1e40af;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.savings-details-toggle:hover {
+  background: #eff6ff;
+}
+
 .cloud-status {
   display: flex;
   align-items: center;

@@ -129,6 +129,7 @@ export class App {
   protected readonly activeSection = signal('Overview');
   protected readonly transactionFormOpen = signal(false);
   protected readonly savingsSubPage = signal<'Plan' | 'AddTransaction'>('Plan');
+  protected readonly savingsDetailsOpen = signal(false);
   protected readonly mobileMenuOpen = signal(false);
   private readonly categoryColorSeed = Math.random() * 360;
   protected readonly selectedMonth = signal('2026-09');
@@ -718,6 +719,10 @@ export class App {
 
   protected selectSavingsSubPage(page: 'Plan' | 'AddTransaction'): void {
     this.savingsSubPage.set(page);
+  }
+
+  protected toggleSavingsDetails(): void {
+    this.savingsDetailsOpen.update((isOpen) => !isOpen);
   }
 
   protected toggleTransactionForm(): void {
