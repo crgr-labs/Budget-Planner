@@ -447,7 +447,8 @@ export class App {
 
   protected subcategoriesFor(category: string): string[] {
     const categorySubcategories = this.categoryGroups().find((group) => group.name === category)?.subcategories ?? [];
-    return [...new Set([...categorySubcategories, ...this.sharedSubcategories()])];
+    const allCategorySubcategories = this.categoryGroups().flatMap((group) => group.subcategories);
+    return [...new Set([...categorySubcategories, ...this.sharedSubcategories(), ...allCategorySubcategories])];
   }
 
   protected savingsSubcategoriesFor(category: string): string[] {
