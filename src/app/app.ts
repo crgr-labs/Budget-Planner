@@ -221,11 +221,8 @@ export class App {
   protected readonly billsExpectedTotal = computed(() => this.billTracking().reduce((sum, bill) => sum + bill.amount, 0));
   protected readonly billsSpentTotal = computed(() => this.billTracking().reduce((sum, bill) => sum + bill.spent, 0));
   protected readonly billsOverspentCount = computed(() => this.billTracking().filter((bill) => bill.overspent).length);
-  protected readonly totalIncome = computed(() => this.selectedTransactions().filter((item) => item.type === 'Income').reduce((sum, item) => sum + item.amount, 0));
   protected readonly totalSpent = computed(() => this.selectedTransactions().filter((item) => item.type === 'Expense').reduce((sum, item) => sum + item.amount, 0));
   protected readonly regularExpenseCount = computed(() => this.selectedTransactions().filter((item) => item.type === 'Expense').length);
-  protected readonly regularIncomeCount = computed(() => this.selectedTransactions().filter((item) => item.type === 'Income').length);
-  protected readonly balance = computed(() => this.totalIncome() - this.totalSpent());
   protected readonly availableBalance = computed(() => {
     const monthlyRegularSpending = this.selectedTransactions().filter((item) => item.type === 'Expense' && !item.savings).reduce((sum, item) => sum + item.amount, 0);
     return this.budget() - monthlyRegularSpending;
@@ -250,18 +247,14 @@ export class App {
     .filter((item) => item.total > 0)
     .sort((first, second) => second.total - first.total));
   protected readonly reportTransactions = computed(() => this.selectedTransactions().filter((item) => !item.savings));
-  protected readonly reportTotalIncome = computed(() => this.reportTransactions().filter((item) => item.type === 'Income').reduce((sum, item) => sum + item.amount, 0));
   protected readonly reportTotalSpent = computed(() => this.reportTransactions().filter((item) => item.type === 'Expense').reduce((sum, item) => sum + item.amount, 0));
-  protected readonly reportBalance = computed(() => this.reportTotalIncome() - this.reportTotalSpent());
   protected readonly reportBudgetProgress = computed(() => {
     const budgetAmount = this.budget();
     if (budgetAmount <= 0) return this.reportTotalSpent() > 0 ? 100 : 0;
     return Math.min(100, Math.max(0, (this.reportTotalSpent() / budgetAmount) * 100));
   });
   protected readonly reportExpenseCount = computed(() => this.reportTransactions().filter((item) => item.type === 'Expense').length);
-  protected readonly reportSavingsRate = computed(() => this.reportTotalIncome() > 0 ? (this.reportBalance() / this.reportTotalIncome()) * 100 : 0);
   protected readonly budgetLeft = computed(() => Math.max(0, this.budget() - this.reportTotalSpent()));
-  protected readonly savingsProgress = computed(() => Math.min(100, this.reportSavingsRate()));
   protected readonly targetSavingsGoal = signal(10000);
   protected readonly targetSavingsProgress = computed(() => {
     const goal = this.targetSavingsGoal();
