@@ -962,6 +962,60 @@
   max-width: 100%;
 }
 
+.mobile-transaction-list {
+  display: none;
+}
+
+.mobile-transaction-card {
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.mobile-transaction-top,
+.mobile-transaction-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-transaction-top > div {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mobile-transaction-top strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-transaction-top small {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.mobile-transaction-amount {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.mobile-transaction-meta {
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding-left: 28px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.mobile-transaction-meta .row-actions {
+  margin-left: auto;
+}
+
 table {
   width: 100%;
   min-width: 580px;
@@ -2149,7 +2203,21 @@ tbody tr:hover {
     white-space: nowrap;
   }
 
-  /* Table horizontal scrolling on mobile */
+  /* Transaction tables become readable cards on mobile. */
+  .transactions-panel .table-wrap,
+  .savings-transactions-panel .table-wrap {
+    display: none;
+  }
+
+  .transactions-panel .mobile-transaction-list,
+  .savings-transactions-panel .mobile-transaction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  /* Other tables retain horizontal scrolling where comparison needs columns. */
   .table-wrap {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;

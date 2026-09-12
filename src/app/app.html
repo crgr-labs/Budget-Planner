@@ -455,6 +455,10 @@
               </tr>} @if (!recentSavingsTransactions().length) {<tr><td colspan="8" class="muted">Add savings transactions to see savings activity.</td></tr>}</tbody>
             </table>
           </div>
+        <div class="mobile-transaction-list">@for (transaction of recentSavingsTransactions(); track transaction.id) {<article class="mobile-transaction-card">
+          <div class="mobile-transaction-top"><span class="transaction-icon" [class.income-icon]="transaction.type === 'Income'">{{ transaction.type === 'Income' ? '↗' : '↘' }}</span><div><strong>{{ transaction.description }}</strong><small>{{ transaction.date | date:'MMM d, y' }}</small></div><strong class="mobile-transaction-amount" [class.income-text]="transaction.type === 'Income'">{{ transaction.type === 'Income' ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
+          <div class="mobile-transaction-meta"><span class="category-pill">{{ transaction.category }}</span><span>{{ transaction.subcategory || 'No sub-category' }}</span><span>{{ transaction.type === 'Income' ? 'Contribution' : 'Withdrawal' }}</span><span>{{ transaction.account || 'No account' }}</span><button class="delete-button" type="button" aria-label="Delete savings transaction" (click)="removeTransaction(transaction.id)">×</button></div>
+        </article>}</div>
         </section>
         }
       </section>
@@ -641,12 +645,12 @@
             </thead>
             <tbody>@for (transaction of regularTransactions(); track transaction.id) {<tr [class.editing-row]="editingExpenseId() === transaction.id">
               @if (editingExpenseId() === transaction.id && editingExpense(); as expense) {
-              <td colspan="4"><div class="expense-edit-fields"><input aria-label="Edit description" [ngModel]="expense.description" (ngModelChange)="updateExpenseEdit('description', $event)" /><select aria-label="Edit category" [ngModel]="expense.category" (ngModelChange)="updateExpenseEdit('category', $event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select><select aria-label="Edit sub-category" [ngModel]="expense.subcategory" (ngModelChange)="updateExpenseEdit('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of subcategoriesFor(expense.category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select><input aria-label="Edit date" type="date" [ngModel]="expense.date" (ngModelChange)="updateExpenseEdit('date', $event)" /></div></td>
-              <td class="align-right"><div class="amount-input expense-edit-amount"><span>₱</span><input aria-label="Edit amount" type="number" min="0" [ngModel]="expense.amount" (ngModelChange)="updateExpenseEdit('amount', $event)" /></div></td>
-              <td><div class="row-actions"><button class="save-row-button" type="button" (click)="saveEditingExpense()">Save</button><button class="cancel-row-button" type="button" (click)="cancelEditingExpense()">Cancel</button></div></td>
-              } @else {
-                <td><span class="transaction-icon" [class.income-icon]="transaction.type === 'Income'">{{
-                    transaction.type === 'Income' ? '↗' : '↘' }}</span><strong>{{ transaction.description }}</strong>
+                <td colspan="4"><div class="expense-edit-fields"><input aria-label="Edit description" [ngModel]="expense.description" (ngModelChange)="updateExpenseEdit('description', $event)" /><select aria-label="Edit category" [ngModel]="expense.category" (ngModelChange)="updateExpenseEdit('category', $event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select><select aria-label="Edit sub-category" [ngModel]="expense.subcategory" (ngModelChange)="updateExpenseEdit('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of subcategoriesFor(expense.category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select><input aria-label="Edit date" type="date" [ngModel]="expense.date" (ngModelChange)="updateExpenseEdit('date', $event)" /></div></td>
+                <td class="align-right"><div class="amount-input expense-edit-amount"><span>₱</span><input aria-label="Edit amount" type="number" min="0" [ngModel]="expense.amount" (ngModelChange)="updateExpenseEdit('amount', $event)" /></div></td>
+                <td><div class="row-actions"><button class="save-row-button" type="button" (click)="saveEditingExpense()">Save</button><button class="cancel-row-button" type="button" (click)="cancelEditingExpense()">Cancel</button></div></td>
+                } @else {
+                  <td><span class="transaction-icon" [class.income-icon]="transaction.type === 'Income'">{{
+                  transaction.type === 'Income' ? '↗' : '↘' }}</span><strong>{{ transaction.description }}</strong>
                 </td>
                 <td><span class="category-pill">{{ transaction.category }}</span></td>
                 <td class="subcategory-cell">{{ transaction.subcategory || '—' }}</td>
@@ -659,6 +663,10 @@
               </tr>}</tbody>
           </table>
         </div>
+        <div class="mobile-transaction-list">@for (transaction of regularTransactions(); track transaction.id) {<article class="mobile-transaction-card">
+          <div class="mobile-transaction-top"><span class="transaction-icon" [class.income-icon]="transaction.type === 'Income'">{{ transaction.type === 'Income' ? '↗' : '↘' }}</span><div><strong>{{ transaction.description }}</strong><small>{{ transaction.date | date:'MMM d, y' }}</small></div><strong class="mobile-transaction-amount" [class.income-text]="transaction.type === 'Income'">{{ transaction.type === 'Income' ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
+          <div class="mobile-transaction-meta"><span class="category-pill">{{ transaction.category }}</span><span>{{ transaction.subcategory || 'No sub-category' }}</span><div class="row-actions">@if (transaction.type === 'Expense') {<button class="edit-row-button" type="button" aria-label="Edit expense" (click)="startEditingExpense(transaction)">Edit</button>}<button class="delete-button" type="button" aria-label="Delete transaction" (click)="removeTransaction(transaction.id)">×</button></div></div>
+        </article>}</div>
       </section>
       }
       <p class="sync-note">↻ Changes are saved automatically in this browser <span>•</span> Excel import/export is
