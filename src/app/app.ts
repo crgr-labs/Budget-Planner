@@ -268,6 +268,7 @@ export class App {
   protected readonly syncPending = signal(false);
   protected readonly syncError = signal(false);
   protected readonly regularTransactions = computed(() => this.transactions().filter((item) => !item.savings));
+  protected readonly newTransaction = signal<NewTransaction>(this.emptyTransaction());
   private getInitialBudget(): number {
     try {
       const saved = localStorage.getItem('ledger-budget');
