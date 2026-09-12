@@ -390,28 +390,7 @@
           <div class="form-grid"><label>Target amount<input type="number" min="1" [ngModel]="targetSavingsGoal()"
                 (ngModelChange)="updateTargetSavingsGoal($event)" /></label></div>
         </section>
-        @if (savingsSubPage() === 'Plan') {
-        <section class="panel savings-summary-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="panel-heading">
-            <div>
-              <h2>Monthly savings summary</h2>
-              <p class="muted">Contributions, withdrawals, and running balance by month</p>
-            </div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Month</th><th class="align-right">Contributions</th><th class="align-right">Withdrawals</th><th class="align-right">Net savings</th><th class="align-right">Running balance</th></tr></thead>
-              <tbody>@for (summary of savingsSummary(); track summary.month) {<tr>
-                <td><strong>{{ formatMonth(summary.month) }}</strong></td>
-                <td class="align-right income-text">{{ summary.contributions | currency:'PHP':'symbol':'1.0-0' }}</td>
-                <td class="align-right">{{ summary.withdrawals | currency:'PHP':'symbol':'1.0-0' }}</td>
-                <td class="align-right"><strong>{{ summary.netSavings | currency:'PHP':'symbol':'1.0-0' }}</strong></td>
-                <td class="align-right"><strong>{{ summary.runningBalance | currency:'PHP':'symbol':'1.0-0' }}</strong></td>
-              </tr>} @if (!savingsSummary().length) {<tr><td colspan="5" class="muted">Add a savings contribution or withdrawal to see monthly summaries.</td></tr>}</tbody>
-            </table>
-          </div>
-        </section>
-        }
+
         <section class="panel savings-entry-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="panel-heading">
             <div>
