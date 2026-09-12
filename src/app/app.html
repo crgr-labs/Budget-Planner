@@ -49,15 +49,15 @@
       }
       @if (activeSection() === 'Overview') {
       <div class="metric-grid">
-        <article class="metric-card balance-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="metric-top"><span>Available balance</span><span class="metric-icon">↗</span></div>
-          <strong>{{ cloudDataReady() ? (availableBalance() | currency:'PHP':'symbol':'1.2-2') : 'Loading...' }}</strong>
-          <p class="muted">Budget minus regular spending</p>
+        <article class="metric-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+          <div class="metric-top"><span>Monthly spend</span><span class="metric-icon expense">↘</span></div>
+          <strong>{{ cloudDataReady() ? (totalSpent() | currency:'PHP':'symbol':'1.2-2') : 'Loading...' }}</strong>
+          <p class="muted">Total expenses for {{ monthLabel() }}</p>
         </article>
         <article class="metric-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="metric-top"><span>Monthly expenses</span><span class="metric-icon expense">↘</span></div>
-          <strong>{{ monthlyExpenses() | currency:'PHP':'symbol':'1.2-2' }}</strong>
-          <p class="muted">Regular spending for {{ monthLabel() }}</p>
+          <div class="metric-top"><span>Top category</span><span class="metric-icon expense">⌁</span></div>
+          <strong>{{ budgetCategories()[0]?.total ? (budgetCategories()[0].total | currency:'PHP':'symbol':'1.2-2') : '₱0.00' }}</strong>
+          <p class="muted">{{ budgetCategories()[0]?.category || 'No expenses yet' }} · {{ monthLabel() }}</p>
         </article>
         <article class="metric-card savings-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="metric-top"><span>Total savings balance</span><span class="metric-icon income">↗</span></div>
@@ -69,42 +69,15 @@
         <section class="panel budget-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="panel-heading">
             <div>
-              <h2>Budget overview</h2>
-              <p class="muted">Your spending across categories</p>
-            </div><button class="more-button" type="button">•••</button>
-          </div>
-          @if (cloudDataReady()) {
-          @if (editingBudget()) {
-          <div class="inline-budget-edit-form">
-            <span class="inline-budget-label">Set monthly budget</span>
-            <div class="inline-budget-input-row">
-              <div class="amount-input">
-                <span>₱</span>
-                <input type="number" min="0" [ngModel]="budgetDraft()" (ngModelChange)="budgetDraft.set($event)" (keydown.enter)="saveBudget()" placeholder="0.00" />
-              </div>
-              <button class="save-row-button" type="button" (click)="saveBudget()">Save</button>
-              <button class="cancel-row-button" type="button" (click)="cancelEditingBudget()">Cancel</button>
+              <h2>Spending by category</h2>
+              <p class="muted">Where your money goes · {{ monthLabel() }}</p>
             </div>
-            @if (savingsPlan().variableAllowance > 0) {
-            <button class="link-plan-allowance-btn" type="button" (click)="useAllowanceAsBudget()">
-              ⚡ Use Savings Plan Allowance ({{ savingsPlan().variableAllowance | currency:'PHP':'symbol':'1.0-0' }})
-            </button>
-            }
+            <span class="report-icon">⌁</span>
           </div>
-          } @else {
-          <div class="budget-total">
-            <div><span>Monthly budget</span><button class="budget-edit" type="button" aria-label="Change monthly budget" title="Click to edit budget"
-                (click)="startEditingBudget()">{{ budget() | currency:'PHP':'symbol':'1.2-2' }} <span class="edit-hint">✎</span></button></div>
-            <div class="spent-copy"><span>Spent</span><strong>{{ totalSpent() | currency:'PHP':'symbol':'1.2-2'
-                }}</strong></div>
+          <div class="spending-total-row">
+            <span>Total spent</span>
+            <strong>{{ cloudDataReady() ? (totalSpent() | currency:'PHP':'symbol':'1.2-2') : 'Loading...' }}</strong>
           </div>
-          }
-          <div class="progress-track"><span [style.width.%]="budgetProgress()"></span></div>
-          <p class="budget-foot"><span>{{ budgetProgress() | number:'1.0-0' }}% used</span><span>{{ budget() -
-              totalSpent() | currency:'PHP':'symbol':'1.2-2' }} remaining</span></p>
-            } @else {
-            <div class="budget-total"><div><span>Monthly budget</span><strong>Loading...</strong></div></div>
-            }
           <div class="category-list">@for (item of budgetCategories(); track item.category; let index = $index) {<div class="category-row"><span
                 class="category-dot" [style.background-color]="categoryColor(index)"></span><span class="category-name">{{ item.category
                 }}</span><span class="category-amount">{{ item.total | currency:'PHP':'symbol':'1.2-2'
@@ -629,8 +602,7 @@
           <article class="report-card report-expense"><span>Monthly expenses</span><strong>{{ reportTotalSpent() |
               currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ reportExpenseCount() }} transactions</small>
           </article>
-          <article class="report-card report-budget"><span>Budget remaining</span><strong>{{ budgetLeft() |
-              currency:'PHP':'symbol':'1.2-2' }}</strong><small>Remaining from monthly budget</small>
+          <article class="report-card report-budget"><span>Top category</span><strong>{{ reportCategories()[0]?.category || '—' }}</strong><small>{{ reportCategories()[0]?.total ? (reportCategories()[0].total | currency:'PHP':'symbol':'1.0-0') + ' spent' : 'No data' }}</small>
           </article>
           <article class="report-card report-savings"><span>Monthly savings</span><strong>{{ monthlyNetSavings() |
               currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ monthlySavingsReportSubtitle() }}</small>
@@ -654,26 +626,21 @@
             @if (cloudDataReady()) {
             <div class="panel-heading">
               <div>
-                <h2>Budget health</h2>
-                <p class="muted">Monthly progress</p>
-              </div><span class="health-ring" [style.--progress.%]="reportBudgetProgress()">{{ reportBudgetProgress() |
-                number:'1.0-0' }}%</span>
+                <h2>Spending summary</h2>
+                <p class="muted">{{ monthLabel() }} overview</p>
+              </div><span class="report-icon">⌁</span>
             </div>
-            <div class="health-copy"><span>Budget used</span><strong>{{ reportTotalSpent() | currency:'PHP':'symbol':'1.2-2'
-                }} of {{ budget() | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
-            <div class="progress-track"><span [style.width.%]="reportBudgetProgress()"></span></div>
-            <p class="budget-foot"><span>{{ reportBudgetProgress() | number:'1.0-0' }}% used</span><span>{{ budget() -
-              reportTotalSpent() | currency:'PHP':'symbol':'1.2-2' }} remaining</span></p><button
-              class="view-all report-link" type="button" (click)="selectSection('Overview')">Back to overview
-              <span>→</span></button>
+            <div class="health-copy"><span>Total spent</span><strong>{{ reportTotalSpent() | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
+            <div class="health-copy"><span>Transactions</span><strong>{{ reportExpenseCount() }}</strong></div>
+            @if (reportCategories()[0]) {
+            <div class="health-copy"><span>Top category</span><strong>{{ reportCategories()[0].category }}</strong></div>
+            <div class="progress-track" style="margin-top:10px"><span [style.width.%]="reportCategories()[0]?.total && reportTotalSpent() > 0 ? (reportCategories()[0].total / reportTotalSpent()) * 100 : 0"></span></div>
+            <p class="budget-foot"><span>{{ reportCategories()[0]?.total && reportTotalSpent() > 0 ? ((reportCategories()[0].total / reportTotalSpent()) * 100 | number:'1.0-0') : 0 }}% of spend</span><span>{{ reportCategories()[0]?.total | currency:'PHP':'symbol':'1.0-0' }}</span></p>
+            }
+            <button class="view-all report-link" type="button" (click)="selectSection('Overview')">Back to overview <span>→</span></button>
             } @else {
-            <div class="panel-heading">
-              <div>
-                <h2>Budget health</h2>
-                <p class="muted">Syncing with cloud storage</p>
-              </div>
-            </div>
-            <p class="muted">Loading budget health...</p>
+            <div class="panel-heading"><div><h2>Spending summary</h2><p class="muted">Syncing with cloud storage</p></div></div>
+            <p class="muted">Loading...</p>
             }
           </section>
         </div>
@@ -682,7 +649,7 @@
       @if (activeSection() === 'Transactions') {
       <div class="spending-summary" aria-label="Regular spending summary">
         <article><span>Spent this month</span><strong>{{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ regularExpenseCount() }} expense transactions</small></article>
-        <article><span>Budget remaining</span><strong>{{ budgetLeft() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>From monthly budget</small></article>
+        <article><span>Top category</span><strong>{{ budgetCategories()[0]?.category || '—' }}</strong><small>{{ budgetCategories()[0]?.total ? (budgetCategories()[0].total | currency:'PHP':'symbol':'1.0-0') + ' spent' : 'No data' }}</small></article>
       </div>
       <section class="panel transaction-entry-panel" id="transaction-entry-panel">
         <div class="panel-heading">
