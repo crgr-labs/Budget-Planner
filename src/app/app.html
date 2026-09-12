@@ -60,9 +60,9 @@
           <p class="muted">Regular spending for {{ monthLabel() }}</p>
         </article>
         <article class="metric-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="metric-top"><span>Monthly savings</span><span class="metric-icon income">↗</span></div>
-          <strong>{{ monthlySavingsContributions() | currency:'PHP':'symbol':'1.2-2' }}</strong>
-          <p class="muted">Savings contributed in {{ monthLabel() }}</p>
+          <div class="metric-top"><span>Monthly savings</span><span class="metric-icon" [class.income]="monthlyNetSavings() >= 0" [class.expense]="monthlyNetSavings() < 0">{{ monthlyNetSavings() >= 0 ? '↗' : '↘' }}</span></div>
+          <strong>{{ monthlyNetSavings() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+          <p class="muted">{{ monthlySavingsSubtitle() }}</p>
         </article>
         <article class="metric-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="metric-top"><span>Total savings balance</span><span class="metric-icon income">↗</span></div>
@@ -304,7 +304,7 @@
           <article><span>Current savings</span><strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>Savings-only balance</small></article>
           <article><span>Target savings goal</span><strong>{{ cloudDataReady() ? (targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong><small>{{ cloudDataReady() ? (savingsGoalProgress() | number:'1.0-0') + '% complete' : 'Syncing with Google Sheets' }}</small></article>
           <article><span>Amount remaining</span><strong>{{ cloudDataReady() ? (amountRemaining() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong><small>Until the goal is reached</small></article>
-          <article><span>Monthly contribution</span><strong>{{ monthlyContribution() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>For {{ monthLabel() }}</small></article>
+          <article><span>Monthly savings</span><strong>{{ monthlyNetSavings() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>{{ monthlySavingsSubtext() }}</small></article>
         </div>
         @if (savingsSubPage() === 'Plan') {
         <button class="savings-details-toggle" type="button" [attr.aria-expanded]="savingsDetailsOpen()" (click)="toggleSavingsDetails()"><span>{{ savingsDetailsOpen() ? 'Hide plan details' : 'Show plan details' }}</span><span aria-hidden="true">{{ savingsDetailsOpen() ? '−' : '+' }}</span></button>
@@ -433,7 +433,7 @@
               <div><label><span>Contributions</span><b>{{ currentSavingsSummary().contributions | currency:'PHP':'symbol':'1.0-0' }}</b></label></div>
               <div><label><span>Withdrawals</span><b>{{ currentSavingsSummary().withdrawals | currency:'PHP':'symbol':'1.0-0' }}</b></label></div>
               <div><label><span>Net savings</span><b>{{ currentSavingsSummary().netSavings | currency:'PHP':'symbol':'1.0-0' }}</b></label></div>
-              <div><label><span>Running balance</span><b>{{ savingsBalance() | currency:'PHP':'symbol':'1.0-0' }}</b></label></div>
+              <div><label><span>Running balance</span><b>{{ currentSavingsSummary().runningBalance | currency:'PHP':'symbol':'1.0-0' }}</b></label></div>
             </div>
           </section>
           <section class="reference-tile fund-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
@@ -522,8 +522,8 @@
                 <td class="muted">{{ transaction.date | date:'MMM d, y' }}</td>
                 <td><span class="category-pill">{{ transaction.category }}</span></td>
                 <td>{{ transaction.subcategory || 'No sub-category' }}</td>
-                <td><span class="category-pill">{{ transaction.type === 'Income' ? 'Contribution' : 'Withdrawal' }}</span></td>
-                <td class="align-right" [class.income-text]="transaction.type === 'Income'"><strong>{{ transaction.type === 'Income' ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></td>
+                <td><span class="category-pill">{{ isSavingsContribution(transaction) ? 'Contribution' : 'Withdrawal' }}</span></td>
+                <td class="align-right" [class.income-text]="isSavingsContribution(transaction)"><strong>{{ isSavingsContribution(transaction) ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></td>
                 <td>{{ transaction.account }}</td>
                 <td>{{ transaction.description }}</td>
                 <td><button class="delete-button" type="button" aria-label="Delete savings transaction"
@@ -532,8 +532,8 @@
             </table>
           </div>
         <div class="mobile-transaction-list">@for (transaction of recentSavingsTransactions(); track transaction.id) {<article class="mobile-transaction-card">
-          <div class="mobile-transaction-top"><span class="transaction-icon" [class.income-icon]="transaction.type === 'Income'">{{ transaction.type === 'Income' ? '↗' : '↘' }}</span><div><strong>{{ transaction.description }}</strong><small>{{ transaction.date | date:'MMM d, y' }}</small></div><strong class="mobile-transaction-amount" [class.income-text]="transaction.type === 'Income'">{{ transaction.type === 'Income' ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
-          <div class="mobile-transaction-meta"><span class="category-pill">{{ transaction.category }}</span><span>{{ transaction.subcategory || 'No sub-category' }}</span><span>{{ transaction.type === 'Income' ? 'Contribution' : 'Withdrawal' }}</span><span>{{ transaction.account || 'No account' }}</span><button class="delete-button" type="button" aria-label="Delete savings transaction" (click)="removeTransaction(transaction.id)">×</button></div>
+          <div class="mobile-transaction-top"><span class="transaction-icon" [class.income-icon]="isSavingsContribution(transaction)">{{ isSavingsContribution(transaction) ? '↗' : '↘' }}</span><div><strong>{{ transaction.description }}</strong><small>{{ transaction.date | date:'MMM d, y' }}</small></div><strong class="mobile-transaction-amount" [class.income-text]="isSavingsContribution(transaction)">{{ isSavingsContribution(transaction) ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
+          <div class="mobile-transaction-meta"><span class="category-pill">{{ transaction.category }}</span><span>{{ transaction.subcategory || 'No sub-category' }}</span><span>{{ isSavingsContribution(transaction) ? 'Contribution' : 'Withdrawal' }}</span><span>{{ transaction.account || 'No account' }}</span><button class="delete-button" type="button" aria-label="Delete savings transaction" (click)="removeTransaction(transaction.id)">×</button></div>
         </article>}</div>
         </section>
         }
@@ -622,8 +622,8 @@
           <article class="report-card report-budget"><span>Budget remaining</span><strong>{{ budgetLeft() |
               currency:'PHP':'symbol':'1.2-2' }}</strong><small>Remaining from monthly budget</small>
           </article>
-          <article class="report-card report-savings"><span>Monthly savings</span><strong>{{ monthlySavingsContributions() |
-              currency:'PHP':'symbol':'1.2-2' }}</strong><small>Saved in {{ monthLabel() }}</small>
+          <article class="report-card report-savings"><span>Monthly savings</span><strong>{{ monthlyNetSavings() |
+              currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ monthlySavingsReportSubtitle() }}</small>
           </article>
         </div>
         <div class="report-grid">
