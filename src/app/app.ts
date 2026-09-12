@@ -268,8 +268,29 @@ export class App {
   protected readonly syncPending = signal(false);
   protected readonly syncError = signal(false);
   protected readonly regularTransactions = computed(() => this.transactions().filter((item) => !item.savings));
-  protected readonly newTransaction = signal<NewTransaction>(this.emptyTransaction());
-  protected readonly budget = signal(3800);
+  private getInitialBudget(): number {
+    try {
+      const saved = localStorage.getItem('ledger-budget');
+      if (saved !== null) {
+        const parsed = Number(saved);
+        if (!Number.isNaN(parsed) && parsed >= 0) return parsed;
+      }
+    } catch {}
+    return 32842;
+  }
+
+  private getInitialTargetSavings(): number {
+    try {
+      const saved = localStorage.getItem('ledger-target-savings');
+      if (saved !== null) {
+        const parsed = Number(saved);
+        if (!Number.isNaN(parsed) && parsed >= 0) return parsed;
+      }
+    } catch {}
+    return 76800;
+  }
+
+  protected readonly budget = signal(this.getInitialBudget());
   protected readonly selectedTransactions = computed(() => this.regularTransactions().filter((item) => item.date.startsWith(this.selectedMonth())));
   protected readonly expectedBills = signal<ExpectedBill[]>([]);
   protected readonly newBillName = signal('');
@@ -323,7 +344,7 @@ export class App {
   });
   protected readonly reportExpenseCount = computed(() => this.reportTransactions().filter((item) => item.type === 'Expense').length);
   protected readonly budgetLeft = computed(() => Math.max(0, this.budget() - this.reportTotalSpent()));
-  protected readonly targetSavingsGoal = signal(10000);
+  protected readonly targetSavingsGoal = signal(this.getInitialTargetSavings());
   protected readonly targetSavingsProgress = computed(() => {
     const goal = this.targetSavingsGoal();
     if (goal <= 0) return this.savingsBalance() > 0 ? 100 : 0;
@@ -413,6 +434,8 @@ export class App {
   protected readonly editingExpense = signal<NewTransaction | null>(null);
   protected readonly recentlyAddedRegular = signal(false);
   protected readonly recentlyAddedSavings = signal(false);
+  protected readonly editingBudget = signal(false);
+  protected readonly budgetDraft = signal<number | null>(null);
   private regularAddedTimer: ReturnType<typeof setTimeout> | null = null;
   private savingsAddedTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -420,68 +443,118 @@ export class App {
     this.updateSavingsField('amount', Math.round(amount));
   }
 
+  protected startEditingBudget(): void {
+    this.budgetDraft.set(this.budget());
+    this.editingBudget.set(true);
+  }
+
+  protected cancelEditingBudget(): void {
+    this.editingBudget.set(false);
+  }
+
+  protected saveBudget(): void {
+    const draft = this.budgetDraft();
+    if (draft !== null && !Number.isNaN(draft) && draft >= 0) {
+      this.updateBudget(draft);
+    }
+    this.editingBudget.set(false);
+  }
+
+  protected useAllowanceAsBudget(): void {
+    const allowance = this.savingsPlan().variableAllowance;
+    if (allowance > 0) {
+      this.updateBudget(allowance);
+      this.editingBudget.set(false);
+    }
+  }
+
   constructor() {
-    if (!this.isHosted) {
+    try {
       const saved = localStorage.getItem('ledger-transactions');
       if (saved) {
-        try { this.transactions.set(JSON.parse(saved)); } catch { localStorage.removeItem('ledger-transactions'); }
+        this.transactions.set(JSON.parse(saved));
       }
+    } catch {
+      try { localStorage.removeItem('ledger-transactions'); } catch {}
+    }
+
+    try {
       const savedBudget = localStorage.getItem('ledger-budget');
       if (savedBudget !== null) {
         const parsed = Number(savedBudget);
         if (!Number.isNaN(parsed) && parsed >= 0) this.budget.set(parsed);
       }
+    } catch {}
+
+    try {
       const savedTargetSavings = localStorage.getItem('ledger-target-savings');
       if (savedTargetSavings !== null) {
         const parsed = Number(savedTargetSavings);
         if (!Number.isNaN(parsed) && parsed >= 0) this.targetSavingsGoal.set(parsed);
       }
-    }
-    if (!this.isHosted) {
+    } catch {}
+
+    try {
       const savedCategories = localStorage.getItem('ledger-categories');
       if (savedCategories) {
-        try { this.categoryGroups.set(JSON.parse(savedCategories)); } catch { localStorage.removeItem('ledger-categories'); }
+        this.categoryGroups.set(JSON.parse(savedCategories));
       }
+    } catch {
+      try { localStorage.removeItem('ledger-categories'); } catch {}
+    }
+
+    try {
       const savedSharedSubcategories = localStorage.getItem('ledger-shared-subcategories');
       if (savedSharedSubcategories) {
-        try { this.sharedSubcategories.set(JSON.parse(savedSharedSubcategories)); } catch { localStorage.removeItem('ledger-shared-subcategories'); }
+        this.sharedSubcategories.set(JSON.parse(savedSharedSubcategories));
       }
+    } catch {
+      try { localStorage.removeItem('ledger-shared-subcategories'); } catch {}
     }
+
     this.ensureExpectedBillsCategory();
-    if (!this.isHosted) {
+
+    try {
       const savedSavingsCategories = localStorage.getItem('ledger-savings-categories');
       if (savedSavingsCategories) {
-        try { this.savingsCategoryGroups.set(JSON.parse(savedSavingsCategories)); } catch { localStorage.removeItem('ledger-savings-categories'); }
+        this.savingsCategoryGroups.set(JSON.parse(savedSavingsCategories));
       }
+    } catch {
+      try { localStorage.removeItem('ledger-savings-categories'); } catch {}
     }
-    if (!this.isHosted) {
+
+    try {
       const savedBills = localStorage.getItem('ledger-expected-bills');
       if (savedBills) {
-        try { this.expectedBills.set(JSON.parse(savedBills)); } catch { localStorage.removeItem('ledger-expected-bills'); }
+        this.expectedBills.set(JSON.parse(savedBills));
       }
+    } catch {
+      try { localStorage.removeItem('ledger-expected-bills'); } catch {}
     }
-    const savedPlanSalary = localStorage.getItem('ledger-plan-salary');
-    if (savedPlanSalary !== null) {
-      const parsed = Number(savedPlanSalary);
-      if (!Number.isNaN(parsed) && parsed >= 0) this.savingsPlanSalary.set(parsed);
-    }
-    const savedPlanRate = localStorage.getItem('ledger-plan-rate');
-    if (savedPlanRate !== null) {
-      const parsed = Number(savedPlanRate);
-      if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 100) this.savingsPlanSavingsRate.set(parsed);
-    }
-    const savedPlanInv = localStorage.getItem('ledger-plan-investment');
-    if (savedPlanInv !== null) {
-      const parsed = Number(savedPlanInv);
-      if (!Number.isNaN(parsed) && parsed >= 0) this.savingsPlanInvestment.set(parsed);
-    }
-    const savedPlanBills = localStorage.getItem('ledger-plan-bills');
-    if (savedPlanBills) {
-      try {
+
+    try {
+      const savedPlanSalary = localStorage.getItem('ledger-plan-salary');
+      if (savedPlanSalary !== null) {
+        const parsed = Number(savedPlanSalary);
+        if (!Number.isNaN(parsed) && parsed >= 0) this.savingsPlanSalary.set(parsed);
+      }
+      const savedPlanRate = localStorage.getItem('ledger-plan-rate');
+      if (savedPlanRate !== null) {
+        const parsed = Number(savedPlanRate);
+        if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 100) this.savingsPlanSavingsRate.set(parsed);
+      }
+      const savedPlanInv = localStorage.getItem('ledger-plan-investment');
+      if (savedPlanInv !== null) {
+        const parsed = Number(savedPlanInv);
+        if (!Number.isNaN(parsed) && parsed >= 0) this.savingsPlanInvestment.set(parsed);
+      }
+      const savedPlanBills = localStorage.getItem('ledger-plan-bills');
+      if (savedPlanBills) {
         const parsed = JSON.parse(savedPlanBills);
         if (Array.isArray(parsed) && parsed.length) this.savingsPlanBills.set(parsed);
-      } catch { localStorage.removeItem('ledger-plan-bills'); }
-    }
+      }
+    } catch {}
+
     this.loadFromApi();
   }
 
@@ -492,7 +565,7 @@ export class App {
     const amount = Number(trimmed);
     if (!Number.isNaN(amount) && amount >= 0) {
       this.budget.set(amount);
-      if (!this.isHosted) localStorage.setItem('ledger-budget', String(amount));
+      try { localStorage.setItem('ledger-budget', String(amount)); } catch {}
       this.syncToApi();
     }
   }
@@ -504,14 +577,13 @@ export class App {
     const amount = Number(trimmed);
     if (!Number.isNaN(amount) && amount >= 0) {
       this.targetSavingsGoal.set(amount);
-      if (!this.isHosted) localStorage.setItem('ledger-target-savings', String(amount));
+      try { localStorage.setItem('ledger-target-savings', String(amount)); } catch {}
       this.syncToApi();
     }
   }
 
   protected editBudget(): void {
-    const value = window.prompt('Enter your monthly budget', String(this.budget()));
-    if (value !== null) this.updateBudget(value);
+    this.startEditingBudget();
   }
 
   protected updateField(field: keyof NewTransaction, value: string | number | null): void {
@@ -1274,8 +1346,8 @@ export class App {
         }
       });
   }
-  private persistExpectedBills(): void { if (!this.isHosted) localStorage.setItem('ledger-expected-bills', JSON.stringify(this.expectedBills())); }
-  private persistSharedSubcategories(): void { if (!this.isHosted) localStorage.setItem('ledger-shared-subcategories', JSON.stringify(this.sharedSubcategories())); }
+  private persistExpectedBills(): void { try { localStorage.setItem('ledger-expected-bills', JSON.stringify(this.expectedBills())); } catch {} }
+  private persistSharedSubcategories(): void { try { localStorage.setItem('ledger-shared-subcategories', JSON.stringify(this.sharedSubcategories())); } catch {} }
   private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null, savings: false }; }
   private emptySavingsTransaction(): NewTransaction {
     const firstCategory = this.savingsCategoryGroups()[0]?.name ?? 'Emergency Fund';
