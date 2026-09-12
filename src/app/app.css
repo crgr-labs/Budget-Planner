@@ -2053,12 +2053,12 @@ tbody tr:hover {
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    padding: 0 14px;
+    padding: 0 12px;
     box-sizing: border-box;
   }
 
   .brand {
-    height: 54px;
+    height: 50px;
     padding: 0;
     border-bottom: none;
     margin: 0;
@@ -2068,7 +2068,7 @@ tbody tr:hover {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    height: 36px;
+    min-height: 40px;
     padding: 0 12px;
     margin: 0;
     background: #f1f5f9;
@@ -2133,9 +2133,9 @@ tbody tr:hover {
 
   .topbar {
     height: auto;
-    min-height: 110px;
+    min-height: 0;
     flex-shrink: 0;
-    padding: 10px 14px;
+    padding: 8px 12px;
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
@@ -2157,6 +2157,7 @@ tbody tr:hover {
     display: flex;
     width: 100%;
     gap: 8px;
+    align-items: stretch;
   }
 
   .import-button,
@@ -2167,7 +2168,7 @@ tbody tr:hover {
     text-align: center;
     padding: 8px 6px;
     font-size: 12px;
-    min-height: 38px;
+    min-height: 42px;
     box-sizing: border-box;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2178,7 +2179,7 @@ tbody tr:hover {
   .page-content {
     width: 100%;
     max-width: 100%;
-    padding: 20px 12px 28px;
+    padding: 16px 12px 32px;
     box-sizing: border-box;
   }
 
@@ -2246,6 +2247,25 @@ tbody tr:hover {
     min-width: 0;
   }
 
+  .panel-heading {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .panel-heading > div {
+    min-width: 0;
+  }
+
+  .panel-heading h2,
+  .panel-heading h3 {
+    line-height: 1.25;
+  }
+
+  .panel-heading .transaction-form-toggle,
+  .panel-heading .export-button {
+    flex-shrink: 0;
+  }
+
   .metric-card strong,
   .reference-metrics strong {
     font-size: 22px;
@@ -2256,6 +2276,16 @@ tbody tr:hover {
 
   .reference-metrics small {
     overflow-wrap: anywhere;
+  }
+
+  .cloud-status {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    line-height: 1.4;
+  }
+
+  .cloud-status button {
+    min-height: 38px;
   }
 
   .budget-total > div {
@@ -2289,6 +2319,12 @@ tbody tr:hover {
   .type-toggle button {
     min-height: 38px;
     font-size: 13px;
+  }
+
+  .savings-subpage-tabs,
+  .savings-action-grid .savings-entry-panel .type-toggle {
+    width: 100%;
+    max-width: none;
   }
 
   .add-button {
