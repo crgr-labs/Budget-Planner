@@ -622,7 +622,7 @@
 
 .spending-summary {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -1889,8 +1889,9 @@ tbody tr:hover {
   color: #94a3b8;
 }
 
-.report-card.report-income strong { color: #0a7140; }
 .report-card.report-expense strong { color: #b00020; }
+.report-card.report-budget strong { color: #0070f2; }
+.report-card.report-savings strong { color: #0a7140; }
 
 /* Two-column report grid (breakdown + health) */
 .report-grid {
