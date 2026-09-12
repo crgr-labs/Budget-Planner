@@ -228,7 +228,8 @@ export class App {
   protected readonly balance = computed(() => this.totalIncome() - this.totalSpent());
   protected readonly availableBalance = computed(() => {
     const monthlyRegularSpending = this.selectedTransactions().filter((item) => item.type === 'Expense' && !item.savings).reduce((sum, item) => sum + item.amount, 0);
-    return this.budget() - monthlyRegularSpending;
+    const monthlySavingsContributions = this.savingsTransactions().filter((item) => item.type === 'Income' && item.date.startsWith(this.selectedMonth())).reduce((sum, item) => sum + item.amount, 0);
+    return this.budget() - monthlyRegularSpending - monthlySavingsContributions;
   });
   protected readonly budgetProgress = computed(() => {
     const budgetAmount = this.budget();
