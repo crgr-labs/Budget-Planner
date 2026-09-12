@@ -195,6 +195,7 @@ export class App {
   protected get savingsCategories(): string[] { return this.savingsCategoryGroups().map((group) => group.name); }
   protected readonly transactions = signal<Transaction[]>([]);
   protected readonly cloudDataReady = signal(!this.isHosted);
+  protected readonly cloudDataError = signal(false);
   protected readonly regularTransactions = computed(() => this.transactions().filter((item) => !item.savings));
   protected readonly newTransaction = signal<NewTransaction>(this.emptyTransaction());
   protected readonly budget = signal(3800);
@@ -869,7 +870,10 @@ export class App {
   private loadFromApi(): void {
     if (!this.apiUrl) return;
     const requestUrl = this.isHosted ? `${this.apiUrl}&cacheBust=${Date.now()}` : this.apiUrl;
-    void fetch(requestUrl, { cache: 'no-store' }).then((response) => response.ok ? response.json() : Promise.reject()).then((data: Transaction[] | CloudData) => {
+    void fetch(requestUrl, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache, no-store, max-age=0', Pragma: 'no-cache' },
+    }).then((response) => response.ok ? response.json() : Promise.reject()).then((data: Transaction[] | CloudData) => {
       const cloudData = Array.isArray(data) ? { transactions: data } : data;
       this.transactions.set(cloudData.transactions);
       const monthlyBudget = cloudData.settings?.monthlyBudget;
@@ -900,7 +904,7 @@ export class App {
       }
       this.persist();
       this.cloudDataReady.set(true);
-    }).catch(() => this.cloudDataReady.set(true));
+    }).catch(() => this.cloudDataError.set(true));
   }
   private syncToApi(): void {
     if (!this.apiUrl) return;
