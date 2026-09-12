@@ -729,6 +729,11 @@ export class App {
     this.transactionFormOpen.update((isOpen) => !isOpen);
   }
 
+  protected openTransactionForm(): void {
+    this.transactionFormOpen.set(true);
+    requestAnimationFrame(() => document.getElementById('transaction-entry-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+
   protected toggleMobileMenu(): void {
     this.mobileMenuOpen.update((isOpen) => !isOpen);
   }
