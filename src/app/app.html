@@ -544,9 +544,9 @@
         <div class="reference-metrics">
           <article><span>Monthly spend</span><strong>{{ reportTotalSpent() | currency:'PHP':'symbol':'1.0-0'
               }}</strong><small>From expense transactions</small></article>
-            <article><span>Budget left</span><strong>{{ cloudDataReady() ? (budgetLeft() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong><small>{{ cloudDataReady() ? 'Remaining from monthly budget' : 'Syncing with cloud storage' }}</small></article>
-            <article><span>Current savings</span><strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Savings-only balance</small></article>
-            <article><span>Target savings progress</span><strong>{{ savingsGoalProgress() | number:'1.0-0' }}%</strong><small>Based on current savings</small></article>
+          <article><span>Top category</span><strong>{{ reportCategories()[0]?.category || '—' }}</strong><small>{{ reportCategories()[0]?.total ? (reportCategories()[0].total | currency:'PHP':'symbol':'1.0-0') + ' (' + ((reportCategories()[0].total / (reportTotalSpent() || 1)) * 100 | number:'1.0-0') + '%)' : 'No spending recorded' }}</small></article>
+          <article><span>Total savings</span><strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>{{ monthlySavingsSubtext() }}</small></article>
+          <article><span>Target savings progress</span><strong>{{ savingsGoalProgress() | number:'1.0-0' }}%</strong><small>Based on current savings</small></article>
         </div>
         <div class="reference-tiles">
           <section class="reference-tile trend-tile">
@@ -604,7 +604,7 @@
           <div>
             <p class="eyebrow">FINANCIAL REPORT</p>
             <h2>Where your money goes</h2>
-            <p class="muted">A clear view of your spending, budget, and savings.</p>
+            <p class="muted">A clear view of your spending and savings.</p>
           </div><button class="export-button" type="button" (click)="exportWorkbook()">↧ Export report</button>
         </div>
         <div class="report-metrics">
@@ -613,8 +613,8 @@
           </article>
           <article class="report-card report-budget"><span>Top category</span><strong>{{ reportCategories()[0]?.category || '—' }}</strong><small>{{ reportCategories()[0]?.total ? (reportCategories()[0].total | currency:'PHP':'symbol':'1.0-0') + ' spent' : 'No data' }}</small>
           </article>
-          <article class="report-card report-savings"><span>Monthly savings</span><strong>{{ monthlyNetSavings() |
-              currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ monthlySavingsReportSubtitle() }}</small>
+          <article class="report-card report-savings"><span>Total savings</span><strong>{{ savingsBalance() |
+              currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ monthlySavingsSubtext() }}</small>
           </article>
         </div>
         <div class="report-grid">
