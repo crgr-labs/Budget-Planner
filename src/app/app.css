@@ -497,7 +497,7 @@
 }
 
 .metric-icon {
-  display: grid;
+  display: grid !important;
   place-items: center;
   width: 26px;
   height: 26px;
@@ -531,10 +531,7 @@
   color: #c5221f;
 }
 
-.metric-icon.bills {
-  background: #f3f0ff;
-  color: #7c3aed;
-}
+
 
 .metric-progress-wrap {
   margin: 6px 0 8px;
