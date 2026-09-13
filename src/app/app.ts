@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
@@ -105,7 +105,7 @@ interface SavingsPlanBucket {
   purpose: string;
 }
 
-// SavingsPlanBill is retired — all bills use ExpectedBill as the single source of truth.
+// SavingsPlanBill is retired ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â all bills use ExpectedBill as the single source of truth.
 // The Savings "Fixed Needs" table uses savingsPlanBillsView (a computed projection of expectedBills).
 
 interface SavingsPlanRoadmap {
@@ -130,7 +130,7 @@ interface CloudData {
       salary?: number;
       savingsRate?: number;
       investment?: number;
-      bills?: { id: number; name: string; monthly: number; paycheckOne: number; paycheckTwo: number }[]; // Legacy — migrated to expectedBills on load
+      bills?: { id: number; name: string; monthly: number; paycheckOne: number; paycheckTwo: number }[]; // Legacy ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â migrated to expectedBills on load
     };
   };
   expectedBills?: ExpectedBill[];
@@ -372,7 +372,7 @@ export class App {
   protected readonly activeExpectedBills = computed(() => this.expectedBills().filter((bill) => bill.active));
   protected readonly billTracking = computed(() => this.activeExpectedBills().map((bill) => {
     const spent = this.selectedTransactions()
-      .filter((item) => item.type === 'Expense' && item.category === bill.category && item.subcategory === bill.subcategory)
+      .filter((item) => item.type === 'Expense' && item.category === bill.category && item.subcategory === bill.subcategory && !this.isFailedTransaction(item))
       .reduce((sum, item) => sum + item.amount, 0);
     return { ...bill, spent, remaining: bill.amount - spent, overspent: spent > bill.amount };
   }));
@@ -381,23 +381,23 @@ export class App {
   protected readonly billsOverspentCount = computed(() => this.billTracking().filter((bill) => bill.overspent).length);
   protected readonly totalSpent = computed(() =>
     this.selectedTransactions()
-      .filter((item) => !item.savings && (item.type === 'Expense' || !item.type))
+      .filter((item) => !item.savings && (item.type === 'Expense' || !item.type) && !this.isFailedTransaction(item))
       .reduce((sum, item) => sum + Math.abs(Number(item.amount) || 0), 0)
   );
   protected readonly regularExpenseCount = computed(() =>
     this.selectedTransactions()
-      .filter((item) => !item.savings && (item.type === 'Expense' || !item.type))
+      .filter((item) => !item.savings && (item.type === 'Expense' || !item.type) && !this.isFailedTransaction(item))
       .length
   );
   protected readonly monthlyExpenses = computed(() => this.totalSpent());
   protected readonly monthlySavingsContributions = computed(() =>
     this.savingsTransactions()
-      .filter((item) => this.isSavingsContribution(item) && this.matchesMonth(item.date, this.selectedMonth()))
+      .filter((item) => this.isSavingsContribution(item) && this.matchesMonth(item.date, this.selectedMonth()) && !this.isFailedTransaction(item))
       .reduce((sum, item) => sum + item.amount, 0)
   );
   protected readonly monthlySavingsWithdrawals = computed(() =>
     this.savingsTransactions()
-      .filter((item) => this.isSavingsWithdrawal(item) && this.matchesMonth(item.date, this.selectedMonth()))
+      .filter((item) => this.isSavingsWithdrawal(item) && this.matchesMonth(item.date, this.selectedMonth()) && !this.isFailedTransaction(item))
       .reduce((sum, item) => sum + item.amount, 0)
   );
   protected readonly monthlyNetSavings = computed(() =>
@@ -407,10 +407,10 @@ export class App {
     const withdrawals = this.monthlySavingsWithdrawals();
     const contributions = this.monthlySavingsContributions();
     if (withdrawals > 0 && contributions > 0) {
-      return `Net saved in ${this.monthLabel()} (+₱${Math.round(contributions).toLocaleString('en-US')} · −₱${Math.round(withdrawals).toLocaleString('en-US')})`;
+      return `Net saved in ${this.monthLabel()} (+ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(contributions).toLocaleString('en-US')} Ãƒâ€šÃ‚Â· ÃƒÂ¢Ã‹â€ Ã¢â‚¬â„¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(withdrawals).toLocaleString('en-US')})`;
     }
     if (withdrawals > 0 && contributions === 0) {
-      return `Net withdrawal in ${this.monthLabel()} (−₱${Math.round(withdrawals).toLocaleString('en-US')})`;
+      return `Net withdrawal in ${this.monthLabel()} (ÃƒÂ¢Ã‹â€ Ã¢â‚¬â„¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(withdrawals).toLocaleString('en-US')})`;
     }
     return `Savings contributed in ${this.monthLabel()}`;
   });
@@ -418,10 +418,10 @@ export class App {
     const withdrawals = this.monthlySavingsWithdrawals();
     const contributions = this.monthlySavingsContributions();
     if (withdrawals > 0 && contributions > 0) {
-      return `Net saved (+₱${Math.round(contributions).toLocaleString('en-US')} · −₱${Math.round(withdrawals).toLocaleString('en-US')})`;
+      return `Net saved (+ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(contributions).toLocaleString('en-US')} Ãƒâ€šÃ‚Â· ÃƒÂ¢Ã‹â€ Ã¢â‚¬â„¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(withdrawals).toLocaleString('en-US')})`;
     }
     if (withdrawals > 0 && contributions === 0) {
-      return `Net withdrawal (−₱${Math.round(withdrawals).toLocaleString('en-US')})`;
+      return `Net withdrawal (ÃƒÂ¢Ã‹â€ Ã¢â‚¬â„¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(withdrawals).toLocaleString('en-US')})`;
     }
     return `Saved in ${this.monthLabel()}`;
   });
@@ -432,18 +432,19 @@ export class App {
       return `No activity in ${this.monthLabel()}`;
     }
     if (withdrawals > 0 && contributions > 0) {
-      return `+₱${Math.round(contributions).toLocaleString('en-US')} in · −₱${Math.round(withdrawals).toLocaleString('en-US')} out this month`;
+      return `+ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(contributions).toLocaleString('en-US')} in Ãƒâ€šÃ‚Â· ÃƒÂ¢Ã‹â€ Ã¢â‚¬â„¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(withdrawals).toLocaleString('en-US')} out this month`;
     }
     if (withdrawals > 0 && contributions === 0) {
-      return `−₱${Math.round(withdrawals).toLocaleString('en-US')} withdrawn in ${this.monthLabel()}`;
+      return `ÃƒÂ¢Ã‹â€ Ã¢â‚¬â„¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(withdrawals).toLocaleString('en-US')} withdrawn in ${this.monthLabel()}`;
     }
-    return `+₱${Math.round(contributions).toLocaleString('en-US')} saved in ${this.monthLabel()}`;
+    return `+ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(contributions).toLocaleString('en-US')} saved in ${this.monthLabel()}`;
   });
   protected readonly budgetCategories = computed(() => {
     const categoryTotals = new Map<string, number>();
     for (const item of this.selectedTransactions()) {
       if (item.savings) continue;
       if (item.type && item.type !== 'Expense') continue;
+      if (this.isFailedTransaction(item)) continue;
       const category = (item.category && item.category.trim()) || 'Other';
       const amount = Math.abs(Number(item.amount) || 0);
       categoryTotals.set(category, (categoryTotals.get(category) ?? 0) + amount);
@@ -458,6 +459,7 @@ export class App {
     for (const item of this.reportTransactions()) {
       if (item.savings) continue;
       if (item.type && item.type !== 'Expense') continue;
+      if (this.isFailedTransaction(item)) continue;
       const category = (item.category && item.category.trim()) || 'Other';
       const amount = Math.abs(Number(item.amount) || 0);
       categoryTotals.set(category, (categoryTotals.get(category) ?? 0) + amount);
@@ -468,8 +470,8 @@ export class App {
       .sort((first, second) => second.total - first.total);
   });
   protected readonly reportTransactions = computed(() => this.selectedTransactions().filter((item) => !item.savings));
-  protected readonly reportTotalSpent = computed(() => this.reportTransactions().filter((item) => (item.type === 'Expense' || !item.type)).reduce((sum, item) => sum + Math.abs(Number(item.amount) || 0), 0));
-  protected readonly reportExpenseCount = computed(() => this.reportTransactions().filter((item) => (item.type === 'Expense' || !item.type)).length);
+  protected readonly reportTotalSpent = computed(() => this.reportTransactions().filter((item) => (item.type === 'Expense' || !item.type) && !this.isFailedTransaction(item)).reduce((sum, item) => sum + Math.abs(Number(item.amount) || 0), 0));
+  protected readonly reportExpenseCount = computed(() => this.reportTransactions().filter((item) => (item.type === 'Expense' || !item.type) && !this.isFailedTransaction(item)).length);
 
   protected isFailedTransaction(item: Transaction | null | undefined): boolean {
     if (!item) return false;
@@ -506,14 +508,14 @@ export class App {
     const prevMonth = this.previousMonth();
     if (!prevMonth) return false;
     return this.transactions().some(
-      (t) => !t.savings && (t.type === 'Expense' || !t.type) && this.matchesMonth(t.date, prevMonth) && Math.abs(Number(t.amount) || 0) > 0
+      (t) => !t.savings && (t.type === 'Expense' || !t.type) && !this.isFailedTransaction(t) && this.matchesMonth(t.date, prevMonth) && Math.abs(Number(t.amount) || 0) > 0
     );
   });
 
   protected readonly recordedExpenseMonths = computed(() => {
     const months = new Set(
       this.transactions()
-        .filter((t) => !t.savings && (t.type === 'Expense' || !t.type) && Math.abs(Number(t.amount) || 0) > 0)
+        .filter((t) => !t.savings && (t.type === 'Expense' || !t.type) && !this.isFailedTransaction(t) && Math.abs(Number(t.amount) || 0) > 0)
         .map((t) => this.getTransactionMonth(t.date))
         .filter(Boolean)
     );
@@ -528,16 +530,16 @@ export class App {
     const currentCategories = this.budgetCategories();
     return currentCategories.map((item) => {
       const prevTotal = this.transactions()
-        .filter((t) => !t.savings && (t.type === 'Expense' || !t.type) && (t.category || '').trim().toLowerCase() === item.category.trim().toLowerCase() && this.matchesMonth(t.date, prevMonth))
+        .filter((t) => !t.savings && (t.type === 'Expense' || !t.type) && !this.isFailedTransaction(t) && (t.category || '').trim().toLowerCase() === item.category.trim().toLowerCase() && this.matchesMonth(t.date, prevMonth))
         .reduce((sum, t) => sum + Math.abs(Number(t.amount) || 0), 0);
       const diff = item.total - prevTotal;
       const pct = prevTotal > 0 ? ((diff / prevTotal) * 100) : null;
       let summaryText = '';
       if (prevTotal > 0) {
-        const sign = diff >= 0 ? '+' : '−';
-        summaryText = `${item.category}: ₱${Math.round(item.total).toLocaleString('en-US')} this month vs. ₱${Math.round(prevTotal).toLocaleString('en-US')} last month (${sign}₱${Math.round(Math.abs(diff)).toLocaleString('en-US')})`;
+        const sign = diff >= 0 ? '+' : 'ÃƒÂ¢Ã‹â€ Ã¢â‚¬â„¢';
+        summaryText = `${item.category}: ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(item.total).toLocaleString('en-US')} this month vs. ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(prevTotal).toLocaleString('en-US')} last month (${sign}ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(Math.abs(diff)).toLocaleString('en-US')})`;
       } else {
-        summaryText = `${item.category}: ₱${Math.round(item.total).toLocaleString('en-US')} this month (no prior spend)`;
+        summaryText = `${item.category}: ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(item.total).toLocaleString('en-US')} this month (no prior spend)`;
       }
       return {
         category: item.category,
@@ -555,8 +557,8 @@ export class App {
     const item = this.monthOverMonthCategories().find((c) => c.category.toLowerCase() === categoryName.toLowerCase());
     if (!item) return '';
     if (item.previousTotal > 0) {
-      const sign = item.diff >= 0 ? '+' : '−';
-      return `vs. ₱${Math.round(item.previousTotal).toLocaleString('en-US')} last month (${sign}₱${Math.round(Math.abs(item.diff)).toLocaleString('en-US')})`;
+      const sign = item.diff >= 0 ? '+' : 'ÃƒÂ¢Ã‹â€ Ã¢â‚¬â„¢';
+      return `vs. ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(item.previousTotal).toLocaleString('en-US')} last month (${sign}ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â±${Math.round(Math.abs(item.diff)).toLocaleString('en-US')})`;
     }
     return '';
   }
@@ -569,6 +571,7 @@ export class App {
   protected readonly savingsTransactions = computed(() => this.transactions().filter((item) => item.savings));
   protected readonly savingsBalance = computed(() =>
     this.savingsTransactions().reduce((sum, item) => {
+      if (this.isFailedTransaction(item)) return sum;
       if (this.isSavingsContribution(item)) return sum + item.amount;
       if (this.isSavingsWithdrawal(item)) return sum - item.amount;
       return sum;
@@ -584,7 +587,7 @@ export class App {
     const months = [...new Set(this.savingsTransactions().map((item) => this.getTransactionMonth(item.date)).filter(Boolean))].sort();
     let runningBalance = 0;
     return months.map((month) => {
-      const monthTransactions = this.savingsTransactions().filter((item) => this.matchesMonth(item.date, month));
+      const monthTransactions = this.savingsTransactions().filter((item) => this.matchesMonth(item.date, month) && !this.isFailedTransaction(item));
       const contributions = monthTransactions.filter((item) => this.isSavingsContribution(item)).reduce((sum, item) => sum + item.amount, 0);
       const withdrawals = monthTransactions.filter((item) => this.isSavingsWithdrawal(item)).reduce((sum, item) => sum + item.amount, 0);
       const netSavings = contributions - withdrawals;
@@ -598,6 +601,7 @@ export class App {
     const runningBalance = this.savingsTransactions()
       .filter((item) => this.isBeforeOrSameMonth(item.date, this.selectedMonth()))
       .reduce((sum, item) => {
+        if (this.isFailedTransaction(item)) return sum;
         if (this.isSavingsContribution(item)) return sum + item.amount;
         if (this.isSavingsWithdrawal(item)) return sum - item.amount;
         return sum;
@@ -635,6 +639,7 @@ export class App {
     const amounts = months.map((month) => this.savingsTransactions()
       .filter((item) => this.matchesMonth(item.date, month))
       .reduce((sum, item) => {
+        if (this.isFailedTransaction(item)) return sum;
         if (this.isSavingsContribution(item)) return sum + item.amount;
         if (this.isSavingsWithdrawal(item)) return sum - item.amount;
         return sum;
@@ -673,7 +678,7 @@ export class App {
     if (months.length < 2) return [];
     const rawData = months.map((month) => {
       const amount = this.transactions()
-        .filter((item) => (item.type === 'Expense' || !item.type) && !item.savings && this.matchesMonth(item.date, month))
+        .filter((item) => (item.type === 'Expense' || !item.type) && !item.savings && !this.isFailedTransaction(item) && this.matchesMonth(item.date, month))
         .reduce((sum, item) => sum + Math.abs(Number(item.amount) || 0), 0);
       return {
         monthKey: month,
@@ -692,7 +697,7 @@ export class App {
     const months = this.getLast6Months();
     if (months.length < 2) return [];
     const totals = new Map<string, number[]>();
-    this.transactions().filter((item) => (item.type === 'Expense' || !item.type) && !item.savings && item.subcategory).forEach((item) => {
+    this.transactions().filter((item) => (item.type === 'Expense' || !item.type) && !item.savings && !this.isFailedTransaction(item) && item.subcategory).forEach((item) => {
       const points = totals.get(item.subcategory) ?? months.map(() => 0);
       const month = this.getTransactionMonth(item.date);
       const monthIndex = months.indexOf(month);
@@ -715,6 +720,7 @@ export class App {
     for (const item of this.reportTransactions()) {
       if (item.savings) continue;
       if (item.type && item.type !== 'Expense') continue;
+      if (this.isFailedTransaction(item)) continue;
       const category = (item.category && item.category.trim()) || 'Other';
       const subcategory = (item.subcategory && item.subcategory.trim()) || 'General / Uncategorized';
       const amount = Math.abs(Number(item.amount) || 0);
@@ -749,7 +755,7 @@ export class App {
   protected readonly hasEnoughSubcategoryHistoricalData = computed(() => {
     const monthsWithSubs = new Set(
       this.transactions()
-        .filter((t) => !t.savings && (t.type === 'Expense' || !t.type) && t.subcategory && Math.abs(Number(t.amount) || 0) > 0)
+        .filter((t) => !t.savings && (t.type === 'Expense' || !t.type) && !this.isFailedTransaction(t) && t.subcategory && Math.abs(Number(t.amount) || 0) > 0)
         .map((t) => this.getTransactionMonth(t.date))
         .filter(Boolean)
     );
@@ -780,6 +786,7 @@ export class App {
     for (const month of months) {
       for (const item of this.transactions()) {
         if (item.savings || (item.type && item.type !== 'Expense')) continue;
+        if (this.isFailedTransaction(item)) continue;
         if (!this.matchesMonth(item.date, month)) continue;
         const sub = (item.subcategory && item.subcategory.trim()) || 'Other';
         const amount = Math.abs(Number(item.amount) || 0);
@@ -803,7 +810,7 @@ export class App {
 
     const rawMonths = months.map((monthKey) => {
       const monthTransactions = this.transactions().filter(
-        (t) => !t.savings && (t.type === 'Expense' || !t.type) && this.matchesMonth(t.date, monthKey)
+        (t) => !t.savings && (t.type === 'Expense' || !t.type) && !this.isFailedTransaction(t) && this.matchesMonth(t.date, monthKey)
       );
 
       const segmentMap = new Map<string, number>();
@@ -1266,6 +1273,12 @@ export class App {
     this.newBillAmount.set(null);
   }
 
+  protected toggleExpectedBillActive(bill: ExpectedBill): void {
+    this.expectedBills.update(bills => bills.map(b => b.id === bill.id ? { ...b, active: !b.active } : b));
+    this.persistExpectedBills();
+    this.syncToApi();
+  }
+
   protected removeExpectedBill(id: number): void {
     if (!window.confirm('Are you sure you want to remove this expected bill?')) return;
     this.expectedBills.update((bills) => bills.filter((bill) => bill.id !== id));
@@ -1457,7 +1470,7 @@ export class App {
     this.syncToApi();
   }
 
-  // Savings "Fixed Needs" table — inline editing delegates to expectedBills
+  // Savings "Fixed Needs" table ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â inline editing delegates to expectedBills
   protected startEditingSavingsBill(bill: { id: number; name: string; monthly: number }): void {
     const source = this.expectedBills().find(b => b.id === bill.id);
     if (source) this.startEditingBill(source);
@@ -1748,7 +1761,7 @@ export class App {
       localStorage.setItem('ledger-plan-salary', String(this.savingsPlanSalary()));
       localStorage.setItem('ledger-plan-rate', String(this.savingsPlanSavingsRate()));
       localStorage.setItem('ledger-plan-investment', String(this.savingsPlanInvestment()));
-      // Note: bills are now persisted via persistExpectedBills() — no longer stored separately
+      // Note: bills are now persisted via persistExpectedBills() ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no longer stored separately
     } catch {}
   }
   private loadFromApi(): void {
@@ -1850,7 +1863,7 @@ export class App {
           salary: this.savingsPlanSalary(),
           savingsRate: this.savingsPlanSavingsRate(),
           investment: this.savingsPlanInvestment(),
-          // bills are now part of expectedBills — no longer duplicated here
+          // bills are now part of expectedBills ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no longer duplicated here
         },
       },
     } : this.transactions());
