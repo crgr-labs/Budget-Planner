@@ -432,9 +432,26 @@
    -------------------------------------------------------------------------- */
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 20px;
+}
+
+.clickable-tile {
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.clickable-tile:hover {
+  border-color: #0854a0;
+  box-shadow: 0 4px 12px rgba(8, 84, 160, 0.08);
+  transform: translateY(-1px);
+}
+
+.metric-target {
+  font-size: 16px;
+  font-weight: 500;
+  color: #64748b;
 }
 
 .metric-card {
@@ -506,6 +523,290 @@
 .metric-icon.expense {
   background: #fdf1f0;
   color: #c5221f;
+}
+
+.metric-icon.bills {
+  background: #f3f0ff;
+  color: #7c3aed;
+}
+
+.metric-progress-wrap {
+  margin: 6px 0 8px;
+}
+
+.metric-progress-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: #dcfce7;
+  overflow: hidden;
+}
+
+.metric-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #107e3e;
+  transition: width 0.3s ease;
+}
+
+.metric-progress-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #107e3e;
+  margin-top: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   Fiori Alert Strip & Warning Badges
+   -------------------------------------------------------------------------- */
+.fiori-alert-strip {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+
+.fiori-alert-warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.fiori-alert-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.fiori-alert-body {
+  flex: 1;
+}
+
+.fiori-alert-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #78350f;
+  margin-bottom: 2px;
+}
+
+.fiori-alert-body p {
+  margin: 0 0 6px;
+  color: #92400e;
+}
+
+.fiori-alert-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fiori-alert-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #78350f;
+}
+
+.fiori-alert-chip small {
+  color: #a16207;
+  font-size: 11px;
+}
+
+.failed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* --------------------------------------------------------------------------
+   Month-over-Month (MoM) Indicators & Expense Trend Chart
+   -------------------------------------------------------------------------- */
+.category-row-group {
+  margin-bottom: 8px;
+}
+
+.category-mom-subtext {
+  padding-left: 18px;
+  margin-top: 2px;
+  margin-bottom: 6px;
+}
+
+.mom-text {
+  font-size: 11px;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* 6-Month Expense Trend Chart */
+.expense-trend-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.overview-trend-chart {
+  display: flex;
+  flex-direction: column;
+  height: 200px;
+  margin-top: 10px;
+}
+
+.overview-trend-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 1;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.overview-trend-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.overview-trend-amount {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.overview-trend-bar-track {
+  width: 100%;
+  max-width: 36px;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.overview-trend-bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, #60a5fa 0%, #0070f2 100%);
+  min-height: 4px;
+  transition: height 0.3s ease, filter 0.2s ease;
+  cursor: pointer;
+}
+
+.overview-trend-bar:hover {
+  filter: brightness(1.15);
+}
+
+.current-month-col .overview-trend-bar {
+  background: linear-gradient(180deg, #f87171 0%, #c5221f 100%);
+}
+
+.current-month-col .overview-trend-amount {
+  color: #c5221f;
+  font-weight: 700;
+}
+
+.current-month-col .overview-trend-label {
+  color: #1d2d3e;
+  font-weight: 700;
+}
+
+.overview-trend-label {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* Month-over-Month Comparison Panel */
+.mom-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.mom-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.mom-item {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mom-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mom-item-header strong {
+  font-size: 13px;
+  color: #1d2d3e;
+}
+
+.mom-item-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #475569;
+}
+
+.mom-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mom-badge.mom-increase {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.mom-badge.mom-decrease {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.mom-badge.mom-same {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
 }
 
 /* --------------------------------------------------------------------------
@@ -841,6 +1142,7 @@
 
 .subcategory-overview {
   min-height: 220px;
+  grid-column: span 3;
 }
 
 .subcategory-chart {
@@ -2562,6 +2864,10 @@ tbody tr:hover {
 
   .dashboard-grid {
     grid-template-columns: 1fr;
+  }
+
+  .subcategory-overview {
+    grid-column: span 1 !important;
   }
 
   .reference-tiles {
