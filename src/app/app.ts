@@ -125,8 +125,8 @@ export class App {
     ['Food', ['Groceries', 'Restaurants', 'Coffee']],
     ['Transport', ['Commute', 'Fuel', 'Parking']],
     ['Lifestyle', ['Entertainment', 'Shopping', 'Subscriptions']],
-    ['Bills', ['Phone', 'Internet', 'Insurance']],
-    ['Expected Bills', ['Globe', 'Condo']],
+    ['Bills', ['Phone', 'Internet', 'Insurance', 'Electricity', 'Water', 'Utilities']],
+    ['Expected Bills', ['Rent', 'Condo', 'Globe', 'Internet', 'Electricity', 'Water', 'Utilities', 'Parking', 'Groceries', 'Insurance', 'Phone']],
     ['Health', ['Medicine', 'Appointments', 'Fitness']],
   ]);
   private readonly builtInSavingsCategories = new Set(['Emergency Fund', 'General Savings', 'Investment Fund', 'Travel Fund', 'Other']);
@@ -190,8 +190,8 @@ export class App {
     { name: 'Food', subcategories: ['Groceries', 'Restaurants', 'Coffee'] },
     { name: 'Transport', subcategories: ['Commute', 'Fuel', 'Parking'] },
     { name: 'Lifestyle', subcategories: ['Entertainment', 'Shopping', 'Subscriptions'] },
-    { name: 'Bills', subcategories: ['Phone', 'Internet', 'Insurance'] },
-    { name: 'Expected Bills', subcategories: ['Globe', 'Condo'] },
+    { name: 'Bills', subcategories: ['Phone', 'Internet', 'Insurance', 'Electricity', 'Water', 'Utilities'] },
+    { name: 'Expected Bills', subcategories: ['Rent', 'Condo', 'Globe', 'Internet', 'Electricity', 'Water', 'Utilities', 'Parking', 'Groceries', 'Insurance', 'Phone'] },
     { name: 'Health', subcategories: ['Medicine', 'Appointments', 'Fitness'] },
   ]);
   protected readonly sharedSubcategories = signal<string[]>([]);
@@ -542,6 +542,8 @@ export class App {
   });
   protected readonly newCategoryName = signal('');
   protected readonly newCategorySubcategory = signal('');
+  protected readonly selectedExpenseCategoryForSubcategory = signal('');
+  protected readonly newExpenseSubcategoryName = signal('');
   protected readonly selectedCategoryForSubcategory = signal('');
   protected readonly newSubcategoryName = signal('');
   protected readonly categorySearch = signal('');
@@ -733,9 +735,24 @@ export class App {
   }
 
   protected subcategoriesFor(category: string): string[] {
-    const categorySubcategories = this.categoryGroups().find((group) => group.name === category)?.subcategories ?? [];
-    const allCategorySubcategories = this.categoryGroups().flatMap((group) => group.subcategories);
-    return [...new Set([...categorySubcategories, ...this.sharedSubcategories(), ...allCategorySubcategories])];
+    const categoryGroup = this.categoryGroups().find((group) => group.name === category);
+    const categorySubcategories = categoryGroup?.subcategories ?? [];
+    const usedInBills = this.expectedBills()
+      .filter((b) => b.category === category && b.subcategory)
+      .map((b) => b.subcategory);
+    const usedInTransactions = this.transactions()
+      .filter((t) => t.category === category && t.subcategory)
+      .map((t) => t.subcategory);
+    const commonBills = (category === 'Expected Bills' || category === 'Bills')
+      ? ['Rent', 'Condo', 'Globe', 'Internet', 'Electricity', 'Water', 'Utilities', 'Parking', 'Groceries', 'Insurance', 'Phone']
+      : [];
+    return [...new Set([
+      ...categorySubcategories,
+      ...commonBills,
+      ...usedInBills,
+      ...usedInTransactions,
+      ...this.sharedSubcategories(),
+    ])].filter(Boolean);
   }
 
   protected savingsSubcategoriesFor(category: string): string[] {
@@ -751,16 +768,32 @@ export class App {
     this.syncToApi();
   }
 
-  protected addSubcategory(subcategory: string): void {
+  protected addExpenseSubcategory(category: string, subcategory: string): void {
     const subcategoryName = subcategory.trim();
-    if (!subcategoryName || this.sharedSubcategories().some((item) => item.toLowerCase() === subcategoryName.toLowerCase())) return;
-    this.sharedSubcategories.update((items) => [...items, subcategoryName]);
-    this.categoryGroups.update((groups) => groups.map((group) => group.subcategories.some((item) => item.toLowerCase() === subcategoryName.toLowerCase())
-      ? group
-      : { ...group, subcategories: [...group.subcategories, subcategoryName] }));
+    if (!subcategoryName) return;
+    if (!category || category === '__ALL__') {
+      if (!this.sharedSubcategories().some((item) => item.toLowerCase() === subcategoryName.toLowerCase())) {
+        this.sharedSubcategories.update((items) => [...items, subcategoryName]);
+        this.persistSharedSubcategories();
+      }
+      this.categoryGroups.update((groups) => groups.map((group) =>
+        group.subcategories.some((item) => item.toLowerCase() === subcategoryName.toLowerCase())
+          ? group
+          : { ...group, subcategories: [...group.subcategories, subcategoryName] }
+      ));
+    } else {
+      this.categoryGroups.update((groups) => groups.map((group) =>
+        group.name === category && !group.subcategories.some((item) => item.toLowerCase() === subcategoryName.toLowerCase())
+          ? { ...group, subcategories: [...group.subcategories, subcategoryName] }
+          : group
+      ));
+    }
     this.persistCategories();
-    this.persistSharedSubcategories();
     this.syncToApi();
+  }
+
+  protected addSubcategory(subcategory: string): void {
+    this.addExpenseSubcategory('__ALL__', subcategory);
   }
 
   protected addSavingsCategory(name: string, subcategory: string): void {
@@ -789,6 +822,11 @@ export class App {
   protected createSubcategory(): void {
     this.addSubcategory(this.newSubcategoryName());
     this.newSubcategoryName.set('');
+  }
+
+  protected createExpenseSubcategory(): void {
+    this.addExpenseSubcategory(this.selectedExpenseCategoryForSubcategory(), this.newExpenseSubcategoryName());
+    this.newExpenseSubcategoryName.set('');
   }
 
   protected createSavingsCategory(): void {
@@ -968,16 +1006,29 @@ export class App {
   }
 
   private ensureExpectedBillsCategory(): void {
+    const defaultExpectedBills = [
+      'Rent', 'Condo', 'Globe', 'Internet', 'Electricity', 'Water', 'Utilities', 'Parking', 'Groceries', 'Insurance', 'Phone'
+    ];
+    const usedInBills = this.expectedBills()
+      .filter((b) => b.category === 'Expected Bills' && b.subcategory)
+      .map((b) => b.subcategory);
+    const usedInTransactions = this.transactions()
+      .filter((t) => t.category === 'Expected Bills' && t.subcategory)
+      .map((t) => t.subcategory);
+    const needed = [...new Set([...defaultExpectedBills, ...usedInBills, ...usedInTransactions])];
+
     const expectedBillsCategory = this.categoryGroups().find((group) => group.name === 'Expected Bills');
     if (!expectedBillsCategory) {
-      this.categoryGroups.update((groups) => [...groups, { name: 'Expected Bills', subcategories: ['Globe', 'Condo'] }]);
+      this.categoryGroups.update((groups) => [...groups, { name: 'Expected Bills', subcategories: needed }]);
       this.persistCategories();
+      this.syncToApi();
       return;
     }
-    const subcategories = [...new Set([...expectedBillsCategory.subcategories, 'Globe', 'Condo'])];
+    const subcategories = [...new Set([...expectedBillsCategory.subcategories, ...needed])];
     if (subcategories.length !== expectedBillsCategory.subcategories.length) {
       this.categoryGroups.update((groups) => groups.map((group) => group.name === 'Expected Bills' ? { ...group, subcategories } : group));
       this.persistCategories();
+      this.syncToApi();
     }
   }
 
@@ -1361,6 +1412,7 @@ export class App {
       }
       if (Array.isArray(cloudData.categories)) {
         this.categoryGroups.set(cloudData.categories);
+        this.ensureExpectedBillsCategory();
         this.persistCategories();
       }
       if (Array.isArray(cloudData.sharedSubcategories)) {
