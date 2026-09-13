@@ -464,8 +464,8 @@
           <div class="panel-heading"><div><h2>Fixed needs and bills</h2><p class="muted">Monthly reserve split evenly across both paychecks.</p></div><strong>{{ savingsPlan().fixedNeeds | currency:'PHP':'symbol':'1.0-0' }}</strong></div>
           <div class="table-wrap"><table>
             <thead><tr><th>Fixed need / bill</th><th class="align-right">Monthly</th><th class="align-right">Paycheck 1</th><th class="align-right">Paycheck 2</th><th></th></tr></thead>
-            <tbody>@for (bill of savingsPlanBills(); track bill.id) {
-              @if (editingSavingsBillId() === bill.id && editingSavingsBill(); as editBill) {
+            <tbody>@for (bill of savingsPlanBillsView(); track bill.id) {
+              @if (editingBillId() === bill.id && editingSavingsBillView(); as editBill) {
                 <tr class="editing-row">
                   <td><input aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateEditingSavingsBill('name', $event)" /></td>
                   <td class="align-right"><div class="amount-input"><span>₱</span><input aria-label="Edit monthly amount" type="number" min="0" [ngModel]="editBill.monthly" (ngModelChange)="updateEditingSavingsBill('monthly', $event)" /></div></td>
@@ -492,6 +492,10 @@
                   </td>
                 </tr>
               }
+            } @empty {
+              <tr>
+                <td colspan="5" class="muted align-center">No fixed needs or bills added yet.</td>
+              </tr>
             }</tbody>
           </table></div>
           <form class="add-savings-bill-form" (submit)="addSavingsPlanBill(); $event.preventDefault()">
