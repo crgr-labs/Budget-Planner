@@ -809,6 +809,71 @@
   border: 1px solid #e2e8f0;
 }
 
+/* Empty states for Trend and MoM */
+.trend-empty-state,
+.mom-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 16px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  margin-top: 10px;
+  min-height: 180px;
+}
+
+.trend-empty-icon,
+.mom-empty-icon {
+  font-size: 26px;
+  margin-bottom: 8px;
+  opacity: 0.6;
+}
+
+.trend-empty-title,
+.mom-empty-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 4px;
+}
+
+.trend-empty-state p,
+.mom-empty-state p {
+  font-size: 12px;
+  color: #64748b;
+  max-width: 280px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Distinguishing Category & Subcategory action buttons */
+.edit-category-btn {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border: 1px solid #bfdbfe !important;
+  font-size: 13px !important;
+}
+
+.edit-category-btn:hover {
+  background: #dbeafe !important;
+  border-color: #93c5fd !important;
+  color: #1e40af !important;
+}
+
+.edit-subcategory-button {
+  background: #f8fafc !important;
+  color: #0070f2 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.edit-subcategory-button:hover {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
 /* --------------------------------------------------------------------------
    SAP Cards & Dashboard Panels
    -------------------------------------------------------------------------- */
