@@ -1,0 +1,122 @@
+<section class="bills-page">
+  <div class="report-page-heading">
+    <div>
+      <p class="eyebrow">PERSONAL FINANCE</p>
+      <h2>Expected bills</h2>
+      <p class="muted">Compare planned bills with spending in {{ ledger.monthLabel() }}.</p>
+    </div>
+  </div>
+
+  <section class="panel bills-summary-tile">
+    <div class="bill-summary-item">
+      <span>Expected bills</span>
+      <strong>{{ ledger.billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+      <small>Planned for this month</small>
+    </div>
+    <div class="bill-summary-item">
+      <span>Bill spending</span>
+      <strong>{{ ledger.billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+      <small>Matched by sub-category</small>
+    </div>
+    <div class="bill-summary-item">
+      <span>Overspending alerts</span>
+      <strong [class.expense-text]="ledger.billsOverspentCount() > 0">{{ ledger.billsOverspentCount() }}</strong>
+      <small>{{ ledger.billsOverspentCount() ? 'Review bills above plan' : 'All bills on track' }}</small>
+    </div>
+  </section>
+
+  <div class="bills-layout">
+    <section class="panel category-form-panel">
+      <h3>Add expected bill</h3>
+      <p class="muted">Set a reference amount before recording expenses.</p>
+      <form (submit)="addExpectedBill(); $event.preventDefault()">
+        <label>Bill name
+          <input required [ngModel]="newBillName()" name="billname" (ngModelChange)="newBillName.set($event)" placeholder="e.g. Internet" />
+        </label>
+        <label>Category
+          <select required [ngModel]="newBillCategory()" name="billcat" (ngModelChange)="updateBillCategory($event)">
+            @for (category of ledger.categories; track category) {
+            <option [value]="category">{{ category }}</option>
+            }
+          </select>
+        </label>
+        <label>Sub-category
+          <select required [ngModel]="newBillSubcategory()" name="billsub" (ngModelChange)="newBillSubcategory.set($event)">
+            <option value="">Choose a sub-category</option>
+            @for (subcategory of ledger.subcategoriesFor(newBillCategory()); track subcategory) {
+            <option [value]="subcategory">{{ subcategory }}</option>
+            }
+          </select>
+        </label>
+        <label>Expected amount
+          <div class="amount-input">
+            <span>₱</span>
+            <input required min="0.01" step="0.01" type="number" [ngModel]="newBillAmount()" name="billamt" (ngModelChange)="newBillAmount.set($event)" placeholder="0.00" />
+          </div>
+        </label>
+        <button class="add-button" type="submit">Add expected bill <span>→</span></button>
+      </form>
+    </section>
+
+    <section class="panel bill-list-panel">
+      <div class="panel-heading">
+        <div>
+          <h3>Bill tracking</h3>
+          <p class="muted">Actual sub-category spending versus your plan.</p>
+        </div>
+        <span class="report-icon">▣</span>
+      </div>
+      @if (ledger.billTracking().length) {
+      <div class="bill-list">
+        @for (bill of ledger.billTracking(); track bill.id) {
+        <article class="bill-row" [class.bill-overspent]="bill.overspent">
+          @if (editingBillId() === bill.id && editingBill(); as editBill) {
+          <div class="bill-edit-fields">
+            <input aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateBillEdit('name', $event)" />
+            <select aria-label="Edit bill category" [ngModel]="editBill.category" (ngModelChange)="updateEditingBillCategory($event)">
+              @for (category of ledger.categories; track category) {
+              <option [value]="category">{{ category }}</option>
+              }
+            </select>
+            <select aria-label="Edit bill sub-category" [ngModel]="editBill.subcategory" (ngModelChange)="updateBillEdit('subcategory', $event)">
+              <option value="">Choose a sub-category</option>
+              @for (subcategory of ledger.subcategoriesFor(editBill.category); track subcategory) {
+              <option [value]="subcategory">{{ subcategory }}</option>
+              }
+            </select>
+            <input aria-label="Edit bill amount" type="number" min="0" [ngModel]="editBill.amount" (ngModelChange)="updateBillEdit('amount', $event)" />
+          </div>
+          <div class="row-actions bill-edit-actions">
+            <button class="save-row-button" type="button" (click)="saveEditingBill()">Save</button>
+            <button class="cancel-row-button" type="button" (click)="cancelEditingBill()">Cancel</button>
+          </div>
+          } @else {
+          <div class="bill-row-heading">
+            <div>
+              <strong>{{ bill.name }}</strong>
+              <small>{{ bill.category }} → {{ bill.subcategory }}</small>
+            </div>
+            <div class="row-actions">
+              <button class="edit-row-button icon-action" type="button" aria-label="Edit expected bill" title="Edit expected bill" (click)="startEditingBill(bill)">✎</button>
+              <button class="delete-button" type="button" aria-label="Remove expected bill" (click)="removeExpectedBill(bill.id)">×</button>
+            </div>
+          </div>
+          <div class="bill-amounts">
+            <span>Spent <b>{{ bill.spent | currency:'PHP':'symbol':'1.0-0' }}</b></span>
+            <span>Plan <b>{{ bill.amount | currency:'PHP':'symbol':'1.0-0' }}</b></span>
+          </div>
+          <div class="progress-track">
+            <span [style.width.%]="ledger.billProgress(bill.spent, bill.amount)" [class.expense-progress]="bill.overspent"></span>
+          </div>
+          <small class="bill-status">{{ ledger.billStatus(bill.spent, bill.amount, bill.overspent) }}</small>
+          }
+        </article>
+        }
+      </div>
+      } @else {
+      <p class="muted bill-empty">Add your recurring bills to start tracking overspending.</p>
+      }
+    </section>
+  </div>
+</section>
+

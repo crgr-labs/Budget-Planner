@@ -197,12 +197,16 @@
 .edit-row-button,
 .save-row-button,
 .cancel-row-button {
-  min-height: 28px;
-  padding: 4px 8px;
+  min-height: 32px;
+  min-width: 32px;
+  padding: 5px 10px;
   border-radius: 4px;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .edit-row-button,
@@ -228,15 +232,16 @@
 .expense-edit-fields select,
 .expense-edit-amount input {
   width: 100%;
-  min-height: 28px;
+  height: 32px;
+  min-height: 32px;
   box-sizing: border-box;
-  padding: 4px 6px;
+  padding: 4px 8px;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
   background: #ffffff;
   color: #1d2d3e;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .expense-edit-amount {
@@ -1048,11 +1053,15 @@
 .form-grid input,
 .form-grid select,
 .category-form-panel input,
-.category-form-panel select {
+.category-form-panel select,
+.fiori-dialog input,
+.fiori-dialog select {
   font-family: inherit;
   width: 100%;
+  height: 36px;
+  min-height: 36px;
   box-sizing: border-box;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   font-size: 13px;
@@ -1065,9 +1074,11 @@
 .form-grid input:focus,
 .form-grid select:focus,
 .category-form-panel input:focus,
-.category-form-panel select:focus {
-  border-color: #0070f2;
-  box-shadow: 0 0 0 3px rgba(0, 112, 242, 0.15);
+.category-form-panel select:focus,
+.fiori-dialog input:focus,
+.fiori-dialog select:focus {
+  border-color: #0057be;
+  box-shadow: inset 0 -2px 0 0 #0070f2;
 }
 
 .amount-input {
@@ -1365,13 +1376,13 @@ tbody tr:hover {
 }
 
 .delete-button {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 4px;
   border: 1px solid transparent;
   background: transparent;
   color: #64748b;
-  font-size: 16px;
+  font-size: 18px;
   cursor: pointer;
   display: inline-grid;
   place-items: center;
@@ -2822,7 +2833,7 @@ tbody tr:hover {
   .reference-tile,
   .category-form-panel,
   .category-directory {
-    padding: 14px;
+    padding: 12px 16px;
     box-sizing: border-box;
     min-width: 0;
   }
@@ -2887,9 +2898,12 @@ tbody tr:hover {
   .form-grid input,
   .form-grid select,
   .category-form-panel input,
-  .category-form-panel select {
+  .category-form-panel select,
+  .fiori-dialog input,
+  .fiori-dialog select {
     font-size: 16px; /* Prevents iOS auto-zoom */
-    min-height: 40px;
+    min-height: 44px;
+    height: 44px;
   }
 
   .amount-input span {
@@ -2897,8 +2911,8 @@ tbody tr:hover {
   }
 
   .type-toggle button {
-    min-height: 38px;
-    font-size: 13px;
+    min-height: 44px;
+    font-size: 14px;
   }
 
   .savings-subpage-tabs,
@@ -2908,8 +2922,87 @@ tbody tr:hover {
   }
 
   .add-button {
-    min-height: 42px;
+    min-height: 44px;
     font-size: 14px;
+  }
+
+  /* Touch targets for all action buttons (min 44px per SAP Cozy & Mobile standard) */
+  .delete-button,
+  .edit-row-button,
+  .save-row-button,
+  .cancel-row-button,
+  .icon-action {
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Responsive card-style layout for Category Manager & Savings Plan tables (no horizontal scrolling) */
+  .category-table-wrap,
+  .savings-plan-panel .table-wrap {
+    overflow-x: visible;
+  }
+
+  .category-table,
+  .category-table tbody,
+  .category-table tr,
+  .category-table td,
+  .savings-plan-panel table,
+  .savings-plan-panel tbody,
+  .savings-plan-panel tr,
+  .savings-plan-panel td {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  .category-table thead,
+  .savings-plan-panel thead {
+    display: none;
+  }
+
+  .category-table tr,
+  .savings-plan-panel tr {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+
+  .category-table tr.inline-add-row {
+    background: #f8fafc;
+    border-style: dashed;
+  }
+
+  .category-table td,
+  .savings-plan-panel td {
+    padding: 4px 0;
+    border: none;
+    text-align: left !important;
+  }
+
+  .category-table td.align-right,
+  .savings-plan-panel td.align-right {
+    margin-top: 6px;
+  }
+
+  .category-table .category-actions {
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .category-col-label {
+    margin-bottom: 4px;
+    color: #0070f2;
+    font-size: 13px;
   }
 
   /* Budget summary */
@@ -2949,29 +3042,14 @@ tbody tr:hover {
     margin-top: 10px;
   }
 
-  /* Other tables retain horizontal scrolling where comparison needs columns. */
-  .table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin-top: 10px;
-    border-radius: 6px;
-    max-width: 100%;
-  }
-
   table {
-    min-width: 560px; /* Crucial: stops columns from squeezing into unreadable text */
+    min-width: 0;
   }
 
   thead th,
   tbody td {
     padding: 9px 10px;
     font-size: 12px;
-  }
-
-  .delete-button {
-    width: 32px;
-    height: 32px;
-    font-size: 18px;
   }
 
   /* Charts */
@@ -3068,3 +3146,172 @@ tbody tr:hover {
     font-size: 20px;
   }
 }
+
+/* --------------------------------------------------------------------------
+   SAP Fiori Header Add Button & Mobile FAB (Requirement 7)
+   -------------------------------------------------------------------------- */
+.topbar-add-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 14px;
+  background: #0070f2;
+  color: #ffffff;
+  border: 1px solid #0070f2;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 112, 242, 0.2);
+  transition: all 0.15s ease;
+}
+
+.topbar-add-button:hover {
+  background: #0057be;
+  border-color: #0057be;
+}
+
+.mobile-fab {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .topbar-add-button {
+    display: none;
+  }
+
+  .mobile-fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #0070f2;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 14px rgba(0, 112, 242, 0.45);
+    cursor: pointer;
+    z-index: 1500;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+  }
+
+  .mobile-fab:active {
+    transform: scale(0.92);
+    background: #0057be;
+  }
+
+  .fab-icon {
+    font-size: 28px;
+    line-height: 1;
+    margin-top: -2px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   SAP Fiori Dialog Overlay (Requirement 7)
+   -------------------------------------------------------------------------- */
+.fiori-dialog-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(29, 45, 62, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2500;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.fiori-dialog {
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: fioriDialogPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fioriDialogPop {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.fiori-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 18px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #ffffff;
+}
+
+.fiori-dialog-header h2 {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1d2d3e;
+  margin: 0;
+}
+
+.fiori-dialog-close {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  color: #64748b;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+}
+
+.fiori-dialog-close:hover {
+  background: #f1f5f9;
+  color: #1d2d3e;
+}
+
+.fiori-dialog-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.fiori-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.dialog-submit-button {
+  margin-top: 0 !important;
+  width: auto !important;
+  min-width: 130px;
+}
+

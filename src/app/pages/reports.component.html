@@ -1,0 +1,213 @@
+<section class="reference-reports reports-overview">
+  <div class="report-page-heading">
+    <div>
+      <p class="eyebrow">PERSONAL FINANCE</p>
+      <h2>Reports dashboard</h2>
+      <p class="muted">Selected month: {{ ledger.monthLabel() }} · Currency: Philippine Peso (₱)</p>
+    </div>
+    <select class="month-button" [ngModel]="ledger.selectedMonth()" (ngModelChange)="selectMonth($event)">
+      @for (month of ledger.monthOptions(); track month) {
+      <option [value]="month">{{ ledger.formatMonth(month) }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="reference-metrics">
+    <article>
+      <span>Monthly spend</span>
+      <strong>{{ ledger.reportTotalSpent() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+      <small>From expense transactions</small>
+    </article>
+    <article>
+      <span>Top category</span>
+      <strong>{{ ledger.reportCategories()[0]?.category || '—' }}</strong>
+      <small>{{ ledger.reportCategories()[0]?.total ? (ledger.reportCategories()[0].total | currency:'PHP':'symbol':'1.0-0') + ' (' + ((ledger.reportCategories()[0].total / (ledger.reportTotalSpent() || 1)) * 100 | number:'1.0-0') + '%)' : 'No spending recorded' }}</small>
+    </article>
+    <article>
+      <span>Total savings</span>
+      <strong>{{ ledger.savingsBalance() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+      <small>{{ ledger.monthlySavingsSubtext() }}</small>
+    </article>
+    <article>
+      <span>Target savings progress</span>
+      <strong>{{ ledger.savingsGoalProgress() | number:'1.0-0' }}%</strong>
+      <small>Based on current savings</small>
+    </article>
+  </div>
+
+  <div class="reference-tiles">
+    <section class="reference-tile trend-tile">
+      <div class="tile-heading">
+        <div>
+          <h3>Monthly spend trend</h3>
+          <p>Expense activity by month</p>
+        </div>
+        <span>₱</span>
+      </div>
+      <div class="trend-chart">
+        @for (point of ledger.trendData(); track point.month) {
+        <div class="trend-column">
+          <i [style.height.%]="point.amount"></i>
+          <small>{{ point.month }}</small>
+        </div>
+        }
+      </div>
+    </section>
+
+    <section class="reference-tile category-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+      <div class="tile-heading">
+        <div>
+          <h3>Category breakdown</h3>
+          <p>Expense totals by category</p>
+        </div>
+        <span>≡</span>
+      </div>
+      <div class="tile-bars">
+        @for (item of ledger.reportCategories(); track item.category; let index = $index) {
+        <div>
+          <label>
+            <span><i class="category-dot" [style.background-color]="ledger.categoryColor(index)"></i>{{ item.category }}</span>
+            <b>{{ item.total | currency:'PHP':'symbol':'0.0-0' }} <small>{{ (item.total / ledger.reportTotalSpent()) * 100 | number:'1.0-0' }}%</small></b>
+          </label>
+          <em><i [style.width.%]="(item.total / ledger.reportTotalSpent()) * 100"></i></em>
+        </div>
+        }
+        @if (!ledger.reportCategories().length) {
+        <p class="empty-report">Add expenses to see categories.</p>
+        }
+      </div>
+    </section>
+
+    <section class="reference-tile savings-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+      <div class="tile-heading">
+        <div>
+          <h3>Savings progress</h3>
+          <p>Progress toward your target savings</p>
+        </div>
+        <span>↗</span>
+      </div>
+      <div class="savings-number">
+        <strong>{{ ledger.savingsGoalProgress() | number:'1.0-0' }}%</strong>
+        <small>of target savings</small>
+      </div>
+      <div class="reference-progress"><i [style.width.%]="ledger.savingsGoalProgress()"></i></div>
+      <div class="tile-foot">
+        <span>Saved {{ ledger.savingsBalance() | currency:'PHP':'symbol':'1.0-0' }}</span>
+        <span>Target {{ ledger.targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }}</span>
+      </div>
+    </section>
+
+    <section class="reference-tile fund-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+      <div class="tile-heading">
+        <div>
+          <h3>Target savings goal</h3>
+          <p>Progress toward your target savings</p>
+        </div>
+        <span>◎</span>
+      </div>
+      <div class="fund-goal">
+        <strong>{{ ledger.savingsBalance() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+        <small>of {{ ledger.targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }} goal</small>
+      </div>
+      <div class="reference-progress"><i [style.width.%]="ledger.targetSavingsProgress()"></i></div>
+      <div class="tile-foot">
+        <span>{{ ledger.targetSavingsProgress() | number:'1.0-0' }}% complete</span>
+        <span>{{ ledger.amountRemaining() | currency:'PHP':'symbol':'1.0-0' }} to go</span>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="reports-dashboard">
+  <div class="report-header">
+    <div>
+      <p class="eyebrow">FINANCIAL REPORT</p>
+      <h2>Where your money goes</h2>
+      <p class="muted">A clear view of your spending and savings.</p>
+    </div>
+    <button class="export-button" type="button" (click)="exportWorkbook()">↧ Export report</button>
+  </div>
+  <div class="report-metrics">
+    <article class="report-card report-expense">
+      <span>Monthly expenses</span>
+      <strong>{{ ledger.reportTotalSpent() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+      <small>{{ ledger.reportExpenseCount() }} transactions</small>
+    </article>
+    <article class="report-card report-budget">
+      <span>Top category</span>
+      <strong>{{ ledger.reportCategories()[0]?.category || '—' }}</strong>
+      <small>{{ ledger.reportCategories()[0]?.total ? (ledger.reportCategories()[0].total | currency:'PHP':'symbol':'1.0-0') + ' spent' : 'No data' }}</small>
+    </article>
+    <article class="report-card report-savings">
+      <span>Total savings</span>
+      <strong>{{ ledger.savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+      <small>{{ ledger.monthlySavingsSubtext() }}</small>
+    </article>
+  </div>
+  <div class="report-grid">
+    <section class="panel report-breakdown" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+      <div class="panel-heading">
+        <div>
+          <h2>Spending by category</h2>
+          <p class="muted">Your largest expense areas</p>
+        </div>
+        <span class="report-icon">⌁</span>
+      </div>
+      @if (ledger.reportCategories().length) {
+      <div class="report-category-list">
+        @for (item of ledger.reportCategories(); track item.category; let index = $index) {
+        <div class="report-category">
+          <div class="report-category-label">
+            <span><i class="category-dot" [style.background-color]="ledger.categoryColor(index)"></i>{{ item.category }}</span>
+            <strong>{{ item.total | currency:'PHP':'symbol':'1.2-2' }} <small>{{ (item.total / ledger.reportTotalSpent()) * 100 | number:'1.0-0' }}%</small></strong>
+          </div>
+          <div class="report-bar"><i [style.width.%]="(item.total / ledger.totalSpent()) * 100"></i></div>
+        </div>
+        }
+      </div>
+      } @else {
+      <p class="empty-report">Add an expense to see your category breakdown.</p>
+      }
+    </section>
+
+    <section class="panel report-health" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+      @if (ledger.cloudDataReady()) {
+      <div class="panel-heading">
+        <div>
+          <h2>Spending summary</h2>
+          <p class="muted">{{ ledger.monthLabel() }} overview</p>
+        </div>
+        <span class="report-icon">⌁</span>
+      </div>
+      <div class="health-copy">
+        <span>Total spent</span>
+        <strong>{{ ledger.reportTotalSpent() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+      </div>
+      <div class="health-copy">
+        <span>Transactions</span>
+        <strong>{{ ledger.reportExpenseCount() }}</strong>
+      </div>
+      @if (ledger.reportCategories()[0]) {
+      <div class="health-copy">
+        <span>Top category</span>
+        <strong>{{ ledger.reportCategories()[0].category }}</strong>
+      </div>
+      <div class="progress-track" style="margin-top:10px">
+        <span [style.width.%]="ledger.reportCategories()[0]?.total && ledger.reportTotalSpent() > 0 ? (ledger.reportCategories()[0].total / ledger.reportTotalSpent()) * 100 : 0"></span>
+      </div>
+      <p class="budget-foot">
+        <span>{{ ledger.reportCategories()[0]?.total && ledger.reportTotalSpent() > 0 ? ((ledger.reportCategories()[0].total / ledger.reportTotalSpent()) * 100 | number:'1.0-0') : 0 }}% of spend</span>
+        <span>{{ ledger.reportCategories()[0]?.total | currency:'PHP':'symbol':'1.0-0' }}</span>
+      </p>
+      }
+      <a class="view-all report-link" routerLink="/overview">Back to overview <span>→</span></a>
+      } @else {
+      <div class="panel-heading">
+        <div><h2>Spending summary</h2><p class="muted">Syncing with cloud storage</p></div>
+      </div>
+      <p class="muted">Loading...</p>
+      }
+    </section>
+  </div>
+</section>
+
