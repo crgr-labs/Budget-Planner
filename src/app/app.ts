@@ -49,7 +49,6 @@ interface ExpectedBill {
   category: string;
   subcategory: string;
   amount: number;
-  dueDay: number;
   active: boolean;
 }
 
@@ -309,17 +308,6 @@ export class App {
   protected readonly syncError = signal(false);
   protected readonly regularTransactions = computed(() => this.transactions().filter((item) => !item.savings));
   protected readonly newTransaction = signal<NewTransaction>(this.emptyTransaction());
-  private getInitialBudget(): number {
-    try {
-      const saved = localStorage.getItem('ledger-budget');
-      if (saved !== null) {
-        const parsed = Number(saved);
-        if (!Number.isNaN(parsed) && parsed >= 0) return parsed;
-      }
-    } catch {}
-    return 32842;
-  }
-
   private getInitialTargetSavings(): number {
     try {
       const saved = localStorage.getItem('ledger-target-savings');
@@ -331,14 +319,12 @@ export class App {
     return 76800;
   }
 
-  protected readonly budget = signal(this.getInitialBudget());
   protected readonly selectedTransactions = computed(() => this.regularTransactions().filter((item) => this.matchesMonth(item.date, this.selectedMonth())));
   protected readonly expectedBills = signal<ExpectedBill[]>([]);
   protected readonly newBillName = signal('');
   protected readonly newBillCategory = signal('Expected Bills');
   protected readonly newBillSubcategory = signal('Globe');
   protected readonly newBillAmount = signal<number | null>(null);
-  protected readonly newBillDueDay = signal(1);
   protected readonly editingBillId = signal<number | null>(null);
   protected readonly editingBill = signal<ExpectedBill | null>(null);
   protected readonly activeExpectedBills = computed(() => this.expectedBills().filter((bill) => bill.active));
@@ -353,10 +339,6 @@ export class App {
   protected readonly billsOverspentCount = computed(() => this.billTracking().filter((bill) => bill.overspent).length);
   protected readonly totalSpent = computed(() => this.selectedTransactions().filter((item) => item.type === 'Expense').reduce((sum, item) => sum + item.amount, 0));
   protected readonly regularExpenseCount = computed(() => this.selectedTransactions().filter((item) => item.type === 'Expense').length);
-  protected readonly availableBalance = computed(() => {
-    const monthlyRegularSpending = this.selectedTransactions().filter((item) => item.type === 'Expense' && !item.savings).reduce((sum, item) => sum + item.amount, 0);
-    return this.budget() - monthlyRegularSpending;
-  });
   protected readonly monthlyExpenses = computed(() =>
     this.selectedTransactions().filter((item) => item.type === 'Expense' && !item.savings).reduce((sum, item) => sum + item.amount, 0)
   );
@@ -409,28 +391,19 @@ export class App {
     }
     return `+₱${Math.round(contributions).toLocaleString('en-US')} saved in ${this.monthLabel()}`;
   });
-  protected readonly budgetProgress = computed(() => {
-    const budgetAmount = this.budget();
-    if (budgetAmount <= 0) return this.totalSpent() > 0 ? 100 : 0;
-    return Math.min(100, Math.max(0, (this.totalSpent() / budgetAmount) * 100));
-  });
   protected readonly budgetCategories = computed(() => this.categories
+    .filter((cat) => cat !== 'Expected Bills')
     .map((category) => ({ category, total: this.categoryTotal(category) }))
     .filter((item) => item.total > 0)
     .sort((first, second) => second.total - first.total));
   protected readonly reportCategories = computed(() => this.categories
+    .filter((cat) => cat !== 'Expected Bills')
     .map((category) => ({ category, total: this.categoryTotal(category) }))
     .filter((item) => item.total > 0)
     .sort((first, second) => second.total - first.total));
   protected readonly reportTransactions = computed(() => this.selectedTransactions().filter((item) => !item.savings));
   protected readonly reportTotalSpent = computed(() => this.reportTransactions().filter((item) => item.type === 'Expense').reduce((sum, item) => sum + item.amount, 0));
-  protected readonly reportBudgetProgress = computed(() => {
-    const budgetAmount = this.budget();
-    if (budgetAmount <= 0) return this.reportTotalSpent() > 0 ? 100 : 0;
-    return Math.min(100, Math.max(0, (this.reportTotalSpent() / budgetAmount) * 100));
-  });
   protected readonly reportExpenseCount = computed(() => this.reportTransactions().filter((item) => item.type === 'Expense').length);
-  protected readonly budgetLeft = computed(() => Math.max(0, this.budget() - this.reportTotalSpent()));
   protected readonly targetSavingsGoal = signal(this.getInitialTargetSavings());
   protected readonly targetSavingsProgress = computed(() => {
     const goal = this.targetSavingsGoal();
@@ -554,38 +527,11 @@ export class App {
   protected readonly editingExpense = signal<NewTransaction | null>(null);
   protected readonly recentlyAddedRegular = signal(false);
   protected readonly recentlyAddedSavings = signal(false);
-  protected readonly editingBudget = signal(false);
-  protected readonly budgetDraft = signal<number | null>(null);
   private regularAddedTimer: ReturnType<typeof setTimeout> | null = null;
   private savingsAddedTimer: ReturnType<typeof setTimeout> | null = null;
 
   protected setSavingsAmount(amount: number): void {
     this.updateSavingsField('amount', Math.round(amount));
-  }
-
-  protected startEditingBudget(): void {
-    this.budgetDraft.set(this.budget());
-    this.editingBudget.set(true);
-  }
-
-  protected cancelEditingBudget(): void {
-    this.editingBudget.set(false);
-  }
-
-  protected saveBudget(): void {
-    const draft = this.budgetDraft();
-    if (draft !== null && !Number.isNaN(draft) && draft >= 0) {
-      this.updateBudget(draft);
-    }
-    this.editingBudget.set(false);
-  }
-
-  protected useAllowanceAsBudget(): void {
-    const allowance = this.savingsPlan().variableAllowance;
-    if (allowance > 0) {
-      this.updateBudget(allowance);
-      this.editingBudget.set(false);
-    }
   }
 
   constructor() {
@@ -677,19 +623,6 @@ export class App {
 
     this.loadFromApi();
   }
-
-  protected updateBudget(value: string | number): void {
-    if (value === null || value === undefined) return;
-    const trimmed = String(value).trim();
-    if (!trimmed) return;
-    const amount = Number(trimmed);
-    if (!Number.isNaN(amount) && amount >= 0) {
-      this.budget.set(amount);
-      try { localStorage.setItem('ledger-budget', String(amount)); } catch {}
-      this.syncToApi();
-    }
-  }
-
   protected updateTargetSavingsGoal(value: string | number): void {
     if (value === null || value === undefined) return;
     const trimmed = String(value).trim();
@@ -700,10 +633,6 @@ export class App {
       try { localStorage.setItem('ledger-target-savings', String(amount)); } catch {}
       this.syncToApi();
     }
-  }
-
-  protected editBudget(): void {
-    this.startEditingBudget();
   }
 
   protected updateField(field: keyof NewTransaction, value: string | number | null): void {
@@ -902,6 +831,7 @@ export class App {
   }
 
   protected deleteCategory(name: string, savings: boolean): void {
+    if (!window.confirm(`Are you sure you want to delete the category "${name}"?`)) return;
     if (savings) {
       this.savingsCategoryGroups.update((items) => items.filter((group) => group.name !== name));
       this.persistSavingsCategories();
@@ -916,6 +846,7 @@ export class App {
   }
 
   protected deleteSubcategory(category: string, subcategory: string, savings: boolean): void {
+    if (!window.confirm(`Are you sure you want to delete the sub-category "${subcategory}" from "${category}"?`)) return;
     if (savings) {
       this.savingsCategoryGroups.update((items) => items.map((group) => group.name === category
         ? { ...group, subcategories: group.subcategories.filter((item) => item !== subcategory) }
@@ -940,20 +871,19 @@ export class App {
   protected addExpectedBill(): void {
     const name = this.newBillName().trim();
     const amount = Number(this.newBillAmount());
-    const dueDay = Math.max(1, Math.min(31, Number(this.newBillDueDay()) || 1));
     if (!name || !this.newBillCategory() || !this.newBillSubcategory() || !Number.isFinite(amount) || amount <= 0) return;
     this.expectedBills.update((bills) => [...bills, {
-      id: Date.now(), name, category: this.newBillCategory(), subcategory: this.newBillSubcategory(), amount, dueDay, active: true,
+      id: Date.now(), name, category: this.newBillCategory(), subcategory: this.newBillSubcategory(), amount, active: true,
     }]);
     this.persistExpectedBills();
     this.syncToApi();
     this.newBillName.set('');
     this.newBillSubcategory.set(this.subcategoriesFor(this.newBillCategory())[0] || '');
     this.newBillAmount.set(null);
-    this.newBillDueDay.set(1);
   }
 
   protected removeExpectedBill(id: number): void {
+    if (!window.confirm('Are you sure you want to remove this expected bill?')) return;
     this.expectedBills.update((bills) => bills.filter((bill) => bill.id !== id));
     this.persistExpectedBills();
     this.syncToApi();
@@ -985,7 +915,6 @@ export class App {
     const id = this.editingBillId();
     const bill = this.editingBill();
     const amount = Number(bill?.amount);
-    const dueDay = Math.max(1, Math.min(31, Number(bill?.dueDay) || 1));
     if (id === null || !bill || !bill.name.trim() || !bill.category || !bill.subcategory || !Number.isFinite(amount) || amount <= 0) return;
     this.expectedBills.update((items) => items.map((item) => item.id === id ? {
       ...item,
@@ -993,7 +922,6 @@ export class App {
       category: bill.category,
       subcategory: bill.subcategory,
       amount,
-      dueDay,
     } : item));
     this.persistExpectedBills();
     this.syncToApi();
@@ -1124,6 +1052,7 @@ export class App {
   }
 
   protected removeSavingsPlanBill(id: number): void {
+    if (!window.confirm('Are you sure you want to remove this fixed need?')) return;
     this.savingsPlanBills.update((bills) => bills.filter((b) => b.id !== id));
     this.persistSavingsPlan();
     this.syncToApi();
