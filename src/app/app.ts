@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
@@ -11,6 +11,7 @@ import { LedgerService, NewTransaction } from './ledger.service';
   imports: [CommonModule, FormsModule, RouterOutlet, RouterLink, RouterLinkActive],
   styleUrl: './app.css',
   templateUrl: './app.html',
+  encapsulation: ViewEncapsulation.None,
 })
 export class App {
   protected readonly ledger = inject(LedgerService);
