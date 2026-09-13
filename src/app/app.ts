@@ -545,14 +545,6 @@ export class App {
     }
 
     try {
-      const savedBudget = localStorage.getItem('ledger-budget');
-      if (savedBudget !== null) {
-        const parsed = Number(savedBudget);
-        if (!Number.isNaN(parsed) && parsed >= 0) this.budget.set(parsed);
-      }
-    } catch {}
-
-    try {
       const savedTargetSavings = localStorage.getItem('ledger-target-savings');
       if (savedTargetSavings !== null) {
         const parsed = Number(savedTargetSavings);
@@ -1317,11 +1309,7 @@ export class App {
     void fetch(requestUrl, { cache: 'no-store' }).then((response) => response.ok ? response.json() : Promise.reject()).then((data: Transaction[] | CloudData) => {
       const cloudData = Array.isArray(data) ? { transactions: data } : data;
       this.transactions.set(cloudData.transactions);
-      const monthlyBudget = cloudData.settings?.monthlyBudget;
-      if (typeof monthlyBudget === 'number' && monthlyBudget >= 0) {
-        this.budget.set(monthlyBudget);
-        try { localStorage.setItem('ledger-budget', String(monthlyBudget)); } catch {}
-      }
+
       const targetSavingsGoal = cloudData.settings?.targetSavingsGoal;
       if (typeof targetSavingsGoal === 'number' && targetSavingsGoal >= 0) {
         this.targetSavingsGoal.set(targetSavingsGoal);
@@ -1406,7 +1394,6 @@ export class App {
       sharedSubcategories: this.sharedSubcategories(),
       savingsCategories: this.savingsCategoryGroups(),
       settings: {
-        monthlyBudget: this.budget(),
         targetSavingsGoal: this.targetSavingsGoal(),
         savingsPlan: {
           salary: this.savingsPlanSalary(),
