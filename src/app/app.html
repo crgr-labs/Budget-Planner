@@ -164,7 +164,6 @@
               <label>Category<select required [ngModel]="newBillCategory()" name="billcat" (ngModelChange)="updateBillCategory($event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
               <label>Sub-category<select required [ngModel]="newBillSubcategory()" name="billsub" (ngModelChange)="newBillSubcategory.set($event)"><option value="">Choose a sub-category</option>@for (subcategory of subcategoriesFor(newBillCategory()); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label>
               <label>Expected amount<div class="amount-input"><span>₱</span><input required min="0.01" step="0.01" type="number" [ngModel]="newBillAmount()" name="billamt" (ngModelChange)="newBillAmount.set($event)" placeholder="0.00" /></div></label>
-              <label>Due day <span class="optional">1-31</span><input type="number" min="1" max="31" [ngModel]="newBillDueDay()" name="billdue" (ngModelChange)="newBillDueDay.set($event)" /></label>
               <button class="add-button" type="submit">Add expected bill <span>→</span></button>
             </form>
           </section>
@@ -174,10 +173,10 @@
             <div class="bill-list">@for (bill of billTracking(); track bill.id) {
               <article class="bill-row" [class.bill-overspent]="bill.overspent">
                 @if (editingBillId() === bill.id && editingBill(); as editBill) {
-                <div class="bill-edit-fields"><input aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateBillEdit('name', $event)" /><select aria-label="Edit bill category" [ngModel]="editBill.category" (ngModelChange)="updateEditingBillCategory($event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select><select aria-label="Edit bill sub-category" [ngModel]="editBill.subcategory" (ngModelChange)="updateBillEdit('subcategory', $event)"><option value="">Choose a sub-category</option>@for (subcategory of subcategoriesFor(editBill.category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select><input aria-label="Edit bill amount" type="number" min="0" [ngModel]="editBill.amount" (ngModelChange)="updateBillEdit('amount', $event)" /><input aria-label="Edit bill due day" type="number" min="1" max="31" [ngModel]="editBill.dueDay" (ngModelChange)="updateBillEdit('dueDay', $event)" /></div>
+                <div class="bill-edit-fields"><input aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateBillEdit('name', $event)" /><select aria-label="Edit bill category" [ngModel]="editBill.category" (ngModelChange)="updateEditingBillCategory($event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select><select aria-label="Edit bill sub-category" [ngModel]="editBill.subcategory" (ngModelChange)="updateBillEdit('subcategory', $event)"><option value="">Choose a sub-category</option>@for (subcategory of subcategoriesFor(editBill.category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select><input aria-label="Edit bill amount" type="number" min="0" [ngModel]="editBill.amount" (ngModelChange)="updateBillEdit('amount', $event)" /></div>
                 <div class="row-actions bill-edit-actions"><button class="save-row-button" type="button" (click)="saveEditingBill()">Save</button><button class="cancel-row-button" type="button" (click)="cancelEditingBill()">Cancel</button></div>
                 } @else {
-                <div class="bill-row-heading"><div><strong>{{ bill.name }}</strong><small>{{ bill.category }} → {{ bill.subcategory }} · Due day {{ bill.dueDay }}</small></div><div class="row-actions"><button class="edit-row-button icon-action" type="button" aria-label="Edit expected bill" title="Edit expected bill" (click)="startEditingBill(bill)">✎</button><button class="delete-button" type="button" aria-label="Remove expected bill" (click)="removeExpectedBill(bill.id)">×</button></div></div>
+                <div class="bill-row-heading"><div><strong>{{ bill.name }}</strong><small>{{ bill.category }} → {{ bill.subcategory }}</small></div><div class="row-actions"><button class="edit-row-button icon-action" type="button" aria-label="Edit expected bill" title="Edit expected bill" (click)="startEditingBill(bill)">✎</button><button class="delete-button" type="button" aria-label="Remove expected bill" (click)="removeExpectedBill(bill.id)">×</button></div></div>
                 <div class="bill-amounts"><span>Spent <b>{{ bill.spent | currency:'PHP':'symbol':'1.0-0' }}</b></span><span>Plan <b>{{ bill.amount | currency:'PHP':'symbol':'1.0-0' }}</b></span></div>
                 <div class="progress-track"><span [style.width.%]="billProgress(bill.spent, bill.amount)" [class.expense-progress]="bill.overspent"></span></div>
                 <small class="bill-status">{{ billStatus(bill.spent, bill.amount, bill.overspent) }}</small>
@@ -215,25 +214,6 @@
             </form>
           </section>
           <section class="panel category-form-panel">
-            <h3>Add sub-category</h3>
-            <p class="muted">Add an option to an existing expense category.</p>
-            <form (submit)="createExpenseSubcategory(); $event.preventDefault()">
-              <label>Category<select
-                  [ngModel]="selectedExpenseCategoryForSubcategory()" name="expcat"
-                  (ngModelChange)="selectedExpenseCategoryForSubcategory.set($event)">
-                  <option value="">Choose a category</option>
-                  <option value="__ALL__">All categories (Shared)</option>
-                  @for (category of categories; track category) {<option
-                    [value]="category">{{ category }}</option>}
-                </select></label>
-              <label>Sub-category name<input required [ngModel]="newExpenseSubcategoryName()" name="expsubname"
-                  (ngModelChange)="newExpenseSubcategoryName.set($event)" placeholder="e.g. Rent" /></label>
-              <button class="add-button" type="submit">Add sub-category <span>→</span></button>
-            </form>
-          </section>
-        </div>
-        <div class="category-manager-grid">
-          <section class="panel category-form-panel">
             <h3>Create savings category</h3>
             <p class="muted">Add a fund for savings transactions.</p>
             <form (submit)="createSavingsCategory(); $event.preventDefault()">
@@ -246,21 +226,6 @@
               <button class="add-button" type="submit">Create savings category <span>→</span></button>
             </form>
           </section>
-          <section class="panel category-form-panel">
-            <h3>Add savings sub-category</h3>
-            <p class="muted">Add an option to an existing savings category.</p>
-            <form (submit)="createSavingsSubcategory(); $event.preventDefault()">
-              <label>Category<select required
-                  [ngModel]="selectedCategoryForSubcategory()" name="savcat"
-                  (ngModelChange)="selectedCategoryForSubcategory.set($event)">
-                  <option value="">Choose a savings category</option>@for (category of savingsCategories; track category) {<option
-                    [value]="category">{{ category }}</option>}
-                </select></label>
-              <label>Sub-category name<input required [ngModel]="newSubcategoryName()" name="savsubname"
-                  (ngModelChange)="newSubcategoryName.set($event)" placeholder="e.g. Renovation" /></label>
-              <button class="add-button" type="submit">Add savings sub-category <span>→</span></button>
-            </form>
-          </section>
         </div>
         <div class="category-search"><label for="category-search-input">Search categories</label><input id="category-search-input" type="search" [ngModel]="categorySearch()" (ngModelChange)="categorySearch.set($event)" placeholder="Search category or sub-category" /></div>
         <section class="panel category-directory">
@@ -270,7 +235,7 @@
               <p class="muted">These options appear in Add transaction.</p>
             </div><span class="report-icon">≡</span>
           </div>
-          <div class="table-wrap category-table-wrap"><table class="category-table"><thead><tr><th>Category</th><th>Sub-category</th><th class="align-right">Actions</th></tr></thead><tbody>@for (group of filteredCategories(); track group.name) {@for (subcategory of group.subcategories; track subcategory) {<tr><td><strong>{{ group.name }}</strong></td><td>{{ subcategory }}</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button" type="button" title="Edit category" aria-label="Edit category" (click)="editCategory(group.name, false)">✎</button><button class="icon-action edit-subcategory-button" type="button" title="Edit sub-category" aria-label="Edit sub-category" (click)="editSubcategory(group.name, subcategory, false)">✎</button><button class="icon-action category-delete-button" type="button" title="Delete sub-category" aria-label="Delete sub-category" (click)="deleteSubcategory(group.name, subcategory, false)">×</button></div></td></tr>} @if (!group.subcategories.length) {<tr><td><strong>{{ group.name }}</strong></td><td class="muted">No sub-categories</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button" type="button" title="Edit category" aria-label="Edit category" (click)="editCategory(group.name, false)">✎</button><button class="icon-action category-delete-button" type="button" title="Delete category" aria-label="Delete category" (click)="deleteCategory(group.name, false)">×</button></div></td></tr>}}</tbody></table></div>
+          <div class="table-wrap category-table-wrap"><table class="category-table"><thead><tr><th>Category</th><th>Sub-category</th><th class="align-right">Actions</th></tr></thead><tbody>@for (group of filteredCategories(); track group.name) {@for (subcategory of group.subcategories; track subcategory) {<tr><td><strong>{{ group.name }}</strong></td><td>{{ subcategory }}</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button" type="button" title="Edit category" aria-label="Edit category" (click)="editCategory(group.name, false)">✎</button><button class="icon-action edit-subcategory-button" type="button" title="Edit sub-category" aria-label="Edit sub-category" (click)="editSubcategory(group.name, subcategory, false)">✎</button><button class="icon-action category-delete-button" type="button" title="Delete sub-category" aria-label="Delete sub-category" (click)="deleteSubcategory(group.name, subcategory, false)">×</button></div></td></tr>} @if (!group.subcategories.length) {<tr><td><strong>{{ group.name }}</strong></td><td class="muted">No sub-categories</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button" type="button" title="Edit category" aria-label="Edit category" (click)="editCategory(group.name, false)">✎</button><button class="icon-action category-delete-button" type="button" title="Delete category" aria-label="Delete category" (click)="deleteCategory(group.name, false)">×</button></div></td></tr>} <tr><td></td><td colspan="2"><form class="inline-add-form" style="display: flex; gap: 8px;" (submit)="addExpenseSubcategory(group.name, inlineSubName.value); inlineSubName.value=''; $event.preventDefault()"><input #inlineSubName placeholder="New sub-category" required style="padding: 4px 8px; font-size: 13px; max-width: 200px;" /><button type="submit" class="save-row-button" style="padding: 4px 12px;">Add</button></form></td></tr>}</tbody></table></div>
         </section>
         <section class="panel category-directory">
           <div class="panel-heading">
@@ -279,7 +244,7 @@
               <p class="muted">These options appear in Savings transactions.</p>
             </div><span class="report-icon">◎</span>
           </div>
-          <div class="table-wrap category-table-wrap"><table class="category-table"><thead><tr><th>Category</th><th>Sub-category</th><th class="align-right">Actions</th></tr></thead><tbody>@for (group of filteredSavingsCategories(); track group.name) {@for (subcategory of group.subcategories; track subcategory) {<tr><td><strong>{{ group.name }}</strong></td><td>{{ subcategory }}</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button" type="button" title="Edit category" aria-label="Edit category" (click)="editCategory(group.name, true)">✎</button><button class="icon-action edit-subcategory-button" type="button" title="Edit sub-category" aria-label="Edit sub-category" (click)="editSubcategory(group.name, subcategory, true)">✎</button><button class="icon-action category-delete-button" type="button" title="Delete sub-category" aria-label="Delete sub-category" (click)="deleteSubcategory(group.name, subcategory, true)">×</button></div></td></tr>} @if (!group.subcategories.length) {<tr><td><strong>{{ group.name }}</strong></td><td class="muted">No sub-categories</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button" type="button" title="Edit category" aria-label="Edit category" (click)="editCategory(group.name, true)">✎</button><button class="icon-action category-delete-button" type="button" title="Delete category" aria-label="Delete category" (click)="deleteCategory(group.name, true)">×</button></div></td></tr>}}</tbody></table></div>
+          <div class="table-wrap category-table-wrap"><table class="category-table"><thead><tr><th>Category</th><th>Sub-category</th><th class="align-right">Actions</th></tr></thead><tbody>@for (group of filteredSavingsCategories(); track group.name) {@for (subcategory of group.subcategories; track subcategory) {<tr><td><strong>{{ group.name }}</strong></td><td>{{ subcategory }}</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button" type="button" title="Edit category" aria-label="Edit category" (click)="editCategory(group.name, true)">✎</button><button class="icon-action edit-subcategory-button" type="button" title="Edit sub-category" aria-label="Edit sub-category" (click)="editSubcategory(group.name, subcategory, true)">✎</button><button class="icon-action category-delete-button" type="button" title="Delete sub-category" aria-label="Delete sub-category" (click)="deleteSubcategory(group.name, subcategory, true)">×</button></div></td></tr>} @if (!group.subcategories.length) {<tr><td><strong>{{ group.name }}</strong></td><td class="muted">No sub-categories</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button" type="button" title="Edit category" aria-label="Edit category" (click)="editCategory(group.name, true)">✎</button><button class="icon-action category-delete-button" type="button" title="Delete category" aria-label="Delete category" (click)="deleteCategory(group.name, true)">×</button></div></td></tr>} <tr><td></td><td colspan="2"><form class="inline-add-form" style="display: flex; gap: 8px;" (submit)="addSavingsSubcategory(group.name, inlineSavSubName.value); inlineSavSubName.value=''; $event.preventDefault()"><input #inlineSavSubName placeholder="New sub-category" required style="padding: 4px 8px; font-size: 13px; max-width: 200px;" /><button type="submit" class="save-row-button" style="padding: 4px 12px;">Add</button></form></td></tr>}</tbody></table></div>
         </section>
       </section>
       }
