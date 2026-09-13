@@ -105,13 +105,8 @@ interface SavingsPlanBucket {
   purpose: string;
 }
 
-interface SavingsPlanBill {
-  id: number;
-  name: string;
-  monthly: number;
-  paycheckOne: number;
-  paycheckTwo: number;
-}
+// SavingsPlanBill is retired — all bills use ExpectedBill as the single source of truth.
+// The Savings "Fixed Needs" table uses savingsPlanBillsView (a computed projection of expectedBills).
 
 interface SavingsPlanRoadmap {
   milestone: string;
@@ -135,7 +130,7 @@ interface CloudData {
       salary?: number;
       savingsRate?: number;
       investment?: number;
-      bills?: SavingsPlanBill[];
+      bills?: { id: number; name: string; monthly: number; paycheckOne: number; paycheckTwo: number }[]; // Legacy — migrated to expectedBills on load
     };
   };
   expectedBills?: ExpectedBill[];
@@ -235,33 +230,46 @@ export class App {
     { name: 'Travel Fund', subcategories: ['Flights', 'Accommodation'] },
     { name: 'Other', subcategories: [] },
   ]);
-  private readonly defaultSavingsPlanBills: SavingsPlanBill[] = [
-    { id: 1, name: 'Condo Amortization', monthly: 6000, paycheckOne: 3000, paycheckTwo: 3000 },
-    { id: 2, name: 'Car Insurance', monthly: 2482, paycheckOne: 1241, paycheckTwo: 1241 },
-    { id: 3, name: 'Easycash (Car)', monthly: 13403, paycheckOne: 6701.5, paycheckTwo: 6701.5 },
-    { id: 4, name: 'Avida Investment', monthly: 11173, paycheckOne: 5586.5, paycheckTwo: 5586.5 },
-    { id: 5, name: 'Parking Rent', monthly: 4000, paycheckOne: 2000, paycheckTwo: 2000 },
-    { id: 6, name: 'Condo Dues', monthly: 5100, paycheckOne: 2550, paycheckTwo: 2550 },
-    { id: 7, name: 'Grocery', monthly: 15000, paycheckOne: 7500, paycheckTwo: 7500 },
-    { id: 8, name: 'Allowance (Shei)', monthly: 8000, paycheckOne: 4000, paycheckTwo: 4000 },
-    { id: 9, name: 'Gas', monthly: 5000, paycheckOne: 2500, paycheckTwo: 2500 },
-    { id: 10, name: 'Internet', monthly: 1800, paycheckOne: 900, paycheckTwo: 900 },
-    { id: 11, name: 'Electricity', monthly: 8000, paycheckOne: 4000, paycheckTwo: 4000 },
-    { id: 12, name: 'Anytime Fitness', monthly: 2400, paycheckOne: 1200, paycheckTwo: 1200 },
+  // Default bills used only for seeding expectedBills on first run (migration)
+  private readonly defaultFixedBills: { name: string; monthly: number }[] = [
+    { name: 'Condo Amortization', monthly: 6000 },
+    { name: 'Car Insurance', monthly: 2482 },
+    { name: 'Easycash (Car)', monthly: 13403 },
+    { name: 'Avida Investment', monthly: 11173 },
+    { name: 'Parking Rent', monthly: 4000 },
+    { name: 'Condo Dues', monthly: 5100 },
+    { name: 'Grocery', monthly: 15000 },
+    { name: 'Allowance (Shei)', monthly: 8000 },
+    { name: 'Gas', monthly: 5000 },
+    { name: 'Internet', monthly: 1800 },
+    { name: 'Electricity', monthly: 8000 },
+    { name: 'Anytime Fitness', monthly: 2400 },
   ];
 
   protected readonly savingsPlanSalary = signal(192000);
   protected readonly savingsPlanSavingsRate = signal(40);
   protected readonly savingsPlanInvestment = signal(18200);
-  protected readonly savingsPlanBills = signal<SavingsPlanBill[]>(this.defaultSavingsPlanBills);
   protected readonly editingPlanParameters = signal(false);
-  protected readonly editingSavingsBillId = signal<number | null>(null);
-  protected readonly editingSavingsBill = signal<{ name: string; monthly: number } | null>(null);
+
+  // Savings add-form signals (kept separate from Expected Bills form)
   protected readonly newSavingsBillName = signal('');
   protected readonly newSavingsBillAmount = signal<number | null>(null);
 
+  // Computed projection: all active expected bills formatted for the Savings "Fixed Needs" table
+  protected readonly savingsPlanBillsView = computed(() =>
+    this.expectedBills()
+      .filter(bill => bill.active)
+      .map(bill => ({
+        id: bill.id,
+        name: bill.name,
+        monthly: bill.amount,
+        paycheckOne: bill.amount / 2,
+        paycheckTwo: bill.amount / 2,
+      }))
+  );
+
   protected readonly savingsPlanFixedNeeds = computed(() =>
-    this.savingsPlanBills().reduce((sum, bill) => sum + bill.monthly, 0)
+    this.expectedBills().filter(bill => bill.active).reduce((sum, bill) => sum + bill.amount, 0)
   );
   protected readonly savingsPlanGoal = computed(() =>
     Math.round(this.savingsPlanSalary() * (this.savingsPlanSavingsRate() / 100))
@@ -947,8 +955,14 @@ export class App {
       }
       const savedPlanBills = localStorage.getItem('ledger-plan-bills');
       if (savedPlanBills) {
-        const parsed = JSON.parse(savedPlanBills);
-        if (Array.isArray(parsed) && parsed.length) this.savingsPlanBills.set(parsed);
+        // One-time migration: merge legacy fixed bills into expectedBills
+        try {
+          const legacyBills = JSON.parse(savedPlanBills);
+          if (Array.isArray(legacyBills) && legacyBills.length) {
+            this.migrateLegacyFixedBills(legacyBills);
+          }
+        } catch {}
+        try { localStorage.removeItem('ledger-plan-bills'); } catch {}
       }
     } catch {}
 
@@ -1327,6 +1341,37 @@ export class App {
     }
   }
 
+  /**
+   * One-time migration: merge legacy SavingsPlanBill records into expectedBills.
+   * Bills with matching names (case-insensitive) are considered the same record.
+   * Bills only in the legacy list are created as new ExpectedBills under 'Expected Bills' category.
+   */
+  private migrateLegacyFixedBills(legacyBills: { id?: number; name: string; monthly: number }[]): void {
+    const current = this.expectedBills();
+    const existingNames = new Set(current.map(b => b.name.toLowerCase().trim()));
+    const newBills: ExpectedBill[] = [];
+
+    for (const legacy of legacyBills) {
+      const name = (legacy.name || '').trim();
+      if (!name || existingNames.has(name.toLowerCase())) continue;
+      newBills.push({
+        id: legacy.id ?? Date.now() + newBills.length + 1,
+        name,
+        category: 'Expected Bills',
+        subcategory: name,
+        amount: legacy.monthly ?? 0,
+        active: true,
+      });
+      existingNames.add(name.toLowerCase());
+    }
+
+    if (newBills.length) {
+      this.expectedBills.update(bills => [...bills, ...newBills]);
+      this.persistExpectedBills();
+      this.syncToApi();
+    }
+  }
+
   protected billProgress(spent: number, amount: number): number {
     return Math.min(100, (spent / amount) * 100);
   }
@@ -1381,65 +1426,68 @@ export class App {
     this.savingsPlanSalary.set(192000);
     this.savingsPlanSavingsRate.set(40);
     this.savingsPlanInvestment.set(18200);
-    this.savingsPlanBills.set(this.defaultSavingsPlanBills);
+    // Seed default fixed bills into expectedBills (only add if not already present)
+    const existing = this.expectedBills();
+    const existingNames = new Set(existing.map(b => b.name.toLowerCase().trim()));
+    const newBills: ExpectedBill[] = this.defaultFixedBills
+      .filter(dfb => !existingNames.has(dfb.name.toLowerCase().trim()))
+      .map((dfb, i) => ({
+        id: Date.now() + i + 1,
+        name: dfb.name,
+        category: 'Expected Bills',
+        subcategory: dfb.name,
+        amount: dfb.monthly,
+        active: true,
+      }));
+    if (newBills.length) {
+      this.expectedBills.update(bills => [...bills, ...newBills]);
+    }
     this.persistSavingsPlan();
+    this.persistExpectedBills();
     this.syncToApi();
   }
 
-  protected startEditingSavingsBill(bill: SavingsPlanBill): void {
-    this.editingSavingsBillId.set(bill.id);
-    this.editingSavingsBill.set({ name: bill.name, monthly: bill.monthly });
+  // Savings "Fixed Needs" table — inline editing delegates to expectedBills
+  protected startEditingSavingsBill(bill: { id: number; name: string; monthly: number }): void {
+    const source = this.expectedBills().find(b => b.id === bill.id);
+    if (source) this.startEditingBill(source);
   }
 
   protected cancelEditingSavingsBill(): void {
-    this.editingSavingsBillId.set(null);
-    this.editingSavingsBill.set(null);
+    this.cancelEditingBill();
   }
 
   protected updateEditingSavingsBill(field: 'name' | 'monthly', value: string | number): void {
-    this.editingSavingsBill.update((b) => b ? { ...b, [field]: value } : b);
+    if (field === 'name') {
+      this.updateBillEdit('name', value);
+    } else if (field === 'monthly') {
+      this.updateBillEdit('amount', value);
+    }
   }
+  // Computed projection of editingBill into the {name, monthly} shape expected by the Savings table editing row
+  protected readonly editingSavingsBillView = computed(() => {
+    const bill = this.editingBill();
+    return bill ? { name: bill.name, monthly: bill.amount } : null;
+  });
 
   protected saveEditingSavingsBill(): void {
-    const id = this.editingSavingsBillId();
-    const bill = this.editingSavingsBill();
-    if (id === null || !bill || !bill.name.trim()) return;
-    const monthly = Number(bill.monthly);
-    if (!Number.isFinite(monthly) || monthly < 0) return;
-    this.savingsPlanBills.update((bills) => bills.map((b) => b.id === id ? {
-      ...b,
-      name: bill.name.trim(),
-      monthly,
-      paycheckOne: monthly / 2,
-      paycheckTwo: monthly / 2,
-    } : b));
-    this.persistSavingsPlan();
-    this.syncToApi();
-    this.cancelEditingSavingsBill();
+    this.saveEditingBill();
   }
 
   protected removeSavingsPlanBill(id: number): void {
-    if (!window.confirm('Are you sure you want to remove this fixed need?')) return;
-    this.savingsPlanBills.update((bills) => bills.filter((b) => b.id !== id));
-    this.persistSavingsPlan();
-    this.syncToApi();
+    this.removeExpectedBill(id);
   }
 
   protected addSavingsPlanBill(): void {
     const name = this.newSavingsBillName().trim();
     const monthly = Number(this.newSavingsBillAmount());
     if (!name || !Number.isFinite(monthly) || monthly <= 0) return;
-    const newBill: SavingsPlanBill = {
-      id: Date.now(),
-      name,
-      monthly,
-      paycheckOne: monthly / 2,
-      paycheckTwo: monthly / 2,
-    };
-    this.savingsPlanBills.update((bills) => [...bills, newBill]);
+    this.expectedBills.update((bills) => [...bills, {
+      id: Date.now(), name, category: 'Expected Bills', subcategory: name, amount: monthly, active: true,
+    }]);
     this.newSavingsBillName.set('');
     this.newSavingsBillAmount.set(null);
-    this.persistSavingsPlan();
+    this.persistExpectedBills();
     this.syncToApi();
   }
 
@@ -1689,7 +1737,7 @@ export class App {
       localStorage.setItem('ledger-plan-salary', String(this.savingsPlanSalary()));
       localStorage.setItem('ledger-plan-rate', String(this.savingsPlanSavingsRate()));
       localStorage.setItem('ledger-plan-investment', String(this.savingsPlanInvestment()));
-      localStorage.setItem('ledger-plan-bills', JSON.stringify(this.savingsPlanBills()));
+      // Note: bills are now persisted via persistExpectedBills() — no longer stored separately
     } catch {}
   }
   private loadFromApi(): void {
@@ -1709,12 +1757,15 @@ export class App {
         if (typeof plan.salary === 'number' && plan.salary >= 0) this.savingsPlanSalary.set(plan.salary);
         if (typeof plan.savingsRate === 'number' && plan.savingsRate >= 0 && plan.savingsRate <= 100) this.savingsPlanSavingsRate.set(plan.savingsRate);
         if (typeof plan.investment === 'number' && plan.investment >= 0) this.savingsPlanInvestment.set(plan.investment);
-        if (Array.isArray(plan.bills) && plan.bills.length) this.savingsPlanBills.set(plan.bills);
         this.persistSavingsPlan();
       }
       if (Array.isArray(cloudData.expectedBills)) {
         this.expectedBills.set(cloudData.expectedBills.map((bill) => ({ ...bill, subcategory: String(bill.subcategory || '') })));
         this.persistExpectedBills();
+      }
+      // Migrate legacy cloud savingsPlan.bills into expectedBills (one-time)
+      if (plan && Array.isArray(plan.bills) && plan.bills.length) {
+        this.migrateLegacyFixedBills(plan.bills);
       }
       if (Array.isArray(cloudData.categories)) {
         this.categoryGroups.set(cloudData.categories);
@@ -1788,7 +1839,7 @@ export class App {
           salary: this.savingsPlanSalary(),
           savingsRate: this.savingsPlanSavingsRate(),
           investment: this.savingsPlanInvestment(),
-          bills: this.savingsPlanBills(),
+          // bills are now part of expectedBills — no longer duplicated here
         },
       },
     } : this.transactions());
