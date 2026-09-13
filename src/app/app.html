@@ -74,12 +74,12 @@
           <p class="muted">Total expenses for {{ monthLabel() }}</p>
         </article>
         <article class="fiori-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="metric-top"><span>Top category</span><span class="metric-icon expense">⌁</span></div>
+          <div class="metric-top"><span>Top category</span><span class="metric-icon expense">↘</span></div>
           <strong>{{ budgetCategories()[0]?.total ? (budgetCategories()[0].total | currency:'PHP':'symbol':'1.2-2') : '₱0.00' }}</strong>
           <p class="muted">{{ budgetCategories()[0]?.category || 'No expenses yet' }} · {{ monthLabel() }}</p>
         </article>
         <article class="fiori-card clickable-tile" (click)="selectSection('Bills')" tabindex="0" role="button" aria-label="Go to Expected Bills" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="metric-top"><span>Expected bills</span><span class="metric-icon bills">▣</span></div>
+          <div class="metric-top"><span>Expected bills</span><span class="metric-icon expense">↘</span></div>
           <strong>{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }} <span class="metric-target">/ {{ billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }}</span></strong>
           <p class="muted">{{ activeExpectedBills().length }} sub-categories planned · View bills →</p>
         </article>
@@ -655,13 +655,20 @@
           </div><button class="export-button" type="button" (click)="exportWorkbook()">↧ Export report</button>
         </div>
         <div class="report-metrics">
-          <article class="fiori-card report-expense"><span>Monthly expenses</span><strong>{{ reportTotalSpent() |
-              currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ reportExpenseCount() }} transactions</small>
+          <article class="fiori-card report-expense">
+            <div class="metric-top"><span>Monthly expenses</span><span class="metric-icon expense">↘</span></div>
+            <strong>{{ reportTotalSpent() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+            <p class="muted">{{ reportExpenseCount() }} transactions</p>
           </article>
-          <article class="fiori-card report-budget"><span>Top category</span><strong>{{ reportCategories()[0]?.category || '—' }}</strong><small>{{ reportCategories()[0]?.total ? (reportCategories()[0].total | currency:'PHP':'symbol':'1.0-0') + ' spent' : 'No data' }}</small>
+          <article class="fiori-card report-budget">
+            <div class="metric-top"><span>Top category</span><span class="metric-icon expense">↘</span></div>
+            <strong>{{ reportCategories()[0]?.category || '—' }}</strong>
+            <p class="muted">{{ reportCategories()[0]?.total ? (reportCategories()[0].total | currency:'PHP':'symbol':'1.0-0') + ' spent' : 'No data' }}</p>
           </article>
-          <article class="fiori-card report-savings"><span>Total savings</span><strong>{{ savingsBalance() |
-              currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ monthlySavingsSubtext() }}</small>
+          <article class="fiori-card report-savings">
+            <div class="metric-top"><span>Total savings</span><span class="metric-icon income">↗</span></div>
+            <strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+            <p class="muted">{{ monthlySavingsSubtext() }}</p>
           </article>
         </div>
         <div class="report-grid">
