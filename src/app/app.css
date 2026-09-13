@@ -454,14 +454,7 @@
   color: #64748b;
 }
 
-.fiori-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 18px 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
-}
+
 
 .fiori-card:hover {
   border-color: #cbd5e1;
@@ -513,6 +506,19 @@
   color: #0070f2;
   font-size: 14px;
   font-weight: 700;
+}
+
+.fiori-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
 }
 
 .metric-icon.income {
@@ -1850,11 +1856,7 @@ tbody tr:hover {
   gap: 20px;
 }
 
-.fiori-card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
+
 
 .fiori-card.primary {
   flex: 1.15;
@@ -2159,13 +2161,7 @@ tbody tr:hover {
   gap: 16px;
 }
 
-.fiori-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
+
 
 .tile-heading {
   display: flex;
@@ -2718,17 +2714,7 @@ tbody tr:hover {
 }
 
 /* Report card: label on top, value bold middle, sub-label small bottom */
-.fiori-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 16px 18px;
-  padding: 18px 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+
 
 .fiori-card span {
   display: block;

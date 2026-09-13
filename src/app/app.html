@@ -78,12 +78,12 @@
           <strong>{{ budgetCategories()[0]?.total ? (budgetCategories()[0].total | currency:'PHP':'symbol':'1.2-2') : '₱0.00' }}</strong>
           <p class="muted">{{ budgetCategories()[0]?.category || 'No expenses yet' }} · {{ monthLabel() }}</p>
         </article>
-        <article class="metric-card clickable-tile" (click)="selectSection('Bills')" tabindex="0" role="button" aria-label="Go to Expected Bills" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+        <article class="fiori-card clickable-tile" (click)="selectSection('Bills')" tabindex="0" role="button" aria-label="Go to Expected Bills" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="metric-top"><span>Expected bills</span><span class="metric-icon bills">▣</span></div>
           <strong>{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }} <span class="metric-target">/ {{ billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }}</span></strong>
           <p class="muted">{{ activeExpectedBills().length }} sub-categories planned · View bills →</p>
         </article>
-        <article class="metric-card savings-card clickable-tile" (click)="selectSection('Savings')" tabindex="0" role="button" aria-label="Go to Savings" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+        <article class="fiori-card savings-card clickable-tile" (click)="selectSection('Savings')" tabindex="0" role="button" aria-label="Go to Savings" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="metric-top"><span>Total savings balance</span><span class="metric-icon income">↗</span></div>
           <strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
           <div class="metric-progress-wrap">
@@ -452,7 +452,7 @@
           </section>
 
           <!-- Middle: this-month breakdown -->
-          <section class="reference-tile savings-month-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+          <section class="fiori-card savings-month-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
             <div class="tile-heading">
               <div>
                 <h3>{{ monthLabel() }}</h3>
@@ -619,7 +619,7 @@
                     [style.width.%]="(item.total / reportTotalSpent()) * 100"></i></em></div>} @if
               (!reportCategories().length) {<p class="empty-report">Add expenses to see categories.</p>}</div>
           </section>
-          <section class="reference-tile savings-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+          <section class="fiori-card savings-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
             <div class="tile-heading">
               <div>
                 <h3>Savings progress</h3>
@@ -631,7 +631,7 @@
             <div class="tile-foot"><span>Saved {{ savingsBalance() | currency:'PHP':'symbol':'1.0-0' }}</span><span>Target {{
               targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }}</span></div>
           </section>
-          <section class="reference-tile fund-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+          <section class="fiori-card fund-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
             <div class="tile-heading">
               <div>
                 <h3>Target savings goal</h3>
@@ -658,9 +658,9 @@
           <article class="fiori-card report-expense"><span>Monthly expenses</span><strong>{{ reportTotalSpent() |
               currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ reportExpenseCount() }} transactions</small>
           </article>
-          <article class="report-card report-budget"><span>Top category</span><strong>{{ reportCategories()[0]?.category || '—' }}</strong><small>{{ reportCategories()[0]?.total ? (reportCategories()[0].total | currency:'PHP':'symbol':'1.0-0') + ' spent' : 'No data' }}</small>
+          <article class="fiori-card report-budget"><span>Top category</span><strong>{{ reportCategories()[0]?.category || '—' }}</strong><small>{{ reportCategories()[0]?.total ? (reportCategories()[0].total | currency:'PHP':'symbol':'1.0-0') + ' spent' : 'No data' }}</small>
           </article>
-          <article class="report-card report-savings"><span>Total savings</span><strong>{{ savingsBalance() |
+          <article class="fiori-card report-savings"><span>Total savings</span><strong>{{ savingsBalance() |
               currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ monthlySavingsSubtext() }}</small>
           </article>
         </div>
