@@ -472,7 +472,7 @@
 }
 
 .savings-card strong {
-  color: #107e3e;
+  color: #107e3e !important;
 }
 
 .metric-top {
@@ -490,7 +490,7 @@
   display: block;
   font-size: 26px;
   font-weight: 700;
-  color: #1d2d3e;
+  
   margin: 10px 0 4px;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
@@ -1890,7 +1890,7 @@ tbody tr:hover {
 }
 
 .savings-overview-value.total-val {
-  color: #107e3e;
+  color: #107e3e !important;
 }
 
 .savings-overview-sub {
@@ -2048,7 +2048,7 @@ tbody tr:hover {
 
 .bills-metrics strong.expense-text,
 .bill-overspent .bill-status {
-  color: #c5221f;
+  color: #c5221f !important;
 }
 
 .bill-list {
@@ -2729,7 +2729,7 @@ tbody tr:hover {
   display: block;
   font-size: 22px;
   font-weight: 700;
-  color: #1d2d3e;
+  
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
 }
@@ -2740,9 +2740,9 @@ tbody tr:hover {
   color: #64748b;
 }
 
-.fiori-card.report-expense strong { color: #b00020; }
-.fiori-card.report-budget strong { color: #0070f2; }
-.fiori-card.report-savings strong { color: #0a7140; }
+.fiori-card.report-expense strong { color: #b00020 !important; }
+.fiori-card.report-budget strong { color: #0070f2 !important; }
+.fiori-card.report-savings strong { color: #0a7140 !important; }
 
 /* Two-column report grid (breakdown + health) */
 .report-grid {
