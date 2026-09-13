@@ -58,6 +58,39 @@ interface SubcategoryTrend {
   points: number[];
 }
 
+interface SubcategoryItem {
+  name: string;
+  amount: number;
+  percentOfParent: number;
+}
+
+interface CategorySubcategoryGroup {
+  category: string;
+  categoryTotal: number;
+  subcategories: SubcategoryItem[];
+}
+
+interface SubcategoryStackedSegment {
+  name: string;
+  amount: number;
+  heightPercent: number;
+  color: string;
+}
+
+interface MonthSubcategoryTrendPoint {
+  monthKey: string;
+  month: string;
+  total: number;
+  columnHeight: number;
+  isCurrent: boolean;
+  segments: SubcategoryStackedSegment[];
+}
+
+interface ReportSubcategoryTrendData {
+  months: MonthSubcategoryTrendPoint[];
+  legend: { name: string; color: string }[];
+}
+
 interface SavingsPlanAllocation {
   name: string;
   paycheckOne: number;
@@ -666,6 +699,158 @@ export class App {
         const maximum = Math.max(...trend.points, 1);
         return { ...trend, points: trend.points.map((point) => point ? Math.max(12, (point / maximum) * 100) : 4) };
       });
+  });
+
+  protected readonly reportSubcategoriesByCategory = computed<CategorySubcategoryGroup[]>(() => {
+    const catMap = new Map<string, { total: number; subs: Map<string, number> }>();
+
+    for (const item of this.reportTransactions()) {
+      if (item.savings) continue;
+      if (item.type && item.type !== 'Expense') continue;
+      const category = (item.category && item.category.trim()) || 'Other';
+      const subcategory = (item.subcategory && item.subcategory.trim()) || 'General / Uncategorized';
+      const amount = Math.abs(Number(item.amount) || 0);
+      if (amount <= 0) continue;
+
+      if (!catMap.has(category)) {
+        catMap.set(category, { total: 0, subs: new Map() });
+      }
+      const group = catMap.get(category)!;
+      group.total += amount;
+      group.subs.set(subcategory, (group.subs.get(subcategory) ?? 0) + amount);
+    }
+
+    return [...catMap.entries()]
+      .map(([category, { total, subs }]) => {
+        const subcategories: SubcategoryItem[] = [...subs.entries()]
+          .map(([name, amount]) => ({
+            name,
+            amount,
+            percentOfParent: total > 0 ? (amount / total) * 100 : 0,
+          }))
+          .sort((a, b) => b.amount - a.amount);
+        return {
+          category,
+          categoryTotal: total,
+          subcategories,
+        };
+      })
+      .sort((a, b) => b.categoryTotal - a.categoryTotal);
+  });
+
+  protected readonly hasEnoughSubcategoryHistoricalData = computed(() => {
+    const monthsWithSubs = new Set(
+      this.transactions()
+        .filter((t) => !t.savings && (t.type === 'Expense' || !t.type) && t.subcategory && Math.abs(Number(t.amount) || 0) > 0)
+        .map((t) => this.getTransactionMonth(t.date))
+        .filter(Boolean)
+    );
+    return monthsWithSubs.size >= 2;
+  });
+
+  protected subcategoryColor(index: number): string {
+    const palette = [
+      '#0070f2', // Fiori Blue
+      '#107e3e', // Green
+      '#e9730c', // Orange
+      '#7c3aed', // Purple
+      '#d9363e', // Coral/Red
+      '#0284c7', // Sky Blue
+      '#16a34a', // Emerald
+      '#b45309', // Amber
+    ];
+    return palette[index % palette.length];
+  }
+
+  protected readonly reportSubcategoryTrendData = computed<ReportSubcategoryTrendData>(() => {
+    const months = this.getLast6Months();
+    if (months.length < 2 || !this.hasEnoughSubcategoryHistoricalData()) {
+      return { months: [], legend: [] };
+    }
+
+    const subTotals = new Map<string, number>();
+    for (const month of months) {
+      for (const item of this.transactions()) {
+        if (item.savings || (item.type && item.type !== 'Expense')) continue;
+        if (!this.matchesMonth(item.date, month)) continue;
+        const sub = (item.subcategory && item.subcategory.trim()) || 'Other';
+        const amount = Math.abs(Number(item.amount) || 0);
+        if (amount > 0) {
+          subTotals.set(sub, (subTotals.get(sub) ?? 0) + amount);
+        }
+      }
+    }
+
+    const sortedSubs = [...subTotals.entries()].sort((a, b) => b[1] - a[1]).map((e) => e[0]);
+    const topSubs = sortedSubs.slice(0, 5);
+    const hasOther = sortedSubs.length > 5;
+
+    const legend: { name: string; color: string }[] = topSubs.map((name, idx) => ({
+      name,
+      color: this.subcategoryColor(idx),
+    }));
+    if (hasOther) {
+      legend.push({ name: 'Other', color: '#94a3b8' });
+    }
+
+    const rawMonths = months.map((monthKey) => {
+      const monthTransactions = this.transactions().filter(
+        (t) => !t.savings && (t.type === 'Expense' || !t.type) && this.matchesMonth(t.date, monthKey)
+      );
+
+      const segmentMap = new Map<string, number>();
+      let monthTotal = 0;
+
+      for (const t of monthTransactions) {
+        const amount = Math.abs(Number(t.amount) || 0);
+        if (amount <= 0) continue;
+        monthTotal += amount;
+        const sub = (t.subcategory && t.subcategory.trim()) || 'Other';
+        const targetGroup = topSubs.includes(sub) ? sub : (hasOther ? 'Other' : sub);
+        segmentMap.set(targetGroup, (segmentMap.get(targetGroup) ?? 0) + amount);
+      }
+
+      return {
+        monthKey,
+        month: new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(new Date(`${monthKey}-01T00:00:00Z`)),
+        total: monthTotal,
+        isCurrent: monthKey === this.selectedMonth(),
+        segmentMap,
+      };
+    });
+
+    const maxMonthTotal = Math.max(...rawMonths.map((m) => m.total), 1);
+
+    const monthPoints: MonthSubcategoryTrendPoint[] = rawMonths.map((m) => {
+      const columnHeight = m.total > 0 ? Math.max(10, Math.round((m.total / maxMonthTotal) * 100)) : 4;
+      const segments: SubcategoryStackedSegment[] = [];
+
+      for (const item of legend) {
+        const amount = m.segmentMap.get(item.name) ?? 0;
+        if (amount > 0 && m.total > 0) {
+          segments.push({
+            name: item.name,
+            amount,
+            heightPercent: Math.max(2, (amount / m.total) * 100),
+            color: item.color,
+          });
+        }
+      }
+
+      return {
+        monthKey: m.monthKey,
+        month: m.month,
+        total: m.total,
+        columnHeight,
+        isCurrent: m.isCurrent,
+        segments,
+      };
+    });
+
+    return {
+      months: monthPoints,
+      legend,
+    };
   });
   protected readonly newCategoryName = signal('');
   protected readonly newCategorySubcategory = signal('');

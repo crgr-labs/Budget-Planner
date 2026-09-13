@@ -2895,6 +2895,220 @@ tbody tr:hover {
 }
 
 /* --------------------------------------------------------------------------
+   Sub-category Spending Breakdown & Stacked Trend
+   -------------------------------------------------------------------------- */
+.subcategory-report-header {
+  margin-top: 32px;
+}
+
+.subcategory-breakdown-panel,
+.subcategory-trend-panel {
+  min-height: 0;
+}
+
+.subcategory-groups-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.subcategory-parent-group {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-sizing: border-box;
+}
+
+.subcategory-parent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.subcategory-parent-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #1d2d3e;
+}
+
+.subcategory-parent-total {
+  font-weight: 700;
+  font-size: 13px;
+  color: #1d2d3e;
+  font-variant-numeric: tabular-nums;
+}
+
+.subcategory-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.subcategory-item-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.subcategory-item-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
+  color: #334155;
+}
+
+.subcategory-name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.subcategory-amount-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.subcategory-share-pct {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.subcategory-bar-track {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.subcategory-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Stacked 6-Month Trend Chart */
+.stacked-trend-container {
+  display: flex;
+  flex-direction: column;
+  height: 260px;
+  margin-top: 16px;
+}
+
+.stacked-trend-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 1;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.stacked-bar-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.stacked-column-total {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.current-month-col .stacked-column-total {
+  color: #0070f2;
+  font-weight: 700;
+}
+
+.current-month-col .stacked-column-label {
+  color: #1d2d3e;
+  font-weight: 700;
+}
+
+.stacked-bar-track {
+  width: 100%;
+  max-width: 36px;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.stacked-bar-body {
+  width: 100%;
+  display: flex;
+  flex-direction: column-reverse; /* Bottom-to-top segment stacking */
+  border-radius: 4px 4px 0 0;
+  overflow: hidden;
+  min-height: 4px;
+  transition: height 0.3s ease;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.stacked-segment {
+  width: 100%;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.stacked-segment:hover {
+  filter: brightness(1.18);
+}
+
+.stacked-column-label {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.stacked-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.stacked-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
    Sync Note & Footer
    -------------------------------------------------------------------------- */
 .sync-note {
@@ -2927,7 +3141,8 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 
-  .dashboard-grid {
+  .dashboard-grid,
+  .report-grid {
     grid-template-columns: 1fr;
   }
 

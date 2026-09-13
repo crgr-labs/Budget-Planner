@@ -764,6 +764,110 @@
             }
           </section>
         </div>
+
+        <!-- Spending by Sub-category Section -->
+        <div class="report-header subcategory-report-header">
+          <div>
+            <p class="eyebrow">DETAILED ANALYSIS</p>
+            <h2>Spending by sub-category</h2>
+            <p class="muted">Sub-category distribution grouped by parent category and 6-month trends.</p>
+          </div>
+        </div>
+
+        <div class="report-grid subcategory-report-grid">
+          <!-- Left Panel: Sub-category Breakdown Card -->
+          <section class="panel subcategory-breakdown-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+            <div class="panel-heading">
+              <div>
+                <h2>Sub-category breakdown</h2>
+                <p class="muted">Grouped by parent category · {{ monthLabel() }}</p>
+              </div>
+              <span class="report-icon">≡</span>
+            </div>
+
+            @if (reportSubcategoriesByCategory().length) {
+            <div class="subcategory-groups-list">
+              @for (catGroup of reportSubcategoriesByCategory(); track catGroup.category; let catIndex = $index) {
+              <div class="subcategory-parent-group">
+                <div class="subcategory-parent-header">
+                  <div class="subcategory-parent-name">
+                    <i class="category-dot" [style.background-color]="categoryColor(catIndex)"></i>
+                    <strong>{{ catGroup.category }}</strong>
+                  </div>
+                  <span class="subcategory-parent-total">{{ catGroup.categoryTotal | currency:'PHP':'symbol':'1.2-2' }}</span>
+                </div>
+
+                <div class="subcategory-items-list">
+                  @for (sub of catGroup.subcategories; track sub.name; let subIndex = $index) {
+                  <div class="subcategory-item-row">
+                    <div class="subcategory-item-label">
+                      <span class="subcategory-name-text">{{ sub.name }}</span>
+                      <span class="subcategory-amount-text">
+                        <b>{{ sub.amount | currency:'PHP':'symbol':'1.2-2' }}</b>
+                        <small class="subcategory-share-pct">{{ sub.percentOfParent | number:'1.0-0' }}% of {{ catGroup.category }}</small>
+                      </span>
+                    </div>
+                    <div class="subcategory-bar-track">
+                      <i class="subcategory-bar-fill" [style.width.%]="sub.percentOfParent" [style.background-color]="categoryColor(catIndex)"></i>
+                    </div>
+                  </div>
+                  }
+                </div>
+              </div>
+              }
+            </div>
+            } @else {
+            <p class="empty-report">No sub-category spending recorded for {{ monthLabel() }}.</p>
+            }
+          </section>
+
+          <!-- Right Panel: 6-Month Sub-category Spending Trend Chart -->
+          <section class="panel subcategory-trend-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+            <div class="panel-heading">
+              <div>
+                <h2>Sub-category spend trend</h2>
+                <p class="muted">Stacked monthly spending by sub-category (last 6 months)</p>
+              </div>
+              <span class="report-icon">📊</span>
+            </div>
+
+            @if (hasEnoughSubcategoryHistoricalData() && reportSubcategoryTrendData().months.length >= 2) {
+            <div class="stacked-trend-container" aria-label="Sub-category 6-month stacked trend chart">
+              <div class="stacked-trend-bars">
+                @for (monthPoint of reportSubcategoryTrendData().months; track monthPoint.monthKey) {
+                <div class="stacked-bar-column" [class.current-month-col]="monthPoint.isCurrent">
+                  <span class="stacked-column-total">{{ monthPoint.total > 0 ? (monthPoint.total | currency:'PHP':'symbol':'1.0-0') : '₱0' }}</span>
+                  <div class="stacked-bar-track">
+                    <div class="stacked-bar-body" [style.height.%]="monthPoint.columnHeight">
+                      @for (seg of monthPoint.segments; track seg.name) {
+                      <div class="stacked-segment" [style.height.%]="seg.heightPercent" [style.background-color]="seg.color" [title]="seg.name + ': ' + (seg.amount | currency:'PHP':'symbol':'1.2-2')"></div>
+                      }
+                    </div>
+                  </div>
+                  <small class="stacked-column-label">{{ monthPoint.month }}</small>
+                </div>
+                }
+              </div>
+
+              <!-- Legend -->
+              <div class="stacked-legend">
+                @for (item of reportSubcategoryTrendData().legend; track item.name) {
+                <span class="stacked-legend-item">
+                  <i class="legend-swatch" [style.background-color]="item.color"></i>
+                  <span>{{ item.name }}</span>
+                </span>
+                }
+              </div>
+            </div>
+            } @else {
+            <div class="trend-empty-state">
+              <div class="trend-empty-icon">📊</div>
+              <strong class="trend-empty-title">Not enough data yet</strong>
+              <p class="muted">Sub-category trend chart requires spending history from at least 2 months to visualize trajectory. Currently showing {{ monthLabel() }}.</p>
+            </div>
+            }
+          </section>
+        </div>
       </section>
       }
       @if (activeSection() === 'Transactions') {
