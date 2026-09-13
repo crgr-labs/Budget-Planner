@@ -1,0 +1,469 @@
+<section class="reference-reports">
+  <div class="report-page-heading">
+    <div>
+      <p class="eyebrow">PERSONAL FINANCE</p>
+      <h2>Savings &amp; Target Savings</h2>
+      <p class="muted">Track your current savings and progress toward your target savings.</p>
+    </div>
+  </div>
+
+  <div class="type-toggle savings-subpage-tabs">
+    <button type="button" [class.selected]="savingsSubPage() === 'Plan'" (click)="selectSavingsSubPage('Plan')">Savings plan</button>
+    <button type="button" [class.selected]="savingsSubPage() === 'AddTransaction'" (click)="selectSavingsSubPage('AddTransaction')">Add transaction</button>
+  </div>
+
+  <section class="panel savings-overview-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+    <div class="savings-overview-metrics">
+      <div class="savings-overview-item primary">
+        <span class="savings-overview-label">Total savings</span>
+        <strong class="savings-overview-value total-val">{{ ledger.savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+        <small class="savings-overview-sub">{{ ledger.monthlySavingsSubtext() }}</small>
+      </div>
+      <div class="savings-overview-divider"></div>
+      <div class="savings-overview-item">
+        <span class="savings-overview-label">Target savings goal</span>
+        <strong class="savings-overview-value">{{ ledger.cloudDataReady() ? (ledger.targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong>
+        <small class="savings-overview-sub">{{ ledger.cloudDataReady() ? (ledger.savingsGoalProgress() | number:'1.0-0') + '% complete' : 'Syncing...' }}</small>
+      </div>
+      <div class="savings-overview-divider"></div>
+      <div class="savings-overview-item">
+        <span class="savings-overview-label">Amount remaining</span>
+        <strong class="savings-overview-value">{{ ledger.cloudDataReady() ? (ledger.amountRemaining() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong>
+        <small class="savings-overview-sub">Until the goal is reached</small>
+      </div>
+    </div>
+    <div class="savings-overview-progress">
+      <div class="savings-progress-bar">
+        <span [style.width.%]="ledger.savingsGoalProgress()"></span>
+      </div>
+    </div>
+  </section>
+
+  @if (savingsSubPage() === 'Plan') {
+    <button class="savings-details-toggle" type="button" [attr.aria-expanded]="savingsDetailsOpen()" (click)="toggleSavingsDetails()">
+      <span>{{ savingsDetailsOpen() ? 'Hide plan details' : 'Show plan details' }}</span>
+      <span aria-hidden="true">{{ savingsDetailsOpen() ? '−' : '+' }}</span>
+    </button>
+  }
+
+  @if (savingsSubPage() === 'Plan' && savingsDetailsOpen()) {
+    <section class="panel savings-plan-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">FROM SAVINGS PLAN</p>
+          <h2>Balanced savings plan</h2>
+          <p class="muted">A twice-monthly allocation built around a {{ ledger.savingsPlanSavingsRate() }}% savings target.</p>
+        </div>
+        <button class="plan-params-toggle" type="button" (click)="toggleEditingPlanParameters()">
+          {{ editingPlanParameters() ? 'Close parameters' : '✎ Edit plan parameters' }}
+        </button>
+      </div>
+
+      @if (editingPlanParameters()) {
+      <div class="savings-plan-params-form">
+        <div class="form-grid">
+          <label>Monthly salary
+            <div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="ledger.savingsPlanSalary()" (ngModelChange)="updateSavingsPlanSalary($event)" /></div>
+          </label>
+          <label>Savings target
+            <div class="amount-input"><span>%</span><input type="number" min="1" max="100" [ngModel]="ledger.savingsPlanSavingsRate()" (ngModelChange)="updateSavingsPlanRate($event)" /></div>
+          </label>
+          <label>Minimum investment
+            <div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="ledger.savingsPlanInvestment()" (ngModelChange)="updateSavingsPlanInvestment($event)" /></div>
+          </label>
+        </div>
+        <div class="plan-params-actions">
+          <button class="reset-plan-button" type="button" (click)="resetSavingsPlanToDefaults()">Reset to default 40% plan</button>
+          <button class="done-plan-button" type="button" (click)="toggleEditingPlanParameters()">Done</button>
+        </div>
+      </div>
+      }
+
+      <div class="reference-metrics">
+        <article>
+          <span>Combined monthly salary</span>
+          <strong>{{ ledger.savingsPlan().salary | currency:'PHP':'symbol':'1.0-0' }}</strong>
+          <small>Two paychecks of {{ ledger.savingsPlan().salary / 2 | currency:'PHP':'symbol':'1.0-0' }}</small>
+        </article>
+        <article>
+          <span>Fixed needs</span>
+          <strong>{{ ledger.savingsPlan().fixedNeeds | currency:'PHP':'symbol':'1.0-0' }}</strong>
+          <small>{{ ledger.savingsPlan().fixedNeeds / (ledger.savingsPlan().salary || 1) | percent:'1.0-0' }} of salary</small>
+        </article>
+        <article>
+          <span>Monthly savings target</span>
+          <strong>{{ ledger.savingsPlan().savingsGoal | currency:'PHP':'symbol':'1.0-0' }}</strong>
+          <small>{{ ledger.savingsPlan().savingsGoal / (ledger.savingsPlan().salary || 1) | percent:'1.0-0' }} of salary</small>
+        </article>
+        <article>
+          <span>Variable allowance</span>
+          <strong>{{ ledger.savingsPlan().variableAllowance | currency:'PHP':'symbol':'1.0-0' }}</strong>
+          <small>Available after savings and fixed needs</small>
+        </article>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Paycheck allocation</th>
+              <th class="align-right">Paycheck 1</th>
+              <th class="align-right">Paycheck 2</th>
+              <th class="align-right">Monthly total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (allocation of ledger.savingsPlanAllocations(); track allocation.name) {
+            <tr>
+              <td><strong>{{ allocation.name }}</strong></td>
+              <td class="align-right">{{ allocation.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
+              <td class="align-right">{{ allocation.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
+              <td class="align-right"><strong>{{ allocation.monthly | currency:'PHP':'symbol':'1.0-0' }}</strong></td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="reference-tiles">
+      <section class="reference-tile">
+        <div class="tile-heading">
+          <div>
+            <h3>Savings allocation detail</h3>
+            <p>Move these amounts immediately after payday.</p>
+          </div>
+          <span>↗</span>
+        </div>
+        <div class="tile-bars">
+          @for (bucket of ledger.savingsPlanBuckets(); track bucket.name) {
+          <div>
+            <label>
+              <span>{{ bucket.name }}</span>
+              <b>{{ bucket.monthly | currency:'PHP':'symbol':'1.0-0' }}</b>
+            </label>
+            <em><i [style.width.%]="(bucket.monthly / (ledger.savingsPlan().savingsGoal || 1)) * 100"></i></em>
+            <small>{{ bucket.perPayday | currency:'PHP':'symbol':'1.0-0' }} per payday · {{ bucket.purpose }}</small>
+          </div>
+          }
+        </div>
+      </section>
+
+      <section class="reference-tile">
+        <div class="tile-heading">
+          <div>
+            <h3>Emergency fund roadmap</h3>
+            <p>Build the safety net with the emergency reserve.</p>
+          </div>
+          <span>◎</span>
+        </div>
+        <div class="tile-bars">
+          @for (milestone of ledger.savingsPlanRoadmap(); track milestone.milestone) {
+          <div>
+            <label>
+              <span>{{ milestone.milestone }}</span>
+              <b>{{ milestone.target | currency:'PHP':'symbol':'1.0-0' }}</b>
+            </label>
+            <em><i [style.width.%]="ledger.savingsBalance() > 0 ? (ledger.savingsBalance() / milestone.target) * 100 : 0"></i></em>
+            <small>{{ milestone.monthlyContribution | currency:'PHP':'symbol':'1.0-0' }} monthly · estimated {{ milestone.estimatedMonths }} months</small>
+          </div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <section class="panel savings-plan-panel">
+      <div class="panel-heading">
+        <div>
+          <h2>Fixed needs and bills</h2>
+          <p class="muted">Monthly reserve split evenly across both paychecks.</p>
+        </div>
+        <strong>{{ ledger.savingsPlan().fixedNeeds | currency:'PHP':'symbol':'1.0-0' }}</strong>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fixed need / bill</th>
+              <th class="align-right">Monthly</th>
+              <th class="align-right">Paycheck 1</th>
+              <th class="align-right">Paycheck 2</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (bill of ledger.savingsPlanBills(); track bill.id) {
+              @if (editingSavingsBillId() === bill.id && editingSavingsBill(); as editBill) {
+              <tr class="editing-row">
+                <td><input aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateEditingSavingsBill('name', $event)" /></td>
+                <td class="align-right"><div class="amount-input"><span>₱</span><input aria-label="Edit monthly amount" type="number" min="0" [ngModel]="editBill.monthly" (ngModelChange)="updateEditingSavingsBill('monthly', $event)" /></div></td>
+                <td class="align-right muted">{{ (editBill.monthly / 2) | currency:'PHP':'symbol':'1.0-0' }}</td>
+                <td class="align-right muted">{{ (editBill.monthly / 2) | currency:'PHP':'symbol':'1.0-0' }}</td>
+                <td>
+                  <div class="row-actions">
+                    <button class="save-row-button" type="button" (click)="saveEditingSavingsBill()">Save</button>
+                    <button class="cancel-row-button" type="button" (click)="cancelEditingSavingsBill()">Cancel</button>
+                  </div>
+                </td>
+              </tr>
+              } @else {
+              <tr>
+                <td>{{ bill.name }}</td>
+                <td class="align-right">{{ bill.monthly | currency:'PHP':'symbol':'1.0-0' }}</td>
+                <td class="align-right">{{ bill.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
+                <td class="align-right">{{ bill.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
+                <td>
+                  <div class="row-actions">
+                    <button class="edit-row-button icon-action" type="button" aria-label="Edit fixed need" (click)="startEditingSavingsBill(bill)">✎</button>
+                    <button class="delete-button" type="button" aria-label="Delete fixed need" (click)="removeSavingsPlanBill(bill.id)">×</button>
+                  </div>
+                </td>
+              </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+      <form class="add-savings-bill-form" (submit)="addSavingsPlanBill(); $event.preventDefault()">
+        <label>Bill name
+          <input required [ngModel]="newSavingsBillName()" name="bname" (ngModelChange)="newSavingsBillName.set($event)" placeholder="e.g. Health Insurance" />
+        </label>
+        <label>Monthly amount
+          <div class="amount-input">
+            <span>₱</span>
+            <input required min="0.01" step="0.01" type="number" [ngModel]="newSavingsBillAmount()" name="bamt" (ngModelChange)="newSavingsBillAmount.set($event)" placeholder="0.00" />
+          </div>
+        </label>
+        <button class="add-bill-button" type="submit">＋ Add fixed need</button>
+      </form>
+    </section>
+
+    <div class="reference-tiles savings-tiles-3col">
+      <section class="reference-tile trend-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+        <div class="tile-heading">
+          <div>
+            <h3>Monthly net savings</h3>
+            <p>Contributions minus withdrawals · last 6 months</p>
+          </div>
+          <span>↗</span>
+        </div>
+        <div class="trend-chart">
+          @for (point of ledger.savingsTrendData(); track point.month) {
+          <div class="trend-column">
+            <i [style.height.%]="point.height" [title]="(point.amount | currency:'PHP':'symbol':'1.0-0')"></i>
+            <small>{{ point.month }}</small>
+          </div>
+          }
+        </div>
+      </section>
+
+      <section class="reference-tile savings-month-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+        <div class="tile-heading">
+          <div>
+            <h3>{{ ledger.monthLabel() }}</h3>
+            <p>This month's savings activity</p>
+          </div>
+          <span>₱</span>
+        </div>
+        <div class="tile-bars">
+          <div>
+            <label><span>Contributions</span><b class="savings-amount">{{ ledger.currentSavingsSummary().contributions | currency:'PHP':'symbol':'1.0-0' }}</b></label>
+          </div>
+          <div>
+            <label><span>Withdrawals</span><b class="withdrawal-amount">{{ ledger.currentSavingsSummary().withdrawals > 0 ? ('−' + (ledger.currentSavingsSummary().withdrawals | currency:'PHP':'symbol':'1.0-0')) : '₱0' }}</b></label>
+          </div>
+          <div>
+            <label><span>Net saved</span><b>{{ ledger.currentSavingsSummary().netSavings | currency:'PHP':'symbol':'1.0-0' }}</b></label>
+          </div>
+        </div>
+        <div class="savings-month-divider"></div>
+        <div class="savings-month-footer">
+          <span>Running balance as of {{ ledger.monthLabel() }}</span>
+          <b>{{ ledger.currentSavingsSummary().runningBalance | currency:'PHP':'symbol':'1.0-0' }}</b>
+        </div>
+      </section>
+
+      <section class="reference-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+        <div class="tile-heading">
+          <div>
+            <h3>Goal progress</h3>
+            <p>Estimated milestone · {{ ledger.targetDate() }}</p>
+          </div>
+          <span>◎</span>
+        </div>
+        <div class="savings-goal-big">
+          <strong>{{ ledger.savingsGoalProgress() | number:'1.0-0' }}<small>%</small></strong>
+          <span>of target</span>
+        </div>
+        <div class="reference-progress"><i [style.width.%]="ledger.savingsGoalProgress()"></i></div>
+        <div class="tile-foot">
+          <span>{{ ledger.savingsBalance() | currency:'PHP':'symbol':'1.0-0' }} saved</span>
+          <span>{{ ledger.amountRemaining() | currency:'PHP':'symbol':'1.0-0' }} to go</span>
+        </div>
+        <div class="tile-bars" style="margin-top:16px">
+          @for (fund of ledger.savingsBalances(); track fund.name) {
+          <div>
+            <label><span>{{ fund.name }}</span><b>{{ fund.amount | currency:'PHP':'symbol':'1.0-0' }}</b></label>
+            <em><i [style.width.%]="ledger.savingsBalance() > 0 ? (fund.amount / ledger.savingsBalance()) * 100 : 0"></i></em>
+          </div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <section class="panel savings-transactions-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+      <div class="panel-heading">
+        <div>
+          <h2>Recent savings transactions</h2>
+          <p class="muted">Recent contributions and withdrawals</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Sub-category</th>
+              <th>Transaction type</th>
+              <th class="align-right">Amount</th>
+              <th>Account</th>
+              <th>Notes</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (transaction of ledger.recentSavingsTransactions(); track transaction.id) {
+            <tr>
+              <td class="muted">{{ transaction.date | date:'MMM d, y' }}</td>
+              <td><span class="category-pill">{{ transaction.category }}</span></td>
+              <td>{{ transaction.subcategory || 'No sub-category' }}</td>
+              <td><span class="category-pill">{{ ledger.isSavingsContribution(transaction) ? 'Contribution' : 'Withdrawal' }}</span></td>
+              <td class="align-right" [class.income-text]="ledger.isSavingsContribution(transaction)">
+                <strong>{{ ledger.isSavingsContribution(transaction) ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong>
+              </td>
+              <td>{{ transaction.account }}</td>
+              <td>{{ transaction.description }}</td>
+              <td>
+                <button class="delete-button" type="button" aria-label="Delete savings transaction" (click)="removeTransaction(transaction.id)">×</button>
+              </td>
+            </tr>
+            }
+            @if (!ledger.recentSavingsTransactions().length) {
+            <tr><td colspan="8" class="muted">Add savings transactions to see savings activity.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="mobile-transaction-list">
+        @for (transaction of ledger.recentSavingsTransactions(); track transaction.id) {
+        <article class="mobile-transaction-card">
+          <div class="mobile-transaction-top">
+            <span class="transaction-icon" [class.income-icon]="ledger.isSavingsContribution(transaction)">{{ ledger.isSavingsContribution(transaction) ? '↗' : '↘' }}</span>
+            <div>
+              <strong>{{ transaction.description }}</strong>
+              <small>{{ transaction.date | date:'MMM d, y' }}</small>
+            </div>
+            <strong class="mobile-transaction-amount" [class.income-text]="ledger.isSavingsContribution(transaction)">
+              {{ ledger.isSavingsContribution(transaction) ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}
+            </strong>
+          </div>
+          <div class="mobile-transaction-meta">
+            <span class="category-pill">{{ transaction.category }}</span>
+            <span>{{ transaction.subcategory || 'No sub-category' }}</span>
+            <span>{{ ledger.isSavingsContribution(transaction) ? 'Contribution' : 'Withdrawal' }}</span>
+            <span>{{ transaction.account || 'No account' }}</span>
+            <button class="delete-button" type="button" aria-label="Delete savings transaction" (click)="removeTransaction(transaction.id)">×</button>
+          </div>
+        </article>
+        }
+      </div>
+    </section>
+  }
+
+  @if (savingsSubPage() === 'AddTransaction') {
+    <section class="panel unified-savings-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+      <div class="panel-heading">
+        <div>
+          <h2>Savings actions</h2>
+          <p class="muted">Manage your savings target or add a transaction.</p>
+        </div>
+        <span class="plus-badge">＋</span>
+      </div>
+
+      <div class="type-toggle" style="margin-bottom: 24px; max-width: 400px;">
+        <button type="button" [class.selected]="savingsActionTab() === 'Transaction'" (click)="savingsActionTab.set('Transaction')">Add Transaction</button>
+        <button type="button" [class.selected]="savingsActionTab() === 'Target'" (click)="savingsActionTab.set('Target')">Target Goal</button>
+      </div>
+
+      @if (savingsActionTab() === 'Transaction') {
+        <div class="type-toggle" style="margin-bottom: 16px; max-width: 300px;">
+          <button type="button" [class.selected]="newSavingsTransaction().type === 'Income'" (click)="updateSavingsField('type', 'Income')">Contribution</button>
+          <button type="button" [class.selected]="newSavingsTransaction().type === 'Expense'" (click)="updateSavingsField('type', 'Expense')">Withdrawal</button>
+        </div>
+        <div class="quick-presets">
+          <span class="presets-label">Quick amount:</span>
+          <div class="preset-chips">
+            <button type="button" class="preset-chip" (click)="setSavingsAmount(1000)">₱1,000</button>
+            <button type="button" class="preset-chip" (click)="setSavingsAmount(5000)">₱5,000</button>
+            <button type="button" class="preset-chip" (click)="setSavingsAmount(10000)">₱10,000</button>
+            <button type="button" class="preset-chip" (click)="setSavingsAmount(20000)">₱20,000</button>
+            @if (ledger.savingsPlan().savingsGoal > 0) {
+            <button type="button" class="preset-chip plan-chip" (click)="setSavingsAmount(ledger.savingsPlan().savingsGoal / 2)">
+              Paycheck target ({{ ledger.savingsPlan().savingsGoal / 2 | currency:'PHP':'symbol':'1.0-0' }})
+            </button>
+            }
+          </div>
+        </div>
+        <form (submit)="addSavingsTransaction(); $event.preventDefault()">
+          <div class="form-grid">
+            <label>Category
+              <select [ngModel]="newSavingsTransaction().category" name="cat" (ngModelChange)="updateSavingsField('category', $event)">
+                @for (category of ledger.savingsCategories; track category) {
+                <option [value]="category">{{ category }}</option>
+                }
+              </select>
+            </label>
+            <label>Sub-category
+              <select [ngModel]="newSavingsTransaction().subcategory" name="subcat" (ngModelChange)="updateSavingsField('subcategory', $event)">
+                <option value="">No sub-category</option>
+                @for (subcategory of ledger.savingsSubcategoriesFor(newSavingsTransaction().category); track subcategory) {
+                <option [value]="subcategory">{{ subcategory }}</option>
+                }
+              </select>
+            </label>
+            <label>Account
+              <input [ngModel]="newSavingsTransaction().account" name="acc" (ngModelChange)="updateSavingsField('account', $event)" placeholder="e.g. BPI or GCash" />
+            </label>
+            <label>Amount
+              <div class="amount-input">
+                <span>₱</span>
+                <input type="number" min="0.01" step="0.01" required [ngModel]="newSavingsTransaction().amount" name="amt" (ngModelChange)="updateSavingsField('amount', $event)" placeholder="0.00" />
+              </div>
+            </label>
+            <label>Date
+              <input type="date" [ngModel]="newSavingsTransaction().date" name="dt" (ngModelChange)="updateSavingsField('date', $event)" required />
+            </label>
+            <label>Notes
+              <input [ngModel]="newSavingsTransaction().description" name="desc" (ngModelChange)="updateSavingsField('description', $event)" placeholder="e.g. Monthly transfer" />
+            </label>
+          </div>
+          <button class="add-button" type="submit" [class.just-added]="recentlyAddedSavings()">
+            {{ recentlyAddedSavings() ? '✓ Added!' : 'Add savings transaction' }} <span>→</span>
+          </button>
+        </form>
+      } @else {
+        <div class="form-grid" style="grid-template-columns: 1fr; max-width: 320px;">
+          <label>Target amount
+            <div class="amount-input">
+              <span>₱</span>
+              <input type="number" min="1" [ngModel]="ledger.targetSavingsGoal()" (ngModelChange)="updateTargetSavingsGoal($event)" />
+            </div>
+          </label>
+        </div>
+        <p class="muted" style="margin-top: 12px; font-size: 13px;">Set your target goal for tracking overall progress.</p>
+      }
+    </section>
+  }
+</section>
+
