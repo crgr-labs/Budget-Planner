@@ -963,6 +963,9 @@ export class App {
           }
         } catch {}
         try { localStorage.removeItem('ledger-plan-bills'); } catch {}
+      } else if (this.expectedBills().length === 0) {
+        // First run with clean state: seed default fixed bills into expectedBills
+        this.migrateLegacyFixedBills(this.defaultFixedBills);
       }
     } catch {}
 
@@ -1341,19 +1344,25 @@ export class App {
     }
   }
 
+  private normalizeBillName(name: string): string {
+    const trimmed = name.toLowerCase().trim();
+    if (trimmed === 'groceries') return 'grocery';
+    return trimmed;
+  }
+
   /**
    * One-time migration: merge legacy SavingsPlanBill records into expectedBills.
-   * Bills with matching names (case-insensitive) are considered the same record.
+   * Bills with matching names (case-insensitive / plural-normalized) are considered the same record.
    * Bills only in the legacy list are created as new ExpectedBills under 'Expected Bills' category.
    */
   private migrateLegacyFixedBills(legacyBills: { id?: number; name: string; monthly: number }[]): void {
     const current = this.expectedBills();
-    const existingNames = new Set(current.map(b => b.name.toLowerCase().trim()));
+    const existingNormNames = new Set(current.map(b => this.normalizeBillName(b.name)));
     const newBills: ExpectedBill[] = [];
 
     for (const legacy of legacyBills) {
       const name = (legacy.name || '').trim();
-      if (!name || existingNames.has(name.toLowerCase())) continue;
+      if (!name || existingNormNames.has(this.normalizeBillName(name))) continue;
       newBills.push({
         id: legacy.id ?? Date.now() + newBills.length + 1,
         name,
@@ -1362,11 +1371,12 @@ export class App {
         amount: legacy.monthly ?? 0,
         active: true,
       });
-      existingNames.add(name.toLowerCase());
+      existingNormNames.add(this.normalizeBillName(name));
     }
 
     if (newBills.length) {
       this.expectedBills.update(bills => [...bills, ...newBills]);
+      this.ensureExpectedBillsCategory();
       this.persistExpectedBills();
       this.syncToApi();
     }
@@ -1487,6 +1497,7 @@ export class App {
     }]);
     this.newSavingsBillName.set('');
     this.newSavingsBillAmount.set(null);
+    this.ensureExpectedBillsCategory();
     this.persistExpectedBills();
     this.syncToApi();
   }
