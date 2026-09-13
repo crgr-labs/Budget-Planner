@@ -132,6 +132,7 @@
             </div>
             <span class="report-icon">📊</span>
           </div>
+          @if (hasEnoughHistoricalData() && trendData().length >= 2) {
           <div class="overview-trend-chart" aria-label="Monthly expense trend chart">
             <div class="overview-trend-bars">
               @for (point of trendData(); track point.monthKey) {
@@ -145,6 +146,13 @@
               }
             </div>
           </div>
+          } @else {
+          <div class="trend-empty-state">
+            <div class="trend-empty-icon">📊</div>
+            <strong class="trend-empty-title">Not enough data yet</strong>
+            <p class="muted">Expense trends require spending records from at least 2 months. Currently showing {{ monthLabel() }}.</p>
+          </div>
+          }
         </section>
 
         <!-- Month-over-Month Comparison Panel (Phase 2, Item 5) -->
@@ -156,7 +164,7 @@
             </div>
             <span class="report-icon">⇄</span>
           </div>
-          @if (monthOverMonthCategories().length) {
+          @if (hasPreviousMonthData() && monthOverMonthCategories().length) {
           <div class="mom-list">
             @for (item of monthOverMonthCategories(); track item.category) {
             <div class="mom-item">
@@ -175,14 +183,18 @@
             }
           </div>
           } @else {
-          <p class="muted category-empty">No category spending recorded for {{ monthLabel() }}.</p>
+          <div class="mom-empty-state">
+            <div class="mom-empty-icon">⇄</div>
+            <strong class="mom-empty-title">Not enough data yet</strong>
+            <p class="muted">Month-over-month comparison requires spending records from consecutive months. Add or import transactions from {{ previousMonthLabel() }} to see spending differences.</p>
+          </div>
           }
         </section>
 
         <div class="overview-side-column" style="grid-column: span 3;">
           <section class="panel subcategory-overview" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
             <div class="panel-heading"><div><h2>Sub-category overview</h2><p class="muted">Your top spending trends</p></div><span class="trend-arrow">↗</span></div>
-          @if (subcategoryTrends().length) {
+          @if (hasEnoughHistoricalData() && subcategoryTrends().length) {
           <div class="subcategory-chart" aria-label="Sub-category spending trend chart">
             <div class="subcategory-chart-scale"><span>₱{{ totalSpent() | number:'1.0-0' }}</span><span>₱0</span></div>
             <div class="subcategory-bars">
@@ -196,7 +208,11 @@
           </div>
           <div class="subcategory-legend">@for (trend of subcategoryTrends(); track trend.name; let index = $index) {<span><i [class]="'legend-dot bar-' + index"></i>{{ trend.name }}</span>}</div>
           } @else {
-          <p class="muted subcategory-empty">Add expenses with sub-categories to see trendlines.</p>
+          <div class="trend-empty-state">
+            <div class="trend-empty-icon">↗</div>
+            <strong class="trend-empty-title">Not enough data yet</strong>
+            <p class="muted">Sub-category trends require spending history across at least 2 months to visualize trajectory.</p>
+          </div>
           }
           </section>
         </div>
@@ -330,7 +346,7 @@
               <p class="muted">These options appear in Add transaction.</p>
             </div><span class="report-icon">≡</span>
           </div>
-          <div class="table-wrap category-table-wrap"><table class="category-table"><thead><tr><th>Category</th><th>Sub-category</th><th class="align-right">Actions</th></tr></thead><tbody>@for (group of filteredCategories(); track group.name) {@for (subcategory of group.subcategories; track subcategory) {<tr><td><strong>{{ group.name }}</strong></td><td>{{ subcategory }}</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button" type="button" title="Edit category" aria-label="Edit category" (click)="editCategory(group.name, false)">✎</button><button class="icon-action edit-subcategory-button" type="button" title="Edit sub-category" aria-label="Edit sub-category" (click)="editSubcategory(group.name, subcategory, false)">✎</button><button class="icon-action category-delete-button" type="button" title="Delete sub-category" aria-label="Delete sub-category" (click)="deleteSubcategory(group.name, subcategory, false)">×</button></div></td></tr>} @if (!group.subcategories.length) {<tr><td><strong>{{ group.name }}</strong></td><td class="muted">No sub-categories</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button" type="button" title="Edit category" aria-label="Edit category" (click)="editCategory(group.name, false)">✎</button><button class="icon-action category-delete-button" type="button" title="Delete category" aria-label="Delete category" (click)="deleteCategory(group.name, false)">×</button></div></td></tr>} <tr><td></td><td colspan="2"><form class="inline-add-form" style="display: flex; gap: 8px;" (submit)="addExpenseSubcategory(group.name, inlineSubName.value); inlineSubName.value=''; $event.preventDefault()"><input #inlineSubName placeholder="New sub-category" required style="padding: 4px 8px; font-size: 13px; max-width: 200px;" /><button type="submit" class="save-row-button" style="padding: 4px 12px;">Add</button></form></td></tr>}</tbody></table></div>
+          <div class="table-wrap category-table-wrap"><table class="category-table"><thead><tr><th>Category</th><th>Sub-category</th><th class="align-right">Actions</th></tr></thead><tbody>@for (group of filteredCategories(); track group.name) {@for (subcategory of group.subcategories; track subcategory) {<tr><td><strong>{{ group.name }}</strong></td><td>{{ subcategory }}</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button edit-category-btn" type="button" [title]="'Edit category name (' + group.name + ')'" [attr.aria-label]="'Edit category name ' + group.name" (click)="editCategory(group.name, false)">🏷</button><button class="icon-action edit-subcategory-button" type="button" [title]="'Edit sub-category (' + subcategory + ')'" [attr.aria-label]="'Edit sub-category ' + subcategory" (click)="editSubcategory(group.name, subcategory, false)">✎</button><button class="icon-action category-delete-button" type="button" [title]="'Delete sub-category (' + subcategory + ')'" [attr.aria-label]="'Delete sub-category ' + subcategory" (click)="deleteSubcategory(group.name, subcategory, false)">×</button></div></td></tr>} @if (!group.subcategories.length) {<tr><td><strong>{{ group.name }}</strong></td><td class="muted">No sub-categories</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button edit-category-btn" type="button" [title]="'Edit category name (' + group.name + ')'" [attr.aria-label]="'Edit category name ' + group.name" (click)="editCategory(group.name, false)">🏷</button><button class="icon-action category-delete-button" type="button" [title]="'Delete category (' + group.name + ')'" [attr.aria-label]="'Delete category ' + group.name" (click)="deleteCategory(group.name, false)">×</button></div></td></tr>} <tr><td></td><td colspan="2"><form class="inline-add-form" style="display: flex; gap: 8px;" (submit)="addExpenseSubcategory(group.name, inlineSubName.value); inlineSubName.value=''; $event.preventDefault()"><input #inlineSubName placeholder="New sub-category" required style="padding: 4px 8px; font-size: 13px; max-width: 200px;" /><button type="submit" class="save-row-button" style="padding: 4px 12px;">Add</button></form></td></tr>}</tbody></table></div>
         </section>
         <section class="panel category-directory">
           <div class="panel-heading">
@@ -339,7 +355,7 @@
               <p class="muted">These options appear in Savings transactions.</p>
             </div><span class="report-icon">◎</span>
           </div>
-          <div class="table-wrap category-table-wrap"><table class="category-table"><thead><tr><th>Category</th><th>Sub-category</th><th class="align-right">Actions</th></tr></thead><tbody>@for (group of filteredSavingsCategories(); track group.name) {@for (subcategory of group.subcategories; track subcategory) {<tr><td><strong>{{ group.name }}</strong></td><td>{{ subcategory }}</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button" type="button" title="Edit category" aria-label="Edit category" (click)="editCategory(group.name, true)">✎</button><button class="icon-action edit-subcategory-button" type="button" title="Edit sub-category" aria-label="Edit sub-category" (click)="editSubcategory(group.name, subcategory, true)">✎</button><button class="icon-action category-delete-button" type="button" title="Delete sub-category" aria-label="Delete sub-category" (click)="deleteSubcategory(group.name, subcategory, true)">×</button></div></td></tr>} @if (!group.subcategories.length) {<tr><td><strong>{{ group.name }}</strong></td><td class="muted">No sub-categories</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button" type="button" title="Edit category" aria-label="Edit category" (click)="editCategory(group.name, true)">✎</button><button class="icon-action category-delete-button" type="button" title="Delete category" aria-label="Delete category" (click)="deleteCategory(group.name, true)">×</button></div></td></tr>} <tr><td></td><td colspan="2"><form class="inline-add-form" style="display: flex; gap: 8px;" (submit)="addSavingsSubcategory(group.name, inlineSavSubName.value); inlineSavSubName.value=''; $event.preventDefault()"><input #inlineSavSubName placeholder="New sub-category" required style="padding: 4px 8px; font-size: 13px; max-width: 200px;" /><button type="submit" class="save-row-button" style="padding: 4px 12px;">Add</button></form></td></tr>}</tbody></table></div>
+          <div class="table-wrap category-table-wrap"><table class="category-table"><thead><tr><th>Category</th><th>Sub-category</th><th class="align-right">Actions</th></tr></thead><tbody>@for (group of filteredSavingsCategories(); track group.name) {@for (subcategory of group.subcategories; track subcategory) {<tr><td><strong>{{ group.name }}</strong></td><td>{{ subcategory }}</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button edit-category-btn" type="button" [title]="'Edit category name (' + group.name + ')'" [attr.aria-label]="'Edit category name ' + group.name" (click)="editCategory(group.name, true)">🏷</button><button class="icon-action edit-subcategory-button" type="button" [title]="'Edit sub-category (' + subcategory + ')'" [attr.aria-label]="'Edit sub-category ' + subcategory" (click)="editSubcategory(group.name, subcategory, true)">✎</button><button class="icon-action category-delete-button" type="button" [title]="'Delete sub-category (' + subcategory + ')'" [attr.aria-label]="'Delete sub-category ' + subcategory" (click)="deleteSubcategory(group.name, subcategory, true)">×</button></div></td></tr>} @if (!group.subcategories.length) {<tr><td><strong>{{ group.name }}</strong></td><td class="muted">No sub-categories</td><td class="align-right"><div class="category-actions"><button class="icon-action edit-row-button edit-category-btn" type="button" [title]="'Edit category name (' + group.name + ')'" [attr.aria-label]="'Edit category name ' + group.name" (click)="editCategory(group.name, true)">🏷</button><button class="icon-action category-delete-button" type="button" [title]="'Delete category (' + group.name + ')'" [attr.aria-label]="'Delete category ' + group.name" (click)="deleteCategory(group.name, true)">×</button></div></td></tr>} <tr><td></td><td colspan="2"><form class="inline-add-form" style="display: flex; gap: 8px;" (submit)="addSavingsSubcategory(group.name, inlineSavSubName.value); inlineSavSubName.value=''; $event.preventDefault()"><input #inlineSavSubName placeholder="New sub-category" required style="padding: 4px 8px; font-size: 13px; max-width: 200px;" /><button type="submit" class="save-row-button" style="padding: 4px 12px;">Add</button></form></td></tr>}</tbody></table></div>
         </section>
       </section>
       }
@@ -647,8 +663,12 @@
                 <p>Expense activity by month</p>
               </div><span>₱</span>
             </div>
+            @if (hasEnoughHistoricalData() && trendData().length >= 2) {
             <div class="trend-chart">@for (point of trendData(); track point.month) {<div class="trend-column"><i
                   [style.height.%]="point.amount"></i><small>{{ point.month }}</small></div>}</div>
+            } @else {
+            <p class="empty-report" style="margin: 20px 0; text-align: center;">Not enough data yet. Requires at least 2 months of records.</p>
+            }
           </section>
           <section class="reference-tile category-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
             <div class="tile-heading">

@@ -461,7 +461,28 @@ export class App {
   protected readonly previousMonth = computed(() => this.getPreviousMonthKey(this.selectedMonth()));
   protected readonly previousMonthLabel = computed(() => this.formatMonth(this.previousMonth()));
 
+  protected readonly hasPreviousMonthData = computed(() => {
+    const prevMonth = this.previousMonth();
+    if (!prevMonth) return false;
+    return this.transactions().some(
+      (t) => !t.savings && (t.type === 'Expense' || !t.type) && this.matchesMonth(t.date, prevMonth) && Math.abs(Number(t.amount) || 0) > 0
+    );
+  });
+
+  protected readonly recordedExpenseMonths = computed(() => {
+    const months = new Set(
+      this.transactions()
+        .filter((t) => !t.savings && (t.type === 'Expense' || !t.type) && Math.abs(Number(t.amount) || 0) > 0)
+        .map((t) => this.getTransactionMonth(t.date))
+        .filter(Boolean)
+    );
+    return [...months].sort();
+  });
+
+  protected readonly hasEnoughHistoricalData = computed(() => this.recordedExpenseMonths().length >= 2);
+
   protected readonly monthOverMonthCategories = computed(() => {
+    if (!this.hasPreviousMonthData()) return [];
     const prevMonth = this.previousMonth();
     const currentCategories = this.budgetCategories();
     return currentCategories.map((item) => {
@@ -475,7 +496,7 @@ export class App {
         const sign = diff >= 0 ? '+' : '−';
         summaryText = `${item.category}: ₱${Math.round(item.total).toLocaleString('en-US')} this month vs. ₱${Math.round(prevTotal).toLocaleString('en-US')} last month (${sign}₱${Math.round(Math.abs(diff)).toLocaleString('en-US')})`;
       } else {
-        summaryText = `${item.category}: ₱${Math.round(item.total).toLocaleString('en-US')} this month vs. ₱0 last month (+₱${Math.round(item.total).toLocaleString('en-US')})`;
+        summaryText = `${item.category}: ₱${Math.round(item.total).toLocaleString('en-US')} this month (no prior spend)`;
       }
       return {
         category: item.category,
@@ -489,13 +510,14 @@ export class App {
   });
 
   protected categoryMoMText(categoryName: string): string {
+    if (!this.hasPreviousMonthData()) return '';
     const item = this.monthOverMonthCategories().find((c) => c.category.toLowerCase() === categoryName.toLowerCase());
     if (!item) return '';
     if (item.previousTotal > 0) {
       const sign = item.diff >= 0 ? '+' : '−';
       return `vs. ₱${Math.round(item.previousTotal).toLocaleString('en-US')} last month (${sign}₱${Math.round(Math.abs(item.diff)).toLocaleString('en-US')})`;
     }
-    return 'vs. ₱0 last month';
+    return '';
   }
   protected readonly targetSavingsGoal = signal(this.getInitialTargetSavings());
   protected readonly targetSavingsProgress = computed(() => {
@@ -584,21 +606,30 @@ export class App {
     }));
   });
   protected getLast6Months(): string[] {
+    const recorded = this.recordedExpenseMonths();
+    if (recorded.length < 2) return [];
+
     const baseMonth = this.selectedMonth() || new Date().toISOString().slice(0, 7);
     const [yStr, mStr] = baseMonth.split('-');
     const year = Number(yStr) || new Date().getFullYear();
     const month = Number(mStr) || (new Date().getMonth() + 1);
+
+    const earliest = recorded[0];
     const months: string[] = [];
     for (let i = 5; i >= 0; i--) {
       const d = new Date(Date.UTC(year, month - 1 - i, 1));
       const y = d.getUTCFullYear();
       const m = String(d.getUTCMonth() + 1).padStart(2, '0');
-      months.push(`${y}-${m}`);
+      const key = `${y}-${m}`;
+      if (key >= earliest && key <= baseMonth) {
+        months.push(key);
+      }
     }
-    return months;
+    return months.length >= 2 ? months : recorded.slice(-6);
   }
   protected readonly trendData = computed(() => {
     const months = this.getLast6Months();
+    if (months.length < 2) return [];
     const rawData = months.map((month) => {
       const amount = this.transactions()
         .filter((item) => (item.type === 'Expense' || !item.type) && !item.savings && this.matchesMonth(item.date, month))
@@ -618,6 +649,7 @@ export class App {
   });
   protected readonly subcategoryTrends = computed<SubcategoryTrend[]>(() => {
     const months = this.getLast6Months();
+    if (months.length < 2) return [];
     const totals = new Map<string, number[]>();
     this.transactions().filter((item) => (item.type === 'Expense' || !item.type) && !item.savings && item.subcategory).forEach((item) => {
       const points = totals.get(item.subcategory) ?? months.map(() => 0);
