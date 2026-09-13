@@ -952,7 +952,7 @@
                 <td class="subcategory-cell">{{ transaction.subcategory || 'Ã¢â‚¬â€' }}</td>
                 <td class="muted">{{ transaction.date | date:'MMM d, y' }}</td>
                 <td class="align-right"><strong>-{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></td>
-                <td><div class="row-actions"><label style="display: flex; align-items: center; gap: 4px; font-size: 13px; color: #475569; cursor: pointer;"><input type="checkbox" [checked]="bill.active" (change)="toggleExpectedBillActive(bill)" /> Active</label><button class="edit-row-button" type="button" aria-label="Edit expense" (click)="startEditingExpense(transaction)">Edit</button><button class="delete-button" type="button" aria-label="Delete transaction"
+                <td><div class="row-actions"><button class="edit-row-button" type="button" aria-label="Edit expense" (click)="startEditingExpense(transaction)">Edit</button><button class="delete-button" type="button" aria-label="Delete transaction"
                   (click)="removeTransaction(transaction.id)">Ãƒâ€”</button></div></td>
                 }
               </tr>} @if (!regularTransactions().length) {<tr><td colspan="6" class="transaction-empty">No regular transactions recorded yet.</td></tr>}</tbody>
@@ -960,7 +960,7 @@
         </div>
         <div class="mobile-transaction-list">@for (transaction of regularTransactions(); track transaction.id) {<article class="mobile-transaction-card">
           <div class="mobile-transaction-top"><span class="transaction-icon">Ã¢â€ Ëœ</span><div><strong>{{ transaction.description }}</strong>@if (isFailedTransaction(transaction)) {<span class="failed-badge">Ã¢Å¡Â  Flagged</span>}<small>{{ transaction.date | date:'MMM d, y' }}</small></div><strong class="mobile-transaction-amount">-{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
-          <div class="mobile-transaction-meta"><span class="category-pill">{{ transaction.category }}</span><span>{{ transaction.subcategory || 'No sub-category' }}</span><div class="row-actions"><label style="display: flex; align-items: center; gap: 4px; font-size: 13px; color: #475569; cursor: pointer;"><input type="checkbox" [checked]="bill.active" (change)="toggleExpectedBillActive(bill)" /> Active</label><button class="edit-row-button" type="button" aria-label="Edit expense" (click)="startEditingExpense(transaction)">Edit</button><button class="delete-button" type="button" aria-label="Delete transaction" (click)="removeTransaction(transaction.id)">Ãƒâ€”</button></div></div>
+          <div class="mobile-transaction-meta"><span class="category-pill">{{ transaction.category }}</span><span>{{ transaction.subcategory || 'No sub-category' }}</span><div class="row-actions"><button class="edit-row-button" type="button" aria-label="Edit expense" (click)="startEditingExpense(transaction)">Edit</button><button class="delete-button" type="button" aria-label="Delete transaction" (click)="removeTransaction(transaction.id)">Ãƒâ€”</button></div></div>
         </article>}</div>
       </section>
       }
