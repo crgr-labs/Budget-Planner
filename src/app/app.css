@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    SAP Fiori Horizon Design System - Personal Finance Ledger
    Minimalist, accessible, enterprise-grade global UI standard
    ========================================================================== */
@@ -1834,7 +1834,7 @@ tbody tr:hover {
   border-top-color: #8e44ad;
 }
 
-/* Savings page â€” unified overview tile */
+/* Savings page — unified overview tile */
 .savings-overview-tile {
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -1919,7 +1919,7 @@ tbody tr:hover {
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Savings page â€” 3-column tile grid */
+/* Savings page — 3-column tile grid */
 .savings-tiles-3col {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -2708,7 +2708,7 @@ tbody tr:hover {
   gap: 16px;
 }
 
-/* KPI summary strip â€” 3 equal cards */
+/* KPI summary strip — 3 equal cards */
 .report-metrics {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
