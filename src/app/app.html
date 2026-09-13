@@ -214,6 +214,25 @@
             </form>
           </section>
           <section class="panel category-form-panel">
+            <h3>Add sub-category</h3>
+            <p class="muted">Add an option to an existing expense category.</p>
+            <form (submit)="createExpenseSubcategory(); $event.preventDefault()">
+              <label>Category<select
+                  [ngModel]="selectedExpenseCategoryForSubcategory()" name="expcat"
+                  (ngModelChange)="selectedExpenseCategoryForSubcategory.set($event)">
+                  <option value="">Choose a category</option>
+                  <option value="__ALL__">All categories (Shared)</option>
+                  @for (category of categories; track category) {<option
+                    [value]="category">{{ category }}</option>}
+                </select></label>
+              <label>Sub-category name<input required [ngModel]="newExpenseSubcategoryName()" name="expsubname"
+                  (ngModelChange)="newExpenseSubcategoryName.set($event)" placeholder="e.g. Rent" /></label>
+              <button class="add-button" type="submit">Add sub-category <span>→</span></button>
+            </form>
+          </section>
+        </div>
+        <div class="category-manager-grid">
+          <section class="panel category-form-panel">
             <h3>Create savings category</h3>
             <p class="muted">Add a fund for savings transactions.</p>
             <form (submit)="createSavingsCategory(); $event.preventDefault()">
@@ -224,6 +243,21 @@
                   class="optional">optional</span><input [ngModel]="newCategorySubcategory()" name="newsavcatsub"
                   (ngModelChange)="newCategorySubcategory.set($event)" placeholder="e.g. Down payment" /></label>
               <button class="add-button" type="submit">Create savings category <span>→</span></button>
+            </form>
+          </section>
+          <section class="panel category-form-panel">
+            <h3>Add savings sub-category</h3>
+            <p class="muted">Add an option to an existing savings category.</p>
+            <form (submit)="createSavingsSubcategory(); $event.preventDefault()">
+              <label>Category<select required
+                  [ngModel]="selectedCategoryForSubcategory()" name="savcat"
+                  (ngModelChange)="selectedCategoryForSubcategory.set($event)">
+                  <option value="">Choose a savings category</option>@for (category of savingsCategories; track category) {<option
+                    [value]="category">{{ category }}</option>}
+                </select></label>
+              <label>Sub-category name<input required [ngModel]="newSubcategoryName()" name="savsubname"
+                  (ngModelChange)="newSubcategoryName.set($event)" placeholder="e.g. Renovation" /></label>
+              <button class="add-button" type="submit">Add savings sub-category <span>→</span></button>
             </form>
           </section>
         </div>
