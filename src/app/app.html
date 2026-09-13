@@ -50,6 +50,23 @@
       </div>
       }
       @if (activeSection() === 'Overview') {
+      @if (failedTransactions().length > 0) {
+      <div class="fiori-alert-strip fiori-alert-warning" role="alert">
+        <div class="fiori-alert-icon">⚠</div>
+        <div class="fiori-alert-body">
+          <div class="fiori-alert-title">Flagged / Failed Transaction Alert</div>
+          <p>{{ failedTransactions().length }} transaction{{ failedTransactions().length > 1 ? 's' : '' }} in {{ monthLabel() }} flagged for review:</p>
+          <div class="fiori-alert-chips">
+            @for (tx of failedTransactions(); track tx.id) {
+            <span class="fiori-alert-chip">
+              <strong>{{ tx.description }}</strong>: -{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
+              <small>({{ tx.date | date:'MMM d' }} · {{ tx.category }})</small>
+            </span>
+            }
+          </div>
+        </div>
+      </div>
+      }
       <div class="metric-grid">
         <article class="metric-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="metric-top"><span>Monthly spend</span><span class="metric-icon expense">↘</span></div>
@@ -61,9 +78,18 @@
           <strong>{{ budgetCategories()[0]?.total ? (budgetCategories()[0].total | currency:'PHP':'symbol':'1.2-2') : '₱0.00' }}</strong>
           <p class="muted">{{ budgetCategories()[0]?.category || 'No expenses yet' }} · {{ monthLabel() }}</p>
         </article>
-        <article class="metric-card savings-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+        <article class="metric-card clickable-tile" (click)="selectSection('Bills')" tabindex="0" role="button" aria-label="Go to Expected Bills" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+          <div class="metric-top"><span>Expected bills</span><span class="metric-icon bills">▣</span></div>
+          <strong>{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }} <span class="metric-target">/ {{ billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }}</span></strong>
+          <p class="muted">{{ activeExpectedBills().length }} sub-categories planned · View bills →</p>
+        </article>
+        <article class="metric-card savings-card clickable-tile" (click)="selectSection('Savings')" tabindex="0" role="button" aria-label="Go to Savings" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="metric-top"><span>Total savings balance</span><span class="metric-icon income">↗</span></div>
           <strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+          <div class="metric-progress-wrap">
+            <div class="metric-progress-bar"><div class="metric-progress-fill" [style.width.%]="savingsGoalProgress()"></div></div>
+            <span class="metric-progress-label">{{ savingsGoalProgress() | number:'1.0-0' }}% of {{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }} goal</span>
+          </div>
           <p class="muted">{{ monthlySavingsSubtext() }}</p>
         </article>
       </div>
@@ -80,13 +106,80 @@
             <span>Total spent</span>
             <strong>{{ cloudDataReady() ? (totalSpent() | currency:'PHP':'symbol':'1.2-2') : 'Loading...' }}</strong>
           </div>
-          <div class="category-list">@for (item of budgetCategories(); track item.category; let index = $index) {<div class="category-row"><span
-                class="category-dot" [style.background-color]="categoryColor(index)"></span><span class="category-name">{{ item.category
-                }}</span><span class="category-amount">{{ item.total | currency:'PHP':'symbol':'1.2-2'
-                }}</span><span class="category-bar"><i
-                  [style.width.%]="budgetCategories()[0]?.total ? (item.total / budgetCategories()[0].total) * 100 : 0"></i></span></div>} @if (!budgetCategories().length && cloudDataReady()) {<p class="muted category-empty">No spending recorded for {{ monthLabel() }}.</p>}</div>
+          <div class="category-list">@for (item of budgetCategories(); track item.category; let index = $index) {
+            <div class="category-row-group">
+              <div class="category-row">
+                <span class="category-dot" [style.background-color]="categoryColor(index)"></span>
+                <span class="category-name">{{ item.category }}</span>
+                <span class="category-amount">{{ item.total | currency:'PHP':'symbol':'1.2-2' }}</span>
+                <span class="category-bar"><i [style.width.%]="budgetCategories()[0]?.total ? (item.total / budgetCategories()[0].total) * 100 : 0"></i></span>
+              </div>
+              @if (categoryMoMText(item.category)) {
+              <div class="category-mom-subtext">
+                <small class="mom-text">{{ categoryMoMText(item.category) }}</small>
+              </div>
+              }
+            </div>
+          } @if (!budgetCategories().length && cloudDataReady()) {<p class="muted category-empty">No spending recorded for {{ monthLabel() }}.</p>}</div>
         </section>
-        <div class="overview-side-column" style="grid-column: span 2;">
+
+        <!-- 6-Month Expense Trend Chart (Phase 2, Item 4) -->
+        <section class="panel expense-trend-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+          <div class="panel-heading">
+            <div>
+              <h2>Expense trend</h2>
+              <p class="muted">Total monthly spending (last 6 months)</p>
+            </div>
+            <span class="report-icon">📊</span>
+          </div>
+          <div class="overview-trend-chart" aria-label="Monthly expense trend chart">
+            <div class="overview-trend-bars">
+              @for (point of trendData(); track point.monthKey) {
+              <div class="overview-trend-column" [class.current-month-col]="point.isCurrent">
+                <span class="overview-trend-amount">{{ point.amount > 0 ? (point.amount | currency:'PHP':'symbol':'1.0-0') : '₱0' }}</span>
+                <div class="overview-trend-bar-track">
+                  <i class="overview-trend-bar" [style.height.%]="point.height" [title]="point.month + ': ' + (point.amount | currency:'PHP')"></i>
+                </div>
+                <small class="overview-trend-label">{{ point.month }}</small>
+              </div>
+              }
+            </div>
+          </div>
+        </section>
+
+        <!-- Month-over-Month Comparison Panel (Phase 2, Item 5) -->
+        <section class="panel mom-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+          <div class="panel-heading">
+            <div>
+              <h2>Month-over-month comparison</h2>
+              <p class="muted">Top categories vs. {{ previousMonthLabel() }}</p>
+            </div>
+            <span class="report-icon">⇄</span>
+          </div>
+          @if (monthOverMonthCategories().length) {
+          <div class="mom-list">
+            @for (item of monthOverMonthCategories(); track item.category) {
+            <div class="mom-item">
+              <div class="mom-item-header">
+                <strong>{{ item.category }}</strong>
+                <span class="mom-badge" [class.mom-increase]="item.diff > 0" [class.mom-decrease]="item.diff < 0" [class.mom-same]="item.diff === 0">
+                  {{ item.diff > 0 ? '+' : '' }}{{ item.diff | currency:'PHP':'symbol':'1.0-0' }}
+                  @if (item.pct !== null) { ({{ item.pct > 0 ? '+' : '' }}{{ item.pct | number:'1.0-0' }}%) }
+                </span>
+              </div>
+              <div class="mom-item-detail">
+                <span>{{ item.currentTotal | currency:'PHP':'symbol':'1.0-0' }} this month</span>
+                <span class="muted">vs. {{ item.previousTotal | currency:'PHP':'symbol':'1.0-0' }} last month</span>
+              </div>
+            </div>
+            }
+          </div>
+          } @else {
+          <p class="muted category-empty">No category spending recorded for {{ monthLabel() }}.</p>
+          }
+        </section>
+
+        <div class="overview-side-column" style="grid-column: span 3;">
           <section class="panel subcategory-overview" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
             <div class="panel-heading"><div><h2>Sub-category overview</h2><p class="muted">Your top spending trends</p></div><span class="trend-arrow">↗</span></div>
           @if (subcategoryTrends().length) {
@@ -721,6 +814,9 @@
                 <td><div class="row-actions"><button class="save-row-button" type="button" (click)="saveEditingExpense()">Save</button><button class="cancel-row-button" type="button" (click)="cancelEditingExpense()">Cancel</button></div></td>
                 } @else {
                   <td><span class="transaction-icon">↘</span><strong>{{ transaction.description }}</strong>
+                    @if (isFailedTransaction(transaction)) {
+                    <span class="failed-badge">⚠ Flagged</span>
+                    }
                 </td>
                 <td><span class="category-pill">{{ transaction.category }}</span></td>
                 <td class="subcategory-cell">{{ transaction.subcategory || '—' }}</td>
@@ -733,7 +829,7 @@
           </table>
         </div>
         <div class="mobile-transaction-list">@for (transaction of regularTransactions(); track transaction.id) {<article class="mobile-transaction-card">
-          <div class="mobile-transaction-top"><span class="transaction-icon">↘</span><div><strong>{{ transaction.description }}</strong><small>{{ transaction.date | date:'MMM d, y' }}</small></div><strong class="mobile-transaction-amount">-{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
+          <div class="mobile-transaction-top"><span class="transaction-icon">↘</span><div><strong>{{ transaction.description }}</strong>@if (isFailedTransaction(transaction)) {<span class="failed-badge">⚠ Flagged</span>}<small>{{ transaction.date | date:'MMM d, y' }}</small></div><strong class="mobile-transaction-amount">-{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
           <div class="mobile-transaction-meta"><span class="category-pill">{{ transaction.category }}</span><span>{{ transaction.subcategory || 'No sub-category' }}</span><div class="row-actions"><button class="edit-row-button" type="button" aria-label="Edit expense" (click)="startEditingExpense(transaction)">Edit</button><button class="delete-button" type="button" aria-label="Delete transaction" (click)="removeTransaction(transaction.id)">×</button></div></div>
         </article>}</div>
       </section>
