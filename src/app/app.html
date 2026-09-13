@@ -454,54 +454,56 @@
         }
         }
         @if (savingsSubPage() === 'AddTransaction') {
-        <div class="savings-action-grid">
-        <section class="panel target-savings-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
+        <section class="panel unified-savings-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
           <div class="panel-heading">
             <div>
-              <h2>Set target savings fund</h2>
-              <p class="muted">Choose the amount you want to save.</p>
-            </div><span class="plus-badge">₱</span>
-          </div>
-          <div class="form-grid"><label>Target amount<input type="number" min="1" [ngModel]="targetSavingsGoal()"
-                (ngModelChange)="updateTargetSavingsGoal($event)" /></label></div>
-        </section>
-
-        <section class="panel savings-entry-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="panel-heading">
-            <div>
-              <h2>Add savings transaction</h2>
-              <p class="muted">Record a contribution or withdrawal separately from daily spending.</p>
+              <h2>Savings actions</h2>
+              <p class="muted">Manage your savings target or add a transaction.</p>
             </div><span class="plus-badge">＋</span>
           </div>
-          <div class="type-toggle">
-            <button type="button" [class.selected]="newSavingsTransaction().type === 'Income'" (click)="updateSavingsField('type', 'Income')">Contribution</button>
-            <button type="button" [class.selected]="newSavingsTransaction().type === 'Expense'" (click)="updateSavingsField('type', 'Expense')">Withdrawal</button>
+
+          <div class="type-toggle" style="margin-bottom: 24px; max-width: 400px;">
+            <button type="button" [class.selected]="savingsActionTab() === 'Transaction'" (click)="savingsActionTab.set('Transaction')">Add Transaction</button>
+            <button type="button" [class.selected]="savingsActionTab() === 'Target'" (click)="savingsActionTab.set('Target')">Target Goal</button>
           </div>
-          <div class="quick-presets">
-            <span class="presets-label">Quick amount:</span>
-            <div class="preset-chips">
-              <button type="button" class="preset-chip" (click)="setSavingsAmount(1000)">₱1,000</button>
-              <button type="button" class="preset-chip" (click)="setSavingsAmount(5000)">₱5,000</button>
-              <button type="button" class="preset-chip" (click)="setSavingsAmount(10000)">₱10,000</button>
-              <button type="button" class="preset-chip" (click)="setSavingsAmount(20000)">₱20,000</button>
-              @if (savingsPlan().savingsGoal > 0) {
-              <button type="button" class="preset-chip plan-chip" (click)="setSavingsAmount(savingsPlan().savingsGoal / 2)">Paycheck target ({{ savingsPlan().savingsGoal / 2 | currency:'PHP':'symbol':'1.0-0' }})</button>
-              }
+
+          @if (savingsActionTab() === 'Transaction') {
+            <div class="type-toggle" style="margin-bottom: 16px; max-width: 300px;">
+              <button type="button" [class.selected]="newSavingsTransaction().type === 'Income'" (click)="updateSavingsField('type', 'Income')">Contribution</button>
+              <button type="button" [class.selected]="newSavingsTransaction().type === 'Expense'" (click)="updateSavingsField('type', 'Expense')">Withdrawal</button>
             </div>
-          </div>
-          <form (submit)="addSavingsTransaction(); $event.preventDefault()">
-            <div class="form-grid">
-              <label>Category<select [ngModel]="newSavingsTransaction().category" name="cat" (ngModelChange)="updateSavingsField('category', $event)">@for (category of savingsCategories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
-              <label>Sub-category<select [ngModel]="newSavingsTransaction().subcategory" name="subcat" (ngModelChange)="updateSavingsField('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of savingsSubcategoriesFor(newSavingsTransaction().category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label>
-              <label>Account<input [ngModel]="newSavingsTransaction().account" name="acc" (ngModelChange)="updateSavingsField('account', $event)" placeholder="e.g. BPI or GCash" /></label>
-              <label>Amount<div class="amount-input"><span>₱</span><input type="number" min="0.01" step="0.01" required [ngModel]="newSavingsTransaction().amount" name="amt" (ngModelChange)="updateSavingsField('amount', $event)" placeholder="0.00" /></div></label>
-              <label>Date<input type="date" [ngModel]="newSavingsTransaction().date" name="dt" (ngModelChange)="updateSavingsField('date', $event)" required /></label>
-              <label>Notes<input [ngModel]="newSavingsTransaction().description" name="desc" (ngModelChange)="updateSavingsField('description', $event)" placeholder="e.g. Monthly transfer" /></label>
+            <div class="quick-presets">
+              <span class="presets-label">Quick amount:</span>
+              <div class="preset-chips">
+                <button type="button" class="preset-chip" (click)="setSavingsAmount(1000)">₱1,000</button>
+                <button type="button" class="preset-chip" (click)="setSavingsAmount(5000)">₱5,000</button>
+                <button type="button" class="preset-chip" (click)="setSavingsAmount(10000)">₱10,000</button>
+                <button type="button" class="preset-chip" (click)="setSavingsAmount(20000)">₱20,000</button>
+                @if (savingsPlan().savingsGoal > 0) {
+                <button type="button" class="preset-chip plan-chip" (click)="setSavingsAmount(savingsPlan().savingsGoal / 2)">Paycheck target ({{ savingsPlan().savingsGoal / 2 | currency:'PHP':'symbol':'1.0-0' }})</button>
+                }
+              </div>
             </div>
-            <button class="add-button" type="submit" [class.just-added]="recentlyAddedSavings()">{{ recentlyAddedSavings() ? '✓ Added!' : 'Add savings transaction' }} <span>→</span></button>
-          </form>
+            <form (submit)="addSavingsTransaction(); $event.preventDefault()">
+              <div class="form-grid">
+                <label>Category<select [ngModel]="newSavingsTransaction().category" name="cat" (ngModelChange)="updateSavingsField('category', $event)">@for (category of savingsCategories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
+                <label>Sub-category<select [ngModel]="newSavingsTransaction().subcategory" name="subcat" (ngModelChange)="updateSavingsField('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of savingsSubcategoriesFor(newSavingsTransaction().category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label>
+                <label>Account<input [ngModel]="newSavingsTransaction().account" name="acc" (ngModelChange)="updateSavingsField('account', $event)" placeholder="e.g. BPI or GCash" /></label>
+                <label>Amount<div class="amount-input"><span>₱</span><input type="number" min="0.01" step="0.01" required [ngModel]="newSavingsTransaction().amount" name="amt" (ngModelChange)="updateSavingsField('amount', $event)" placeholder="0.00" /></div></label>
+                <label>Date<input type="date" [ngModel]="newSavingsTransaction().date" name="dt" (ngModelChange)="updateSavingsField('date', $event)" required /></label>
+                <label>Notes<input [ngModel]="newSavingsTransaction().description" name="desc" (ngModelChange)="updateSavingsField('description', $event)" placeholder="e.g. Monthly transfer" /></label>
+              </div>
+              <button class="add-button" type="submit" [class.just-added]="recentlyAddedSavings()">{{ recentlyAddedSavings() ? '✓ Added!' : 'Add savings transaction' }} <span>→</span></button>
+            </form>
+          } @else {
+            <div class="form-grid" style="grid-template-columns: 1fr; max-width: 320px;">
+              <label>Target amount
+                <div class="amount-input"><span>₱</span><input type="number" min="1" [ngModel]="targetSavingsGoal()" (ngModelChange)="updateTargetSavingsGoal($event)" /></div>
+              </label>
+            </div>
+            <p class="muted" style="margin-top: 12px; font-size: 13px;">Set your target goal for tracking overall progress.</p>
+          }
         </section>
-        </div>
         }
         @if (savingsSubPage() === 'Plan') {
         <section class="panel savings-transactions-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
