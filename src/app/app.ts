@@ -656,28 +656,63 @@ export class App {
   }
 
   protected subcategoriesFor(category: string): string[] {
-    const categoryGroup = this.categoryGroups().find((group) => group.name === category);
-    const categorySubcategories = categoryGroup?.subcategories ?? [];
-    const usedInBills = this.expectedBills()
-      .filter((b) => b.category === category && b.subcategory)
-      .map((b) => b.subcategory);
-    const usedInTransactions = this.transactions()
-      .filter((t) => t.category === category && t.subcategory)
+    const expectedBillsGroup = this.categoryGroups().find((group) => group.name === 'Expected Bills');
+    const expectedBillsSubcategories = expectedBillsGroup?.subcategories ?? [];
+    
+    const usedInExpectedBillsTransactions = this.transactions()
+      .filter((t) => t.category === 'Expected Bills' && t.subcategory)
       .map((t) => t.subcategory);
-    const commonBills = (category === 'Expected Bills' || category === 'Bills')
-      ? ['Rent', 'Condo', 'Globe', 'Internet', 'Electricity', 'Water', 'Utilities', 'Parking', 'Groceries', 'Insurance', 'Phone']
-      : [];
-    return [...new Set([
-      ...categorySubcategories,
-      ...commonBills,
-      ...usedInBills,
-      ...usedInTransactions,
+      
+    const usedInExpectedBillsBills = this.expectedBills()
+      .filter((b) => b.category === 'Expected Bills' && b.subcategory)
+      .map((b) => b.subcategory);
+
+    const allExpectedBillsSubcategories = new Set([
+      ...expectedBillsSubcategories,
+      ...usedInExpectedBillsTransactions,
+      ...usedInExpectedBillsBills
+    ]);
+
+    if (category === 'Expected Bills') {
+      return [...allExpectedBillsSubcategories].filter(Boolean).sort();
+    }
+
+    const allOtherGroupsSubcategories = this.categoryGroups()
+      .filter((g) => g.name !== 'Expected Bills')
+      .flatMap((g) => g.subcategories);
+      
+    const allOtherUsedInTransactions = this.transactions()
+      .filter((t) => t.category !== 'Expected Bills' && t.subcategory)
+      .map((t) => t.subcategory);
+      
+    const allOtherUsedInBills = this.expectedBills()
+      .filter((b) => b.category !== 'Expected Bills' && b.subcategory)
+      .map((b) => b.subcategory);
+
+    const allOtherSubcategories = new Set([
+      ...allOtherGroupsSubcategories,
+      ...allOtherUsedInTransactions,
+      ...allOtherUsedInBills,
       ...this.sharedSubcategories(),
-    ])].filter(Boolean);
+    ]);
+
+    return [...allOtherSubcategories].filter(sub => sub && !allExpectedBillsSubcategories.has(sub)).sort();
   }
 
   protected savingsSubcategoriesFor(category: string): string[] {
-    return this.savingsCategoryGroups().find((group) => group.name === category)?.subcategories ?? [];
+    const allSavingsGroupsSubcategories = this.savingsCategoryGroups()
+      .flatMap((g) => g.subcategories);
+      
+    const allSavingsUsedInTransactions = this.transactions()
+      .filter((t) => t.savings && t.subcategory)
+      .map((t) => t.subcategory);
+
+    const allSavingsSubcategories = new Set([
+      ...allSavingsGroupsSubcategories,
+      ...allSavingsUsedInTransactions,
+    ]);
+
+    return [...allSavingsSubcategories].filter(Boolean).sort();
   }
 
   protected addCategory(name: string, subcategory: string): void {
@@ -697,11 +732,12 @@ export class App {
         this.sharedSubcategories.update((items) => [...items, subcategoryName]);
         this.persistSharedSubcategories();
       }
-      this.categoryGroups.update((groups) => groups.map((group) =>
-        group.subcategories.some((item) => item.toLowerCase() === subcategoryName.toLowerCase())
+      this.categoryGroups.update((groups) => groups.map((group) => {
+        if (group.name === 'Expected Bills') return group;
+        return group.subcategories.some((item) => item.toLowerCase() === subcategoryName.toLowerCase())
           ? group
-          : { ...group, subcategories: [...group.subcategories, subcategoryName] }
-      ));
+          : { ...group, subcategories: [...group.subcategories, subcategoryName] };
+      }));
     } else {
       this.categoryGroups.update((groups) => groups.map((group) =>
         group.name === category && !group.subcategories.some((item) => item.toLowerCase() === subcategoryName.toLowerCase())
