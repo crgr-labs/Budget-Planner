@@ -892,6 +892,20 @@ export class App {
   protected readonly newExpenseSubcategoryName = signal('');
   protected readonly selectedCategoryForSubcategory = signal('');
   protected readonly newSubcategoryName = signal('');
+  protected readonly addCategoryModalOpen = signal(false);
+  protected readonly addSubcategoryModalOpen = signal(false);
+  protected readonly newCategoryModalName = signal('');
+  protected readonly newCategoryModalSubcategory = signal('');
+  protected readonly newCategoryModalColor = signal('#0070f2');
+  protected readonly subcategoryModalCategory = signal('');
+  protected readonly subcategoryModalName = signal('');
+  protected readonly addingSubcategoryFor = signal<string | null>(null);
+  protected readonly inlineSubcategoryName = signal('');
+  protected readonly customCategoryColors = signal<Record<string, string>>({});
+  protected readonly categoryColorPresets: string[] = [
+    '#0070f2', '#107e3e', '#bb0000', '#e9730c', '#6366f1',
+    '#ec4899', '#06b6d4', '#8b5cf6', '#16191d', '#64748b',
+  ];
   protected readonly filteredCategories = computed(() => this.filterCategoryGroups(this.categoryGroups()));
   protected readonly filteredSavingsCategories = computed(() => this.filterCategoryGroups(this.savingsCategoryGroups()));
   protected readonly newSavingsTransaction = signal<NewTransaction>(this.emptySavingsTransaction());
@@ -931,6 +945,15 @@ export class App {
       }
     } catch {
       try { localStorage.removeItem('ledger-categories'); } catch {}
+    }
+
+    try {
+      const savedCategoryColors = localStorage.getItem('ledger-category-colors');
+      if (savedCategoryColors) {
+        this.customCategoryColors.set(JSON.parse(savedCategoryColors));
+      }
+    } catch {
+      try { localStorage.removeItem('ledger-category-colors'); } catch {}
     }
 
     try {
@@ -1203,6 +1226,74 @@ export class App {
   protected createSavingsSubcategory(): void {
     this.addSavingsSubcategory(this.selectedCategoryForSubcategory(), this.newSubcategoryName());
     this.newSubcategoryName.set('');
+  }
+
+  protected openAddCategoryModal(): void {
+    this.newCategoryModalName.set('');
+    this.newCategoryModalSubcategory.set('');
+    this.newCategoryModalColor.set('#0070f2');
+    this.addCategoryModalOpen.set(true);
+  }
+
+  protected closeAddCategoryModal(): void {
+    this.addCategoryModalOpen.set(false);
+  }
+
+  protected submitAddCategoryModal(): void {
+    const name = this.newCategoryModalName().trim();
+    if (!name) return;
+    const sub = this.newCategoryModalSubcategory().trim();
+    const color = this.newCategoryModalColor();
+    if (color) {
+      this.customCategoryColors.update((colors) => ({ ...colors, [name]: color }));
+      try { localStorage.setItem('ledger-category-colors', JSON.stringify(this.customCategoryColors())); } catch {}
+    }
+    const exists = this.categories.some((category) => category.toLowerCase() === name.toLowerCase());
+    if (exists) {
+      if (sub) {
+        this.addExpenseSubcategory(name, sub);
+      }
+    } else {
+      this.addCategory(name, sub);
+    }
+    this.closeAddCategoryModal();
+  }
+
+  protected openAddSubcategoryModal(categoryName: string = ''): void {
+    this.subcategoryModalCategory.set(categoryName || (this.categories[0] || ''));
+    this.subcategoryModalName.set('');
+    this.addSubcategoryModalOpen.set(true);
+  }
+
+  protected closeAddSubcategoryModal(): void {
+    this.addSubcategoryModalOpen.set(false);
+  }
+
+  protected submitAddSubcategoryModal(): void {
+    const cat = this.subcategoryModalCategory();
+    const sub = this.subcategoryModalName().trim();
+    if (cat && sub) {
+      this.addExpenseSubcategory(cat, sub);
+    }
+    this.closeAddSubcategoryModal();
+  }
+
+  protected openInlineSubcategory(categoryName: string): void {
+    this.addingSubcategoryFor.set(categoryName);
+    this.inlineSubcategoryName.set('');
+  }
+
+  protected closeInlineSubcategory(): void {
+    this.addingSubcategoryFor.set(null);
+    this.inlineSubcategoryName.set('');
+  }
+
+  protected submitInlineSubcategory(categoryName: string): void {
+    const sub = this.inlineSubcategoryName().trim();
+    if (sub) {
+      this.addExpenseSubcategory(categoryName, sub);
+    }
+    this.closeInlineSubcategory();
   }
 
   private filterCategoryGroups(groups: CategoryGroup[]): CategoryGroup[] {
@@ -1737,6 +1828,9 @@ export class App {
   }
 
   protected getCategoryColor(name: string): string {
+    if (name && this.customCategoryColors()[name]) {
+      return this.customCategoryColors()[name];
+    }
     const palette: Record<string, string> = {
       'Food': '#0070f2',
       'Food & Dining': '#0070f2',
@@ -1880,7 +1974,10 @@ export class App {
     }
   }
   private persistCategories(): void {
-    try { localStorage.setItem('ledger-categories', JSON.stringify(this.categoryGroups())); } catch {}
+    try {
+      localStorage.setItem('ledger-categories', JSON.stringify(this.categoryGroups()));
+      localStorage.setItem('ledger-category-colors', JSON.stringify(this.customCategoryColors()));
+    } catch {}
   }
   private persistSavingsCategories(): void {
     try { localStorage.setItem('ledger-savings-categories', JSON.stringify(this.savingsCategoryGroups())); } catch {}

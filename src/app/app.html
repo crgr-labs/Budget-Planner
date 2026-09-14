@@ -790,22 +790,54 @@
             <h1>Categories</h1>
             <p class="fiori-page-subtitle">{{ filteredCategoryGroups().length }} categories directory</p>
           </div>
-          <div class="fiori-page-actions">
+          <div class="fiori-page-actions" style="display:flex; gap:10px; align-items:center;">
             <input class="fiori-input" style="width:200px;" placeholder="Search categories" [ngModel]="categorySearch()" (ngModelChange)="categorySearch.set($event)">
+            <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddCategoryModal()">＋ Add category</button>
           </div>
         </div>
 
-        <section class="fiori-panel">
+        <section class="fiori-panel" style="min-width:0; overflow:hidden; box-sizing:border-box;">
+          @if (filteredCategoryGroups().length === 0) {
+            <div style="padding:48px 20px; text-align:center; color:var(--fiori-muted);">
+              <div style="font-size:14px; font-weight:600; margin-bottom:6px; color:var(--fiori-ink);">No categories found</div>
+              <p style="font-size:12px; margin:0 0 16px;">{{ categorySearch() ? 'No categories match your search query.' : 'Get started by creating your first spending category.' }}</p>
+              <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddCategoryModal()">＋ Add category</button>
+            </div>
+          }
           @for (group of filteredCategoryGroups(); track group.name) {
             <div class="fiori-cat-card">
               <div class="fiori-cat-card-header">
-                <span style="width:10px; height:10px;" [style.background]="getCategoryColor(group.name)"></span>
-                <strong style="font-size:13px;">{{ group.name }}</strong>
+                <span style="width:12px; height:12px; border-radius:2px; flex-shrink:0;" [style.background]="getCategoryColor(group.name)"></span>
+                <strong style="font-size:13px; color:var(--fiori-ink);">{{ group.name }}</strong>
                 <span style="font-size:11px; color:var(--fiori-muted);">{{ group.subcategories.length }} sub-categories</span>
+                <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
+                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="openAddSubcategoryModal(group.name)">
+                    ＋ Add sub-category
+                  </button>
+                  @if (isUserCategory(group.name, false)) {
+                    <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 6px; font-size:11px; color:var(--fiori-red);" (click)="deleteCategory(group.name, false)" title="Delete category">
+                      Delete
+                    </button>
+                  }
+                </div>
               </div>
               <div class="fiori-chip-list">
                 @for (sub of group.subcategories; track sub) {
-                  <span class="fiori-chip">{{ sub }}</span>
+                  <span class="fiori-chip" style="display:inline-flex; align-items:center; gap:6px;">
+                    {{ sub }}
+                    <button type="button" (click)="deleteSubcategory(group.name, sub, false)" title="Remove {{ sub }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:13px; color:var(--fiori-muted); line-height:1;">×</button>
+                  </span>
+                }
+                @if (addingSubcategoryFor() === group.name) {
+                  <form (submit)="submitInlineSubcategory(group.name); $event.preventDefault()" style="display:inline-flex; align-items:center; gap:6px; margin:0;">
+                    <input class="fiori-input" style="height:26px; padding:0 8px; font-size:12px; width:150px;" placeholder="Sub-category name" [ngModel]="inlineSubcategoryName()" (ngModelChange)="inlineSubcategoryName.set($event)" name="inlineSub" required autofocus />
+                    <button type="submit" class="fiori-btn fiori-btn-primary" style="height:26px; padding:0 8px; font-size:11px;">Add</button>
+                    <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="closeInlineSubcategory()">Cancel</button>
+                  </form>
+                } @else {
+                  <button type="button" class="fiori-chip-add" (click)="openInlineSubcategory(group.name)" title="Add sub-category to {{ group.name }}">
+                    ＋ Add sub-category
+                  </button>
                 }
               </div>
             </div>
@@ -1093,6 +1125,94 @@
           <div class="fiori-dialog-footer">
             <button type="button" class="fiori-btn fiori-btn-ghost" (click)="closeAddTransactionModal()">Cancel</button>
             <button type="submit" class="fiori-btn fiori-btn-primary">{{ newTransaction().savings ? 'Save contribution' : 'Add transaction' }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Add Category Modal Dialog -->
+  @if (addCategoryModalOpen()) {
+    <div class="fiori-dialog-backdrop" (click)="closeAddCategoryModal()">
+      <div class="fiori-dialog" (click)="$event.stopPropagation()" style="max-width:440px;">
+        <div class="fiori-dialog-header">
+          <h2>Add category</h2>
+          <button type="button" class="fiori-dialog-close" (click)="closeAddCategoryModal()">×</button>
+        </div>
+        <form (ngSubmit)="submitAddCategoryModal()" style="margin:0;">
+          <div class="fiori-dialog-body">
+            <div class="fiori-field">
+              <label>Category name</label>
+              <input class="fiori-input" placeholder="e.g. Education, Fitness, Pet Care" [ngModel]="newCategoryModalName()" name="catName" (ngModelChange)="newCategoryModalName.set($event)" required autofocus>
+            </div>
+
+            <div class="fiori-field">
+              <label>Initial sub-category <span style="font-size:11px; color:var(--fiori-muted); font-weight:normal;">(optional)</span></label>
+              <input class="fiori-input" placeholder="e.g. Courses, Gym membership" [ngModel]="newCategoryModalSubcategory()" name="catSub" (ngModelChange)="newCategoryModalSubcategory.set($event)">
+            </div>
+
+            <div class="fiori-field">
+              <label>Color</label>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+                @for (color of categoryColorPresets; track color) {
+                  <button type="button" (click)="newCategoryModalColor.set(color)" [style.background]="color" style="width:24px; height:24px; border:2px solid; border-radius:3px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0;" [style.border-color]="newCategoryModalColor() === color ? 'var(--fiori-ink)' : 'transparent'" [title]="color">
+                    @if (newCategoryModalColor() === color) {
+                      <span style="color:#ffffff; font-size:12px; font-weight:700; text-shadow:0 0 2px rgba(0,0,0,0.8);">✓</span>
+                    }
+                  </button>
+                }
+                <div style="display:inline-flex; align-items:center; gap:6px; margin-left:4px;">
+                  <input type="color" [ngModel]="newCategoryModalColor()" name="catColor" (ngModelChange)="newCategoryModalColor.set($event)" style="width:28px; height:26px; padding:0; border:1px solid var(--fiori-border); cursor:pointer; background:none; border-radius:3px;">
+                  <span style="font-size:11px; color:var(--fiori-muted); font-variant-numeric:tabular-nums;">{{ newCategoryModalColor() }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview Swatch -->
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--fiori-chip); border:1px solid var(--fiori-border);">
+              <span style="width:12px; height:12px; border-radius:2px;" [style.background]="newCategoryModalColor()"></span>
+              <span style="font-size:13px; font-weight:600; color:var(--fiori-ink);">{{ newCategoryModalName() || 'Preview category' }}</span>
+              <span style="font-size:11px; color:var(--fiori-muted); margin-left:auto;">{{ newCategoryModalSubcategory() ? ('1 sub-category: ' + newCategoryModalSubcategory()) : 'No sub-categories yet' }}</span>
+            </div>
+          </div>
+
+          <div class="fiori-dialog-footer">
+            <button type="button" class="fiori-btn fiori-btn-ghost" (click)="closeAddCategoryModal()">Cancel</button>
+            <button type="submit" class="fiori-btn fiori-btn-primary">Add category</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Add Sub-category Modal Dialog -->
+  @if (addSubcategoryModalOpen()) {
+    <div class="fiori-dialog-backdrop" (click)="closeAddSubcategoryModal()">
+      <div class="fiori-dialog" (click)="$event.stopPropagation()" style="max-width:400px;">
+        <div class="fiori-dialog-header">
+          <h2>Add sub-category</h2>
+          <button type="button" class="fiori-dialog-close" (click)="closeAddSubcategoryModal()">×</button>
+        </div>
+        <form (ngSubmit)="submitAddSubcategoryModal()" style="margin:0;">
+          <div class="fiori-dialog-body">
+            <div class="fiori-field">
+              <label>Parent category</label>
+              <select class="fiori-select" [ngModel]="subcategoryModalCategory()" name="parentCat" (ngModelChange)="subcategoryModalCategory.set($event)" required>
+                @for (category of categories; track category) {
+                  <option [value]="category">{{ category }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="fiori-field">
+              <label>Sub-category name</label>
+              <input class="fiori-input" placeholder="e.g. Equipment, Books, Snacks" [ngModel]="subcategoryModalName()" name="subName" (ngModelChange)="subcategoryModalName.set($event)" required autofocus>
+            </div>
+          </div>
+
+          <div class="fiori-dialog-footer">
+            <button type="button" class="fiori-btn fiori-btn-ghost" (click)="closeAddSubcategoryModal()">Cancel</button>
+            <button type="submit" class="fiori-btn fiori-btn-primary">Add sub-category</button>
           </div>
         </form>
       </div>
