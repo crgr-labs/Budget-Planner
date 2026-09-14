@@ -376,6 +376,7 @@ export class App {
   }
 
   protected readonly selectedTransactions = computed(() => this.regularTransactions().filter((item) => this.matchesMonth(item.date, this.selectedMonth()) && !this.isFailedTransaction(item)));
+  protected readonly allSelectedTransactions = computed(() => this.regularTransactions().filter((item) => this.matchesMonth(item.date, this.selectedMonth())));
   protected readonly expectedBills = signal<ExpectedBill[]>([]);
   protected readonly newBillName = signal('');
   protected readonly newBillCategory = signal('Expected Bills');
@@ -463,8 +464,13 @@ export class App {
       const amount = Math.abs(Number(item.amount) || 0);
       categoryTotals.set(category, (categoryTotals.get(category) ?? 0) + amount);
     }
+    const total = [...categoryTotals.values()].reduce((sum, amt) => sum + amt, 0);
     return [...categoryTotals.entries()]
-      .map(([category, total]) => ({ category, total }))
+      .map(([category, catTotal]) => ({
+        category,
+        total: catTotal,
+        percentOfSpend: total > 0 ? (catTotal / total) * 100 : 0,
+      }))
       .filter((item) => item.total > 0)
       .sort((first, second) => second.total - first.total);
   });
@@ -564,6 +570,7 @@ export class App {
       };
     });
   });
+  protected readonly monthOverMonthComparison = this.monthOverMonthCategories;
 
   protected categoryMoMText(categoryName: string): string {
     if (!this.hasPreviousMonthData()) return '';
@@ -881,7 +888,6 @@ export class App {
   protected readonly newExpenseSubcategoryName = signal('');
   protected readonly selectedCategoryForSubcategory = signal('');
   protected readonly newSubcategoryName = signal('');
-  protected readonly categorySearch = signal('');
   protected readonly filteredCategories = computed(() => this.filterCategoryGroups(this.categoryGroups()));
   protected readonly filteredSavingsCategories = computed(() => this.filterCategoryGroups(this.savingsCategoryGroups()));
   protected readonly newSavingsTransaction = signal<NewTransaction>(this.emptySavingsTransaction());
