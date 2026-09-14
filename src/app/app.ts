@@ -196,6 +196,16 @@ export class App {
     return this.getTransactionMonth(dateStr) === targetMonth;
   }
 
+  private syncSelectedMonthToAvailableData(txList: Transaction[]): void {
+    if (!txList || !txList.length) return;
+    const current = this.selectedMonth();
+    const hasCurrent = txList.some((item) => this.matchesMonth(item.date, current));
+    if (!hasCurrent) {
+      const months = [...new Set(txList.map((item) => this.getTransactionMonth(item.date)).filter(Boolean))].sort().reverse();
+      if (months.length > 0) this.selectedMonth.set(months[0]);
+    }
+  }
+
   protected isBeforeOrSameMonth(dateStr: string, targetMonth: string): boolean {
     const month = this.getTransactionMonth(dateStr);
     return !!month && month <= targetMonth;
@@ -217,7 +227,15 @@ export class App {
     return item.type === 'Expense';
   }
 
-  protected readonly monthOptions = computed(() => [...new Set(this.transactions().map((item) => this.getTransactionMonth(item.date)).filter(Boolean))].sort().reverse());
+  protected readonly monthOptions = computed(() => {
+    const months = new Set(this.transactions().map((item) => this.getTransactionMonth(item.date)).filter(Boolean));
+    if (this.selectedMonth()) {
+      months.add(this.selectedMonth());
+    }
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    months.add(currentMonth);
+    return [...months].sort().reverse();
+  });
   protected readonly monthLabel = computed(() => this.formatMonth(this.selectedMonth()));
   protected readonly categoryGroups = signal<CategoryGroup[]>([
     { name: 'Housing', subcategories: ['Rent', 'Utilities', 'Repairs'] },
@@ -924,11 +942,15 @@ export class App {
     try {
       const saved = localStorage.getItem('ledger-transactions');
       if (saved) {
-        this.transactions.set(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          this.transactions.set(parsed);
+        }
       }
     } catch {
       try { localStorage.removeItem('ledger-transactions'); } catch {}
     }
+    this.syncSelectedMonthToAvailableData(this.transactions());
 
     try {
       const savedTargetSavings = localStorage.getItem('ledger-target-savings');
@@ -1491,14 +1513,14 @@ export class App {
     if (!expectedBillsCategory) {
       this.categoryGroups.update((groups) => [...groups, { name: 'Expected Bills', subcategories: needed }]);
       this.persistCategories();
-      this.syncToApi();
+      if (this.cloudDataReady()) this.syncToApi();
       return;
     }
     const subcategories = [...new Set([...expectedBillsCategory.subcategories, ...needed])];
     if (subcategories.length !== expectedBillsCategory.subcategories.length) {
       this.categoryGroups.update((groups) => groups.map((group) => group.name === 'Expected Bills' ? { ...group, subcategories } : group));
       this.persistCategories();
-      this.syncToApi();
+      if (this.cloudDataReady()) this.syncToApi();
     }
   }
 
@@ -1536,7 +1558,7 @@ export class App {
       this.expectedBills.update(bills => [...bills, ...newBills]);
       this.ensureExpectedBillsCategory();
       this.persistExpectedBills();
-      this.syncToApi();
+      if (this.cloudDataReady()) this.syncToApi();
     }
   }
 
@@ -2018,7 +2040,12 @@ export class App {
     const requestUrl = this.isHosted ? `${this.apiUrl}&cacheBust=${Date.now()}` : this.apiUrl;
     void fetch(requestUrl, { cache: 'no-store' }).then((response) => response.ok ? response.json() : Promise.reject()).then((data: Transaction[] | CloudData) => {
       const cloudData = Array.isArray(data) ? { transactions: data } : data;
-      this.transactions.set(cloudData.transactions);
+      this.cloudDataReady.set(true);
+
+      if (Array.isArray(cloudData.transactions)) {
+        this.transactions.set(cloudData.transactions);
+      }
+      this.syncSelectedMonthToAvailableData(this.transactions());
 
       const targetSavingsGoal = cloudData.settings?.targetSavingsGoal;
       if (typeof targetSavingsGoal === 'number' && targetSavingsGoal >= 0) {
@@ -2032,7 +2059,7 @@ export class App {
         if (typeof plan.investment === 'number' && plan.investment >= 0) this.savingsPlanInvestment.set(plan.investment);
         this.persistSavingsPlan();
       }
-      if (Array.isArray(cloudData.expectedBills)) {
+      if (Array.isArray(cloudData.expectedBills) && cloudData.expectedBills.length > 0) {
         this.expectedBills.set(cloudData.expectedBills.map((bill) => ({ ...bill, subcategory: String(bill.subcategory || '') })));
         this.persistExpectedBills();
       }
@@ -2040,21 +2067,20 @@ export class App {
       if (plan && Array.isArray(plan.bills) && plan.bills.length) {
         this.migrateLegacyFixedBills(plan.bills);
       }
-      if (Array.isArray(cloudData.categories)) {
+      if (Array.isArray(cloudData.categories) && cloudData.categories.length > 0) {
         this.categoryGroups.set(cloudData.categories);
         this.ensureExpectedBillsCategory();
         this.persistCategories();
       }
-      if (Array.isArray(cloudData.sharedSubcategories)) {
+      if (Array.isArray(cloudData.sharedSubcategories) && cloudData.sharedSubcategories.length > 0) {
         this.sharedSubcategories.set(cloudData.sharedSubcategories);
         this.persistSharedSubcategories();
       }
-      if (Array.isArray(cloudData.savingsCategories)) {
+      if (Array.isArray(cloudData.savingsCategories) && cloudData.savingsCategories.length > 0) {
         this.savingsCategoryGroups.set(cloudData.savingsCategories);
         this.persistSavingsCategories();
       }
       this.persist();
-      this.cloudDataReady.set(true);
     }).catch(() => {
       try {
         const saved = localStorage.getItem('ledger-transactions');
@@ -2062,10 +2088,11 @@ export class App {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length) {
             this.transactions.set(parsed);
-            this.cloudDataReady.set(true);
           }
         }
       } catch {}
+      this.syncSelectedMonthToAvailableData(this.transactions());
+      this.cloudDataReady.set(true);
       this.cloudDataError.set(true);
     });
   }
@@ -2091,6 +2118,12 @@ export class App {
 
   private executeSyncToApi(): void {
     if (!this.apiUrl) return;
+    if (!this.cloudDataReady() && !this.cloudDataError()) {
+      return;
+    }
+    if (this.transactions().length === 0) {
+      return;
+    }
     if (this.syncInProgress) {
       this.syncQueued = true;
       return;
