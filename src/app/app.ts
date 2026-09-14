@@ -164,6 +164,12 @@ export class App {
     : this.googleSheetsUrl;
   private readonly isHosted = this.apiUrl === this.googleSheetsUrl;
   protected readonly activeSection = signal('Overview');
+  protected readonly darkMode = signal(false);
+  protected readonly themeLabel = computed(() => this.darkMode() ? 'Light mode' : 'Dark mode');
+  protected toggleTheme(): void {
+    this.darkMode.update((d) => !d);
+  }
+  protected readonly categorySearch = signal('');
   protected readonly transactionFormOpen = signal(false);
   protected readonly addTransactionModalOpen = signal(false);
   protected readonly savingsSubPage = signal<'Plan' | 'AddTransaction'>('Plan');
@@ -222,6 +228,14 @@ export class App {
     { name: 'Expected Bills', subcategories: ['Rent', 'Condo', 'Globe', 'Internet', 'Electricity', 'Water', 'Utilities', 'Parking', 'Groceries', 'Insurance', 'Phone'] },
     { name: 'Health', subcategories: ['Medicine', 'Appointments', 'Fitness'] },
   ]);
+  protected readonly filteredCategoryGroups = computed(() => {
+    const q = this.categorySearch().toLowerCase().trim();
+    const groups = this.categoryGroups().filter((g) => g.name !== 'Expected Bills');
+    if (!q) return groups;
+    return groups.filter((g) =>
+      g.name.toLowerCase().includes(q) || g.subcategories.some((s) => s.toLowerCase().includes(q))
+    );
+  });
   protected readonly sharedSubcategories = signal<string[]>([]);
   protected readonly savingsCategoryGroups = signal<CategoryGroup[]>([
     { name: 'Emergency Fund', subcategories: ['Short-term buffer', 'Medical reserve'] },
@@ -367,6 +381,7 @@ export class App {
   protected readonly newBillCategory = signal('Expected Bills');
   protected readonly newBillSubcategory = signal('Globe');
   protected readonly newBillAmount = signal<number | null>(null);
+  protected readonly addBillFormOpen = signal(false);
   protected readonly editingBillId = signal<number | null>(null);
   protected readonly editingBill = signal<ExpectedBill | null>(null);
   protected readonly activeExpectedBills = computed(() => this.expectedBills().filter((bill) => bill.active));
@@ -1266,6 +1281,15 @@ export class App {
     this.newBillAmount.set(null);
   }
 
+  protected toggleAddBillForm(): void {
+    this.addBillFormOpen.update((v) => !v);
+  }
+
+  protected saveNewBill(): void {
+    this.addExpectedBill();
+    this.addBillFormOpen.set(false);
+  }
+
   protected toggleExpectedBillActive(bill: ExpectedBill): void {
     this.expectedBills.update(bills => bills.map(b => b.id === bill.id ? { ...b, active: !b.active } : b));
     this.persistExpectedBills();
@@ -1630,6 +1654,47 @@ export class App {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action: 'delete', id }),
     }).catch(() => undefined);
+  }
+
+  protected deleteTransaction(id: number): void {
+    this.removeTransaction(id);
+  }
+
+  protected submitNewTransactionModal(): void {
+    this.addTransaction();
+    this.closeAddTransactionModal();
+  }
+
+  protected getCategoryColor(name: string): string {
+    const palette: Record<string, string> = {
+      'Food': '#0070f2',
+      'Food & Dining': '#0070f2',
+      'Groceries': '#107e3e',
+      'Transportation': '#e9730c',
+      'Transport': '#e9730c',
+      'Bills': '#bb0000',
+      'Utilities': '#6366f1',
+      'Expected Bills': '#bb0000',
+      'Shopping': '#ec4899',
+      'Lifestyle': '#ec4899',
+      'Personal': '#8b5cf6',
+      'Entertainment': '#f59e0b',
+      'Health': '#06b6d4',
+      'Emergency Fund': '#107e3e',
+      'Travel': '#3b82f6',
+      'Travel Fund': '#3b82f6',
+      'Investments': '#107e3e',
+      'Investment Fund': '#107e3e',
+      'General Savings': '#0070f2',
+      'House': '#6366f1',
+      'Housing': '#6366f1',
+    };
+    if (name && palette[name]) return palette[name];
+    const fallbackColors = ['#0070f2', '#107e3e', '#e9730c', '#6366f1', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b'];
+    let hash = 0;
+    const str = name || '';
+    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    return fallbackColors[Math.abs(hash) % fallbackColors.length];
   }
 
   protected startEditingExpense(transaction: Transaction): void {

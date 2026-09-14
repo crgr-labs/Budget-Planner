@@ -1,1071 +1,895 @@
-<main class="app-shell">
-  <nav class="sidebar" [class.menu-open]="mobileMenuOpen()">
-    <div class="brand"><span class="brand-mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg></span><span>Ledger</span></div>
-    <button class="mobile-menu-toggle" type="button" [attr.aria-expanded]="mobileMenuOpen()"
-      aria-controls="workspace-navigation" (click)="toggleMobileMenu()"><span aria-hidden="true">☰</span><span>{{
-        mobileMenuOpen() ? 'Hide menu' : 'Show menu' }}</span></button>
-    <div class="nav-label" id="workspace-navigation">WORKSPACE</div>
-    <a class="nav-link" [class.active]="activeSection() === 'Overview'" (click)="selectSection('Overview')"><span
-        class="nav-icon">◈</span>Overview</a>
-    <a class="nav-link" [class.active]="activeSection() === 'Transactions'"
-      (click)="selectSection('Transactions')"><span class="nav-icon">↔</span>Regular spending</a>
-    <a class="nav-link" [class.active]="activeSection() === 'Bills'" (click)="selectSection('Bills')"><span
-      class="nav-icon">▣</span>Expected bills</a>
-    <a class="nav-link" [class.active]="activeSection() === 'Savings'" (click)="selectSection('Savings')"><span
-      class="nav-icon">◎</span>Savings</a>
-    <a class="nav-link" [class.active]="activeSection() === 'Reports'" (click)="selectSection('Reports')"><span
-        class="nav-icon">⌁</span>Reports</a>
-    <a class="nav-link" [class.active]="activeSection() === 'Categories'" (click)="selectSection('Categories')"><span
-        class="nav-icon">▤</span>Categories</a>
-    <div class="sidebar-bottom">
-      <div class="profile"><span class="avatar">ES</span><span><strong>Eric Smith</strong><small>Personal
-            account</small></span><span class="dots">•••</span></div>
-    </div>
-  </nav>
-  <section class="workspace">
-    <header class="topbar">
-      <div class="breadcrumbs">Financial Management <span>/</span> {{ activeSection() === 'Transactions' ? 'Regular spending' : activeSection() }}</div>
-      <div class="top-actions">
-        <button class="topbar-add-button" type="button" (click)="openAddTransactionModal()">＋ Add transaction</button>
-        <label class="import-button">↥ Import Excel<input type="file" accept=".xlsx,.xls,.csv"
-            (change)="importWorkbook($event)" /></label><button class="export-button" type="button"
-          (click)="exportWorkbook()">＋ Export .xlsx</button></div>
-    </header>
-    <div class="page-content">
-      @if (cloudDataError() || syncError()) {
-      <div class="cloud-status cloud-status-error"><span>{{ syncError() ? 'Could not save changes to cloud.' : 'Cloud data could not be loaded.' }}</span><button type="button" (click)="retryCloudData()">Retry sync</button></div>
-      } @else if (syncPending()) {
-      <div class="cloud-status cloud-status-syncing"><span>Saving changes to cloud...</span></div>
-      } @else if (hosted && !cloudDataReady()) {
-      <div class="cloud-status"><span>Syncing with cloud storage...</span></div>
-      }
-      @if (activeSection() !== 'Reports' && activeSection() !== 'Bills' && activeSection() !== 'Savings' && activeSection() !== 'Categories') {
-      <div class="page-heading">
-        <div>
-          <p class="eyebrow">PERSONAL FINANCE</p>
-          <h1>Good morning, Eric</h1>
-          <p class="muted">Here is your financial snapshot for {{ monthLabel() }}.</p>
-        </div><div class="page-heading-actions">@if (activeSection() === 'Transactions') {<button class="mobile-quick-add" type="button" (click)="openTransactionForm()">＋ Add transaction</button>}<select class="month-button" [ngModel]="selectedMonth()" (ngModelChange)="selectMonth($event)">@for (month
-          of monthOptions(); track month) {<option [value]="month">{{ formatMonth(month) }}</option>}</select></div>
+<div class="fiori-app-root" [attr.data-theme]="darkMode() ? 'dark' : 'light'">
+  <!-- Top Shell Bar (Desktop & Tablet) -->
+  <header class="fiori-shell-bar">
+    <div class="fiori-shell-left">
+      <div class="fiori-brand" (click)="selectSection('Overview')" role="button" tabindex="0" aria-label="Go to Overview">
+        <span class="fiori-brand-mark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+            <path d="M8 7h8"/>
+            <path d="M8 11h8"/>
+            <path d="M8 15h5"/>
+          </svg>
+        </span>
+        <span class="fiori-brand-title">Ledger</span>
       </div>
-      }
-      @if (activeSection() === 'Overview') {
-      @if (failedTransactions().length > 0) {
-      <div class="fiori-alert-strip fiori-alert-warning" role="alert">
+      <nav class="fiori-shell-nav" aria-label="Main Navigation">
+        <a class="fiori-nav-item" [class.active]="activeSection() === 'Overview'" (click)="selectSection('Overview')">Overview</a>
+        <a class="fiori-nav-item" [class.active]="activeSection() === 'Spending' || activeSection() === 'Transactions'" (click)="selectSection('Spending')">Spending</a>
+        <a class="fiori-nav-item" [class.active]="activeSection() === 'Bills'" (click)="selectSection('Bills')">Bills</a>
+        <a class="fiori-nav-item" [class.active]="activeSection() === 'Savings'" (click)="selectSection('Savings')">Savings</a>
+        <a class="fiori-nav-item" [class.active]="activeSection() === 'Plan'" (click)="selectSection('Plan')">Plan</a>
+        <a class="fiori-nav-item" [class.active]="activeSection() === 'Reports'" (click)="selectSection('Reports')">Reports</a>
+        <a class="fiori-nav-item" [class.active]="activeSection() === 'Categories'" (click)="selectSection('Categories')">Categories</a>
+        <a class="fiori-nav-item" [class.active]="activeSection() === 'Data'" (click)="selectSection('Data')">Data</a>
+        <a class="fiori-nav-item" [class.active]="activeSection() === 'States'" (click)="selectSection('States')">States</a>
+      </nav>
+    </div>
+
+    <div class="fiori-shell-right">
+      <select class="fiori-select fiori-month-select" [ngModel]="selectedMonth()" (ngModelChange)="selectMonth($event)" aria-label="Select month">
+        @for (month of monthOptions(); track month) {
+          <option [value]="month">{{ formatMonth(month) }}</option>
+        }
+      </select>
+      <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddTransactionModal()">Add transaction</button>
+      <span class="fiori-avatar-badge" title="Eric Smith (Personal account)">ES</span>
+      <button type="button" class="fiori-btn fiori-btn-ghost" (click)="toggleTheme()" title="Switch appearance">
+        {{ themeLabel() }}
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Top Header (<= 768px) -->
+  <header class="fiori-mobile-header">
+    <div class="fiori-brand" (click)="selectSection('Overview')" role="button" tabindex="0">
+      <span class="fiori-brand-mark">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+          <path d="M8 7h8"/>
+          <path d="M8 11h8"/>
+        </svg>
+      </span>
+      <span class="fiori-brand-title">Ledger</span>
+    </div>
+    <div class="fiori-mobile-header-right">
+      <select class="fiori-select fiori-mobile-month-select" [ngModel]="selectedMonth()" (ngModelChange)="selectMonth($event)" aria-label="Select month">
+        @for (month of monthOptions(); track month) {
+          <option [value]="month">{{ formatMonth(month) }}</option>
+        }
+      </select>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="fiori-main-content">
+
+    <!-- Cloud Sync Status Notification -->
+    @if (cloudDataError() || syncError()) {
+      <div class="fiori-alert-strip" style="background:#fef2f2; border-color:#fecaca; color:#b91c1c;" role="alert">
         <div class="fiori-alert-icon">⚠</div>
         <div class="fiori-alert-body">
-          <div class="fiori-alert-title">Flagged / Failed Transaction Alert</div>
-          <p>{{ failedTransactions().length }} transaction{{ failedTransactions().length > 1 ? 's' : '' }} in {{ monthLabel() }} flagged for review:</p>
-          <div class="fiori-alert-chips">
-            @for (tx of failedTransactions(); track tx.id) {
-            <span class="fiori-alert-chip">
-              <strong>{{ tx.description }}</strong>: -{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
-              <small>({{ tx.date | date:'MMM d' }} · {{ tx.category }})</small>
-            </span>
-            }
-          </div>
+          <div class="fiori-alert-title">Sync Notice</div>
+          <p>{{ syncError() ? 'Could not save changes to cloud storage.' : 'Cloud data could not be loaded.' }}</p>
+          <button type="button" class="fiori-btn fiori-btn-ghost" style="margin-top:6px;" (click)="retryCloudData()">Retry sync</button>
         </div>
       </div>
-      }
-      <div class="metric-grid">
-        <article class="fiori-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="metric-top"><span>Monthly spend</span><span class="metric-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span></div>
-          <strong>{{ cloudDataReady() ? (totalSpent() | currency:'PHP':'symbol':'1.2-2') : 'Loading...' }}</strong>
-          <p class="muted">Total expenses for {{ monthLabel() }}</p>
-        </article>
-        <article class="fiori-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="metric-top"><span>Top category</span><span class="metric-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42l-8.704-8.704z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg></span></div>
-          <strong>{{ budgetCategories()[0]?.total ? (budgetCategories()[0].total | currency:'PHP':'symbol':'1.2-2') : '₱0.00' }}</strong>
-          <p class="muted">{{ budgetCategories()[0]?.category || 'No expenses yet' }} · {{ monthLabel() }}</p>
-        </article>
-        <article class="fiori-card clickable-tile" (click)="selectSection('Bills')" tabindex="0" role="button" aria-label="Go to Expected Bills" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="metric-top"><span>Expected bills</span><span class="metric-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg></span></div>
-          <strong>{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }} <span class="metric-target">/ {{ billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }}</span></strong>
-          <p class="muted">{{ activeExpectedBills().length }} sub-categories planned · View bills →</p>
-        </article>
-        <article class="fiori-card savings-card clickable-tile" (click)="selectSection('Savings')" tabindex="0" role="button" aria-label="Go to Savings" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="metric-top"><span>Total savings balance</span><span class="metric-icon income"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span></div>
-          <strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
-          <div class="metric-progress-wrap">
-            <div class="metric-progress-bar"><div class="metric-progress-fill" [style.width.%]="savingsGoalProgress()"></div></div>
-            <span class="metric-progress-label">{{ savingsGoalProgress() | number:'1.0-0' }}% of {{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }} goal</span>
-          </div>
-          <p class="muted">{{ monthlySavingsSubtext() }}</p>
-        </article>
+    } @else if (syncPending()) {
+      <div class="fiori-alert-strip" style="background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8;">
+        <div class="fiori-alert-icon">⏳</div>
+        <div class="fiori-alert-body">
+          <div class="fiori-alert-title">Saving changes to cloud...</div>
+        </div>
       </div>
-      <div class="dashboard-grid">
-        <section class="panel budget-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="panel-heading">
-            <div>
+    }
+
+    <!-- SECTION: OVERVIEW -->
+    @if (activeSection() === 'Overview') {
+      <div>
+        <div class="fiori-page-header">
+          <div>
+            <h1>Overview</h1>
+            <p class="fiori-page-subtitle">{{ monthLabel() }} · {{ selectedTransactions().length }} transactions</p>
+          </div>
+          <span class="fiori-page-status">Saved automatically</span>
+        </div>
+
+        <!-- Flagged / Failed Transaction Alert Strip -->
+        @if (failedTransactions().length > 0) {
+          <div class="fiori-alert-strip" role="alert">
+            <div class="fiori-alert-icon">⚠</div>
+            <div class="fiori-alert-body">
+              <div class="fiori-alert-title">Flagged / Failed Transaction Alert</div>
+              <p>{{ failedTransactions().length }} transaction{{ failedTransactions().length > 1 ? 's' : '' }} in {{ monthLabel() }} flagged for review (excluded from totals):</p>
+              <div class="fiori-alert-chips">
+                @for (tx of failedTransactions(); track tx.id) {
+                  <span class="fiori-alert-chip">
+                    <strong>{{ tx.description }}</strong>: -{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
+                    <small>({{ tx.date | date:'MMM d' }} · {{ tx.category }})</small>
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- 4 Connected KPI Cards -->
+        <div class="fiori-kpi-grid">
+          <div class="fiori-kpi-card clickable" (click)="selectSection('Spending')">
+            <span class="fiori-kpi-label">Monthly spend</span>
+            <strong class="fiori-kpi-value">{{ cloudDataReady() ? (totalSpent() | currency:'PHP':'symbol':'1.2-2') : 'Loading...' }}</strong>
+            <span class="fiori-kpi-sub">Total expenses for {{ monthLabel() }}</span>
+            <div class="fiori-kpi-footer">
+              <svg viewBox="0 0 120 28" preserveAspectRatio="none" style="width:100%; height:28px; display:block;">
+                <polyline points="0,18 24,14 48,22 72,10 96,16 120,8" fill="none" stroke="#0070f2" stroke-width="1.5"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="fiori-kpi-card">
+            <span class="fiori-kpi-label">Top category</span>
+            <strong class="fiori-kpi-value">{{ budgetCategories()[0]?.total ? (budgetCategories()[0].total | currency:'PHP':'symbol':'1.2-2') : '₱0.00' }}</strong>
+            <span class="fiori-kpi-sub">{{ budgetCategories()[0]?.category || 'No expenses yet' }} · {{ monthLabel() }}</span>
+            <div class="fiori-kpi-footer">
+              <svg viewBox="0 0 120 28" preserveAspectRatio="none" style="width:100%; height:28px; display:block;">
+                <polyline points="0,18 24,16 48,17 72,15 96,16 120,14" fill="none" stroke="#4a6fa5" stroke-width="1.5"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="fiori-kpi-card clickable" (click)="selectSection('Bills')">
+            <span class="fiori-kpi-label">Expected bills</span>
+            <strong class="fiori-kpi-value">{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }} <span style="font-size:16px; font-weight:500; color:var(--fiori-muted);">/ {{ billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }}</span></strong>
+            <span class="fiori-kpi-sub">{{ activeExpectedBills().length }} sub-categories planned</span>
+            <div class="fiori-kpi-footer">
+              <div style="height:4px; background:var(--fiori-track); overflow:hidden;">
+                <div [style.width.%]="billsExpectedTotal() > 0 ? (billsSpentTotal() / billsExpectedTotal()) * 100 : 0" style="height:100%; background:var(--fiori-accent);"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="fiori-kpi-card clickable" (click)="selectSection('Savings')">
+            <span class="fiori-kpi-label">Savings balance</span>
+            <strong class="fiori-kpi-value green">{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+            <span class="fiori-kpi-sub">{{ savingsGoalProgress() | number:'1.0-0' }}% of {{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }} goal</span>
+            <div class="fiori-kpi-footer">
+              <div style="height:4px; background:var(--fiori-track); overflow:hidden;">
+                <div [style.width.%]="savingsGoalProgress()" style="height:100%; background:var(--fiori-green);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two Column Overview Grid -->
+        <div class="fiori-grid-2col">
+          <!-- Left: Spending by Category -->
+          <section class="fiori-panel">
+            <div class="fiori-panel-header">
               <h2>Spending by category</h2>
-              <p class="muted">Where your money goes · {{ monthLabel() }}</p>
+              <span class="fiori-panel-meta">{{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }} total</span>
             </div>
-            <span class="report-icon">⌁</span>
-          </div>
-          <div class="spending-total-row">
-            <span>Total spent</span>
-            <strong>{{ cloudDataReady() ? (totalSpent() | currency:'PHP':'symbol':'1.2-2') : 'Loading...' }}</strong>
-          </div>
-          <div class="category-list">@for (item of budgetCategories(); track item.category; let index = $index) {
-            <div class="category-row-group">
-              <div class="category-row">
-                <span class="category-dot" [style.background-color]="categoryColor(index)"></span>
-                <span class="category-name">{{ item.category }}</span>
-                <span class="category-amount">{{ item.total | currency:'PHP':'symbol':'1.2-2' }}</span>
-                <span class="category-bar"><i [style.width.%]="budgetCategories()[0]?.total ? (item.total / budgetCategories()[0].total) * 100 : 0"></i></span>
-              </div>
-              @if (categoryMoMText(item.category)) {
-              <div class="category-mom-subtext">
-                <small class="mom-text">{{ categoryMoMText(item.category) }}</small>
-              </div>
+            <div>
+              @if (budgetCategories().length === 0) {
+                <div style="padding:32px 20px; text-align:center; color:var(--fiori-muted); font-size:13px;">
+                  No spending recorded for {{ monthLabel() }}.
+                </div>
+              }
+              @for (cat of budgetCategories(); track cat.category) {
+                <div class="fiori-cat-row">
+                  <span class="fiori-cat-dot" [style.background]="getCategoryColor(cat.category)"></span>
+                  <span class="fiori-cat-name">{{ cat.category }}</span>
+                  <span class="fiori-cat-amount">{{ cat.total | currency:'PHP':'symbol':'1.2-2' }}</span>
+                  <span class="fiori-cat-bar-wrap">
+                    <i class="fiori-cat-track">
+                      <i class="fiori-cat-fill" [style.background]="getCategoryColor(cat.category)" [style.width.%]="cat.percentOfSpend"></i>
+                    </i>
+                    <small class="fiori-cat-share">{{ cat.percentOfSpend | number:'1.0-0' }}%</small>
+                  </span>
+                </div>
               }
             </div>
-          } @if (!budgetCategories().length && cloudDataReady()) {<p class="muted category-empty">No spending recorded for {{ monthLabel() }}.</p>}</div>
-        </section><div class="overview-side-column" style="grid-column: span 3;">
-          <section class="panel subcategory-overview" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-            <div class="panel-heading"><div><h2>Sub-category overview</h2><p class="muted">Your top spending trends</p></div><span class="trend-arrow">↗</span></div>
-          @if (hasEnoughHistoricalData() && subcategoryTrends().length) {
-          <div class="subcategory-chart" aria-label="Sub-category spending trend chart">
-            <div class="subcategory-chart-scale"><span>₱{{ totalSpent() | number:'1.0-0' }}</span><span>₱0</span></div>
-            <div class="subcategory-bars">
-              @for (month of trendData(); track month.month; let monthIndex = $index) {
-              <div class="subcategory-column">
-                <div class="subcategory-bar-group">@for (trend of subcategoryTrends(); track trend.name) {<i [class]="'subcategory-bar bar-' + $index" [style.height.%]="trend.points[monthIndex] || 4" [title]="trend.name"></i>}</div>
-                <small>{{ month.month }}</small>
-              </div>
+          </section>
+
+          <!-- Right: Recent Transactions -->
+          <section class="fiori-panel">
+            <div class="fiori-panel-header">
+              <h2>Recent transactions</h2>
+              <a class="fiori-link" (click)="selectSection('Spending')">View all</a>
+            </div>
+            <div>
+              @if (selectedTransactions().length === 0) {
+                <div style="padding:32px 20px; text-align:center; color:var(--fiori-muted); font-size:13px;">
+                  No transactions recorded for this month.
+                </div>
+              }
+              @for (tx of selectedTransactions().slice(0, 7); track tx.id) {
+                <div class="fiori-tx-row">
+                  <div class="fiori-tx-info">
+                    <div class="fiori-tx-desc">{{ tx.description }}</div>
+                    <div class="fiori-tx-meta">{{ tx.category }} @if (tx.subcategory) { · {{ tx.subcategory }} } · {{ tx.date | date:'MMM d' }}</div>
+                  </div>
+                  <span class="fiori-tx-amount">-{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}</span>
+                </div>
               }
             </div>
-          </div>
-          <div class="subcategory-legend">@for (trend of subcategoryTrends(); track trend.name; let index = $index) {<span><i [class]="'legend-dot bar-' + index"></i>{{ trend.name }}</span>}</div>
-          } @else {
-          <div class="trend-empty-state">
-            <div class="trend-empty-icon">↗</div>
-            <strong class="trend-empty-title">Not enough data yet</strong>
-            <p class="muted">Sub-category trends require spending history across at least 2 months to visualize trajectory.</p>
-          </div>
-          }
           </section>
         </div>
       </div>
-      }
-      @if (activeSection() === 'Bills') {
-      <section class="bills-page">
-        <div class="report-page-heading">
+    }
+
+    <!-- SECTION: SPENDING (REGULAR SPENDING) -->
+    @if (activeSection() === 'Spending' || activeSection() === 'Transactions') {
+      <div>
+        <div class="fiori-page-header">
           <div>
-            <p class="eyebrow">PERSONAL FINANCE</p>
-            <h2>Expected bills</h2>
-            <p class="muted">Compare planned bills with spending in {{ monthLabel() }}.</p>
+            <h1>Regular spending</h1>
+            <p class="fiori-page-subtitle">{{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }} across {{ selectedTransactions().length }} transactions · {{ monthLabel() }}</p>
           </div>
-        </div>
-        <section class="panel bills-summary-tile">
-          <div class="bill-summary-item"><span>Expected bills</span><strong>{{ billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Planned for this month</small></div>
-          <div class="bill-summary-item"><span>Bill spending</span><strong>{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Matched by sub-category</small></div>
-          <div class="bill-summary-item"><span>Overspending alerts</span><strong [class.expense-text]="billsOverspentCount() > 0">{{ billsOverspentCount() }}</strong><small>{{ billsOverspentCount() ? 'Review bills above plan' : 'All bills on track' }}</small></div>
-        </section>
-        <div class="bills-layout">
-          <section class="panel category-form-panel">
-            <h3>Add expected bill</h3>
-            <p class="muted">Set a reference amount before recording expenses.</p>
-            <form (submit)="addExpectedBill(); $event.preventDefault()">
-              <label>Bill name<input required [ngModel]="newBillName()" name="billname" (ngModelChange)="newBillName.set($event)" placeholder="e.g. Internet" /></label>
-              <label>Category<select required [ngModel]="newBillCategory()" name="billcat" (ngModelChange)="updateBillCategory($event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
-              <label>Sub-category<select required [ngModel]="newBillSubcategory()" name="billsub" (ngModelChange)="newBillSubcategory.set($event)"><option value="">Choose a sub-category</option>@for (subcategory of subcategoriesFor(newBillCategory()); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label>
-              <label>Expected amount<div class="amount-input"><span>₱</span><input required min="0.01" step="0.01" type="number" [ngModel]="newBillAmount()" name="billamt" (ngModelChange)="newBillAmount.set($event)" placeholder="0.00" /></div></label>
-              <button class="add-button" type="submit">Add expected bill <span>→</span></button>
-            </form>
-          </section>
-          <section class="panel bill-list-panel">
-            <div class="panel-heading"><div><h3>Bill tracking</h3><p class="muted">Actual sub-category spending versus your plan.</p></div><span class="report-icon">▣</span></div>
-            @if (billTracking().length) {
-            <div class="bill-list">@for (bill of billTracking(); track bill.id) {
-              <article class="bill-row" [class.bill-overspent]="bill.overspent">
-                @if (editingBillId() === bill.id && editingBill(); as editBill) {
-                <div class="bill-edit-fields"><input aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateBillEdit('name', $event)" /><select aria-label="Edit bill category" [ngModel]="editBill.category" (ngModelChange)="updateEditingBillCategory($event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select><select aria-label="Edit bill sub-category" [ngModel]="editBill.subcategory" (ngModelChange)="updateBillEdit('subcategory', $event)"><option value="">Choose a sub-category</option>@for (subcategory of subcategoriesFor(editBill.category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select><input aria-label="Edit bill amount" type="number" min="0" [ngModel]="editBill.amount" (ngModelChange)="updateBillEdit('amount', $event)" /></div>
-                <div class="row-actions bill-edit-actions"><button class="save-row-button" type="button" (click)="saveEditingBill()">Save</button><button class="cancel-row-button" type="button" (click)="cancelEditingBill()">Cancel</button></div>
-                } @else {
-                <div class="bill-row-heading"><div><strong>{{ bill.name }}</strong><small>{{ bill.category }} → {{ bill.subcategory }}</small></div><div class="row-actions"><button class="edit-row-button" type="button" aria-label="Edit expected bill" title="Edit expected bill" (click)="startEditingBill(bill)">Edit</button><button class="delete-button" type="button" aria-label="Remove expected bill" (click)="removeExpectedBill(bill.id)">×</button></div></div>
-                <div class="bill-amounts"><span>Spent <b>{{ bill.spent | currency:'PHP':'symbol':'1.0-0' }}</b></span><span>Plan <b>{{ bill.amount | currency:'PHP':'symbol':'1.0-0' }}</b></span></div>
-                <div class="progress-track"><span [style.width.%]="billProgress(bill.spent, bill.amount)" [class.expense-progress]="bill.overspent"></span></div>
-                <small class="bill-status">{{ billStatus(bill.spent, bill.amount, bill.overspent) }}</small>
-                }
-              </article>
-            }</div>
-            } @else {
-            <p class="muted bill-empty">Add your recurring bills to start tracking overspending.</p>
-            }
-          </section>
-        </div>
-      </section>
-      }
-      @if (activeSection() === 'Categories') {
-      <section class="category-manager">
-        <div class="category-manager-heading">
-          <div>
-            <p class="eyebrow">PERSONAL FINANCE</p>
-            <h2>Categories</h2>
-            <p class="muted">Create categories and sub-categories for your transactions.</p>
-          </div>
-        </div>
-        <div class="category-manager-grid">
-          <section class="panel category-form-panel">
-            <h3>Create category</h3>
-            <p class="muted">Add a new top-level spending group.</p>
-            <form (submit)="createCategory(); $event.preventDefault()">
-              <label>Category name<input required
-                  [ngModel]="newCategoryName()" name="newcatname" (ngModelChange)="newCategoryName.set($event)"
-                  placeholder="e.g. Education" /></label>
-              <label>First sub-category <span
-                  class="optional">optional</span><input [ngModel]="newCategorySubcategory()" name="newcatsub"
-                  (ngModelChange)="newCategorySubcategory.set($event)" placeholder="e.g. Tuition" /></label>
-              <button class="add-button" type="submit">Create category <span>→</span></button>
-            </form>
-          </section>
-          <section class="panel category-form-panel">
-            <h3>Add sub-category</h3>
-            <p class="muted">Add an option to an existing expense category.</p>
-            <form (submit)="createExpenseSubcategory(); $event.preventDefault()">
-              <label>Category<select
-                  [ngModel]="selectedExpenseCategoryForSubcategory()" name="expcat"
-                  (ngModelChange)="selectedExpenseCategoryForSubcategory.set($event)">
-                  <option value="">Choose a category</option>
-                  <option value="__ALL__">All categories (Shared)</option>
-                  @for (category of categories; track category) {<option
-                    [value]="category">{{ category }}</option>}
-                </select></label>
-              <label>Sub-category name<input required [ngModel]="newExpenseSubcategoryName()" name="expsubname"
-                  (ngModelChange)="newExpenseSubcategoryName.set($event)" placeholder="e.g. Rent" /></label>
-              <button class="add-button" type="submit">Add sub-category <span>→</span></button>
-            </form>
-          </section>
-        </div>
-        <div class="category-manager-grid">
-          <section class="panel category-form-panel">
-            <h3>Create savings category</h3>
-            <p class="muted">Add a fund for savings transactions.</p>
-            <form (submit)="createSavingsCategory(); $event.preventDefault()">
-              <label>Category name<input required
-                  [ngModel]="newCategoryName()" name="newsavcatname" (ngModelChange)="newCategoryName.set($event)"
-                  placeholder="e.g. Home deposit" /></label>
-              <label>First sub-category <span
-                  class="optional">optional</span><input [ngModel]="newCategorySubcategory()" name="newsavcatsub"
-                  (ngModelChange)="newCategorySubcategory.set($event)" placeholder="e.g. Down payment" /></label>
-              <button class="add-button" type="submit">Create savings category <span>→</span></button>
-            </form>
-          </section>
-          <section class="panel category-form-panel">
-            <h3>Add savings sub-category</h3>
-            <p class="muted">Add an option to an existing savings category.</p>
-            <form (submit)="createSavingsSubcategory(); $event.preventDefault()">
-              <label>Category<select required
-                  [ngModel]="selectedCategoryForSubcategory()" name="savcat"
-                  (ngModelChange)="selectedCategoryForSubcategory.set($event)">
-                  <option value="">Choose a savings category</option>@for (category of savingsCategories; track category) {<option
-                    [value]="category">{{ category }}</option>}
-                </select></label>
-              <label>Sub-category name<input required [ngModel]="newSubcategoryName()" name="savsubname"
-                  (ngModelChange)="newSubcategoryName.set($event)" placeholder="e.g. Renovation" /></label>
-              <button class="add-button" type="submit">Add savings sub-category <span>→</span></button>
-            </form>
-          </section>
-        </div>
-        <div class="category-search"><label for="category-search-input">Search categories</label><input id="category-search-input" type="search" [ngModel]="categorySearch()" (ngModelChange)="categorySearch.set($event)" placeholder="Search category or sub-category" /></div>
-        <section class="panel category-directory">
-          <div class="panel-heading">
-            <div>
-              <h3>Available categories</h3>
-              <p class="muted">These options appear in Add transaction.</p>
-            </div><span class="report-icon">≡</span>
-          </div>
-          <div class="table-wrap category-table-wrap"><table class="category-table"><thead><tr><th>Category</th><th>Sub-category</th><th class="align-right">Actions</th></tr></thead><tbody>@for (group of filteredCategories(); track group.name) {<tr><td colspan="2" data-label="Category"><strong>{{ group.name }}</strong></td><td class="align-right" data-label="Actions"><div class="category-actions"><button class="edit-row-button edit-category-btn" type="button" [title]="'Edit category name (' + group.name + ')'" [attr.aria-label]="'Edit category name ' + group.name" (click)="editCategory(group.name, false)">Edit</button><button class="icon-action category-delete-button" type="button" [title]="'Delete category (' + group.name + ')'" [attr.aria-label]="'Delete category ' + group.name" (click)="deleteCategory(group.name, false)">×</button></div></td></tr>@for (subcategory of group.subcategories; track subcategory) {<tr><td></td><td data-label="Sub-category">{{ subcategory }}</td><td class="align-right" data-label="Actions"><div class="category-actions"><button class="edit-subcategory-button" type="button" [title]="'Edit sub-category (' + subcategory + ')'" [attr.aria-label]="'Edit sub-category ' + subcategory" (click)="editSubcategory(group.name, subcategory, false)">Edit</button><button class="icon-action category-delete-button" type="button" [title]="'Delete sub-category (' + subcategory + ')'" [attr.aria-label]="'Delete sub-category ' + subcategory" (click)="deleteSubcategory(group.name, subcategory, false)">×</button></div></td></tr>} @if (!group.subcategories.length) {<tr><td></td><td class="muted" data-label="Sub-category">No sub-categories</td><td></td></tr>} <tr><td></td><td colspan="2"><form class="inline-add-form" style="display: flex; gap: 8px;" (submit)="addExpenseSubcategory(group.name, inlineSubName.value); inlineSubName.value=''; $event.preventDefault()"><input #inlineSubName placeholder="New sub-category" required style="padding: 4px 8px; font-size: 13px; max-width: 200px;" /><button type="submit" class="save-row-button" style="padding: 4px 12px;">Add</button></form></td></tr>}</tbody></table></div>
-        </section>
-        <section class="panel category-directory">
-          <div class="panel-heading">
-            <div>
-              <h3>Available savings categories</h3>
-              <p class="muted">These options appear in Savings transactions.</p>
-            </div><span class="report-icon">◎</span>
-          </div>
-          <div class="table-wrap category-table-wrap"><table class="category-table"><thead><tr><th>Category</th><th>Sub-category</th><th class="align-right">Actions</th></tr></thead><tbody>@for (group of filteredSavingsCategories(); track group.name) {<tr><td colspan="2" data-label="Category"><strong>{{ group.name }}</strong></td><td class="align-right" data-label="Actions"><div class="category-actions"><button class="edit-row-button edit-category-btn" type="button" [title]="'Edit category name (' + group.name + ')'" [attr.aria-label]="'Edit category name ' + group.name" (click)="editCategory(group.name, true)">Edit</button><button class="icon-action category-delete-button" type="button" [title]="'Delete category (' + group.name + ')'" [attr.aria-label]="'Delete category ' + group.name" (click)="deleteCategory(group.name, true)">×</button></div></td></tr>@for (subcategory of group.subcategories; track subcategory) {<tr><td></td><td data-label="Sub-category">{{ subcategory }}</td><td class="align-right" data-label="Actions"><div class="category-actions"><button class="edit-subcategory-button" type="button" [title]="'Edit sub-category (' + subcategory + ')'" [attr.aria-label]="'Edit sub-category ' + subcategory" (click)="editSubcategory(group.name, subcategory, true)">Edit</button><button class="icon-action category-delete-button" type="button" [title]="'Delete sub-category (' + subcategory + ')'" [attr.aria-label]="'Delete sub-category ' + subcategory" (click)="deleteSubcategory(group.name, subcategory, true)">×</button></div></td></tr>} @if (!group.subcategories.length) {<tr><td></td><td class="muted" data-label="Sub-category">No sub-categories</td><td></td></tr>} <tr><td></td><td colspan="2"><form class="inline-add-form" style="display: flex; gap: 8px;" (submit)="addSavingsSubcategory(group.name, inlineSavSubName.value); inlineSavSubName.value=''; $event.preventDefault()"><input #inlineSavSubName placeholder="New sub-category" required style="padding: 4px 8px; font-size: 13px; max-width: 200px;" /><button type="submit" class="save-row-button" style="padding: 4px 12px;">Add</button></form></td></tr>}</tbody></table></div>
-        </section>
-      </section>
-      }
-      @if (activeSection() === 'Savings') {
-      <section class="reference-reports">
-        <div class="report-page-heading">
-          <div>
-            <p class="eyebrow">PERSONAL FINANCE</p>
-            <h2>Savings &amp; Target Savings</h2>
-            <p class="muted">Track your current savings and progress toward your target savings.</p>
-          </div>
-        </div>
-        <div class="type-toggle savings-subpage-tabs"><button type="button" [class.selected]="savingsSubPage() === 'Plan'"
-            (click)="selectSavingsSubPage('Plan')">Savings plan</button><button type="button"
-            [class.selected]="savingsSubPage() === 'AddTransaction'" (click)="selectSavingsSubPage('AddTransaction')">Add transaction</button></div>
-        <section class="panel savings-overview-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="savings-overview-metrics">
-            <div class="fiori-card primary">
-              <span class="savings-overview-label">Total savings</span>
-              <strong class="savings-overview-value total-val">{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
-              <small class="savings-overview-sub">{{ monthlySavingsSubtext() }}</small>
-            </div>
-            <div class="savings-overview-divider"></div>
-            <div class="fiori-card">
-              <span class="savings-overview-label">Target savings goal</span>
-              <strong class="savings-overview-value">{{ cloudDataReady() ? (targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong>
-              <small class="savings-overview-sub">{{ cloudDataReady() ? (savingsGoalProgress() | number:'1.0-0') + '% complete' : 'Syncing...' }}</small>
-            </div>
-            <div class="savings-overview-divider"></div>
-            <div class="fiori-card">
-              <span class="savings-overview-label">Amount remaining</span>
-              <strong class="savings-overview-value">{{ cloudDataReady() ? (amountRemaining() | currency:'PHP':'symbol':'1.0-0') : 'Loading...' }}</strong>
-              <small class="savings-overview-sub">Until the goal is reached</small>
-            </div>
-          </div>
-          <div class="savings-overview-progress">
-            <div class="savings-progress-bar">
-              <span [style.width.%]="savingsGoalProgress()"></span>
-            </div>
-          </div>
-        </section>
-        @if (savingsSubPage() === 'Plan') {
-        <button class="savings-details-toggle" type="button" [attr.aria-expanded]="savingsDetailsOpen()" (click)="toggleSavingsDetails()"><span>{{ savingsDetailsOpen() ? 'Hide plan details' : 'Show plan details' }}</span><span aria-hidden="true">{{ savingsDetailsOpen() ? '−' : '+' }}</span></button>
-        }
-        @if (savingsSubPage() === 'Plan' && savingsDetailsOpen()) {
-        <section class="panel savings-plan-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">FROM SAVINGS PLAN</p>
-              <h2>Balanced savings plan</h2>
-              <p class="muted">A twice-monthly allocation built around a {{ savingsPlanSavingsRate() }}% savings target.</p>
-            </div>
-            <button class="plan-params-toggle" type="button" (click)="toggleEditingPlanParameters()">
-              {{ editingPlanParameters() ? 'Close parameters' : '✎ Edit plan parameters' }}
-            </button>
-          </div>
-          @if (editingPlanParameters()) {
-          <div class="savings-plan-params-form">
-            <div class="form-grid">
-              <label>Monthly salary
-                <div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="savingsPlanSalary()" (ngModelChange)="updateSavingsPlanSalary($event)" /></div>
-              </label>
-              <label>Savings target
-                <div class="amount-input"><span>%</span><input type="number" min="1" max="100" [ngModel]="savingsPlanSavingsRate()" (ngModelChange)="updateSavingsPlanRate($event)" /></div>
-              </label>
-              <label>Minimum investment
-                <div class="amount-input"><span>₱</span><input type="number" min="0" [ngModel]="savingsPlanInvestment()" (ngModelChange)="updateSavingsPlanInvestment($event)" /></div>
-              </label>
-            </div>
-            <div class="plan-params-actions">
-              <button class="reset-plan-button" type="button" (click)="resetSavingsPlanToDefaults()">Reset to default 40% plan</button>
-              <button class="done-plan-button" type="button" (click)="toggleEditingPlanParameters()">Done</button>
-            </div>
-          </div>
-          }
-          <div class="reference-metrics">
-            <article><span>Combined monthly salary</span><strong>{{ savingsPlan().salary | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Two paychecks of {{ savingsPlan().salary / 2 | currency:'PHP':'symbol':'1.0-0' }}</small></article>
-            <article><span>Fixed needs</span><strong>{{ savingsPlan().fixedNeeds | currency:'PHP':'symbol':'1.0-0' }}</strong><small>{{ savingsPlan().fixedNeeds / (savingsPlan().salary || 1) | percent:'1.0-0' }} of salary</small></article>
-            <article><span>Monthly savings target</span><strong>{{ savingsPlan().savingsGoal | currency:'PHP':'symbol':'1.0-0' }}</strong><small>{{ savingsPlan().savingsGoal / (savingsPlan().salary || 1) | percent:'1.0-0' }} of salary</small></article>
-            <article><span>Variable allowance</span><strong>{{ savingsPlan().variableAllowance | currency:'PHP':'symbol':'1.0-0' }}</strong><small>Available after savings and fixed needs</small></article>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Paycheck allocation</th><th class="align-right">Paycheck 1</th><th class="align-right">Paycheck 2</th><th class="align-right">Monthly total</th></tr></thead>
-              <tbody>@for (allocation of savingsPlanAllocations(); track allocation.name) {<tr>
-                <td><strong>{{ allocation.name }}</strong></td>
-                <td class="align-right">{{ allocation.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
-                <td class="align-right">{{ allocation.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
-                <td class="align-right"><strong>{{ allocation.monthly | currency:'PHP':'symbol':'1.0-0' }}</strong></td>
-              </tr>}</tbody>
-            </table>
-          </div>
-        </section>
-        @if (savingsSubPage() === 'Plan') {
-        <div class="reference-tiles">
-          <section class="fiori-card">
-            <div class="tile-heading"><div><h3>Savings allocation detail</h3><p>Move these amounts immediately after payday.</p></div><span>↗</span></div>
-            <div class="tile-bars">@for (bucket of savingsPlanBuckets(); track bucket.name) {<div><label><span>{{ bucket.name }}</span><b>{{ bucket.monthly | currency:'PHP':'symbol':'1.0-0' }}</b></label><em><i [style.width.%]="(bucket.monthly / (savingsPlan().savingsGoal || 1)) * 100"></i></em><small>{{ bucket.perPayday | currency:'PHP':'symbol':'1.0-0' }} per payday · {{ bucket.purpose }}</small></div>}</div>
-          </section>
-          <section class="fiori-card">
-            <div class="tile-heading"><div><h3>Emergency fund roadmap</h3><p>Build the safety net with the emergency reserve.</p></div><span>◎</span></div>
-            <div class="tile-bars">@for (milestone of savingsPlanRoadmap(); track milestone.milestone) {<div><label><span>{{ milestone.milestone }}</span><b>{{ milestone.target | currency:'PHP':'symbol':'1.0-0' }}</b></label><em><i [style.width.%]="savingsBalance() > 0 ? (savingsBalance() / milestone.target) * 100 : 0"></i></em><small>{{ milestone.monthlyContribution | currency:'PHP':'symbol':'1.0-0' }} monthly · estimated {{ milestone.estimatedMonths }} months</small></div>}</div>
-          </section>
-        </div>
-        <section class="panel savings-plan-panel">
-          <div class="panel-heading"><div><h2>Fixed needs and bills</h2><p class="muted">Monthly reserve split evenly across both paychecks.</p></div><strong>{{ savingsPlan().fixedNeeds | currency:'PHP':'symbol':'1.0-0' }}</strong></div>
-          <div class="table-wrap"><table>
-            <thead><tr><th>Fixed need / bill</th><th class="align-right">Monthly</th><th class="align-right">Paycheck 1</th><th class="align-right">Paycheck 2</th><th></th></tr></thead>
-            <tbody>@for (bill of savingsPlanBillsView(); track bill.id) {
-              @if (editingBillId() === bill.id && editingSavingsBillView(); as editBill) {
-                <tr class="editing-row">
-                  <td><input aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateEditingSavingsBill('name', $event)" /></td>
-                  <td class="align-right"><div class="amount-input"><span>₱</span><input aria-label="Edit monthly amount" type="number" min="0" [ngModel]="editBill.monthly" (ngModelChange)="updateEditingSavingsBill('monthly', $event)" /></div></td>
-                  <td class="align-right muted">{{ (editBill.monthly / 2) | currency:'PHP':'symbol':'1.0-0' }}</td>
-                  <td class="align-right muted">{{ (editBill.monthly / 2) | currency:'PHP':'symbol':'1.0-0' }}</td>
-                  <td>
-                    <div class="row-actions">
-                      <button class="save-row-button" type="button" (click)="saveEditingSavingsBill()">Save</button>
-                      <button class="cancel-row-button" type="button" (click)="cancelEditingSavingsBill()">Cancel</button>
-                    </div>
-                  </td>
-                </tr>
-              } @else {
-                <tr>
-                  <td data-label="Fixed need / bill">{{ bill.name }}</td>
-                  <td class="align-right" data-label="Monthly">{{ bill.monthly | currency:'PHP':'symbol':'1.0-0' }}</td>
-                  <td class="align-right" data-label="Paycheck 1">{{ bill.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
-                  <td class="align-right" data-label="Paycheck 2">{{ bill.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
-                  <td>
-                    <div class="row-actions">
-                      <button class="edit-row-button" type="button" aria-label="Edit fixed need" (click)="startEditingSavingsBill(bill)">Edit</button>
-                      <button class="delete-button" type="button" aria-label="Delete fixed need" (click)="removeSavingsPlanBill(bill.id)">×</button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            } @empty {
-              <tr>
-                <td colspan="5" class="muted align-center">No fixed needs or bills added yet.</td>
-              </tr>
-            }</tbody>
-          </table></div>
-          <form class="add-savings-bill-form" (submit)="addExpectedBill(); $event.preventDefault()">
-            <label>Bill name<input required [ngModel]="newBillName()" name="bname" (ngModelChange)="newBillName.set($event)" placeholder="e.g. Health Insurance" /></label>
-            <label>Category<select required [ngModel]="newBillCategory()" name="billcat" (ngModelChange)="updateBillCategory($event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
-            <label>Sub-category<select required [ngModel]="newBillSubcategory()" name="billsub" (ngModelChange)="newBillSubcategory.set($event)"><option value="">Choose a sub-category</option>@for (subcategory of subcategoriesFor(newBillCategory()); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label>
-            <label>Monthly amount<div class="amount-input"><span>₱</span><input required min="0.01" step="0.01" type="number" [ngModel]="newBillAmount()" name="bamt" (ngModelChange)="newBillAmount.set($event)" placeholder="0.00" /></div></label>
-            <button class="add-bill-button" type="submit">＋ Add fixed need</button>
-          </form>
-        </section>
-        }
-        @if (savingsSubPage() === 'Plan') {
-        <div class="reference-tiles savings-tiles-3col">
-          <!-- Left: savings trend chart -->
-          <section class="fiori-card trend-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-            <div class="tile-heading">
-              <div>
-                <h3>Monthly net savings</h3>
-                <p>Contributions minus withdrawals · last 6 months</p>
-              </div><span>↗</span>
-            </div>
-            <div class="trend-chart">@for (point of savingsTrendData(); track point.month) {<div class="trend-column"><i
-                  [style.height.%]="point.height" [title]="(point.amount | currency:'PHP':'symbol':'1.0-0')"></i><small>{{ point.month }}</small></div>}</div>
-          </section>
-
-          <!-- Middle: this-month breakdown -->
-          <section class="fiori-card savings-month-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-            <div class="tile-heading">
-              <div>
-                <h3>{{ monthLabel() }}</h3>
-                <p>This month's savings activity</p>
-              </div><span>₱</span>
-            </div>
-            <div class="tile-bars">
-              <div><label><span>Contributions</span><b class="savings-amount">{{ currentSavingsSummary().contributions | currency:'PHP':'symbol':'1.0-0' }}</b></label></div>
-              <div><label><span>Withdrawals</span><b class="withdrawal-amount">{{ currentSavingsSummary().withdrawals > 0 ? ('−' + (currentSavingsSummary().withdrawals | currency:'PHP':'symbol':'1.0-0')) : '₱0' }}</b></label></div>
-              <div><label><span>Net saved</span><b>{{ currentSavingsSummary().netSavings | currency:'PHP':'symbol':'1.0-0' }}</b></label></div>
-            </div>
-            <div class="savings-month-divider"></div>
-            <div class="savings-month-footer">
-              <span>Running balance as of {{ monthLabel() }}</span>
-              <b>{{ currentSavingsSummary().runningBalance | currency:'PHP':'symbol':'1.0-0' }}</b>
-            </div>
-          </section>
-
-          <!-- Right: target goal progress -->
-          <section class="fiori-card" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-            <div class="tile-heading">
-              <div>
-                <h3>Goal progress</h3>
-                <p>Estimated milestone · {{ targetDate() }}</p>
-              </div><span>◎</span>
-            </div>
-            <div class="savings-goal-big">
-              <strong>{{ savingsGoalProgress() | number:'1.0-0' }}<small>%</small></strong>
-              <span>of target</span>
-            </div>
-            <div class="reference-progress"><i [style.width.%]="savingsGoalProgress()"></i></div>
-            <div class="tile-foot"><span>{{ savingsBalance() | currency:'PHP':'symbol':'1.0-0' }} saved</span><span>{{ amountRemaining() | currency:'PHP':'symbol':'1.0-0' }} to go</span></div>
-            <div class="tile-bars" style="margin-top:16px">@for (fund of savingsBalances(); track fund.name) {<div><label><span>{{ fund.name }}</span><b>{{ fund.amount | currency:'PHP':'symbol':'1.0-0' }}</b></label><em><i [style.width.%]="savingsBalance() > 0 ? (fund.amount / savingsBalance()) * 100 : 0"></i></em></div>}</div>
-          </section>
-        </div>
-        }
-        }
-        @if (savingsSubPage() === 'AddTransaction') {
-        <section class="panel unified-savings-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="panel-heading">
-            <div>
-              <h2>Savings actions</h2>
-              <p class="muted">Manage your savings target or add a transaction.</p>
-            </div><span class="plus-badge">＋</span>
-          </div>
-
-          <div class="type-toggle" style="margin-bottom: 24px; max-width: 400px;">
-            <button type="button" [class.selected]="savingsActionTab() === 'Transaction'" (click)="savingsActionTab.set('Transaction')">Add Transaction</button>
-            <button type="button" [class.selected]="savingsActionTab() === 'Target'" (click)="savingsActionTab.set('Target')">Target Goal</button>
-          </div>
-
-          @if (savingsActionTab() === 'Transaction') {
-            <div class="type-toggle" style="margin-bottom: 16px; max-width: 300px;">
-              <button type="button" [class.selected]="newSavingsTransaction().type === 'Income'" (click)="updateSavingsField('type', 'Income')">Contribution</button>
-              <button type="button" [class.selected]="newSavingsTransaction().type === 'Expense'" (click)="updateSavingsField('type', 'Expense')">Withdrawal</button>
-            </div>
-            <div class="quick-presets">
-              <span class="presets-label">Quick amount:</span>
-              <div class="preset-chips">
-                <button type="button" class="preset-chip" (click)="setSavingsAmount(1000)">₱1,000</button>
-                <button type="button" class="preset-chip" (click)="setSavingsAmount(5000)">₱5,000</button>
-                <button type="button" class="preset-chip" (click)="setSavingsAmount(10000)">₱10,000</button>
-                <button type="button" class="preset-chip" (click)="setSavingsAmount(20000)">₱20,000</button>
-                @if (savingsPlan().savingsGoal > 0) {
-                <button type="button" class="preset-chip plan-chip" (click)="setSavingsAmount(savingsPlan().savingsGoal / 2)">Paycheck target ({{ savingsPlan().savingsGoal / 2 | currency:'PHP':'symbol':'1.0-0' }})</button>
-                }
-              </div>
-            </div>
-            <form (submit)="addSavingsTransaction(); $event.preventDefault()">
-              <div class="form-grid">
-                <label>Category<select [ngModel]="newSavingsTransaction().category" name="cat" (ngModelChange)="updateSavingsField('category', $event)">@for (category of savingsCategories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
-                <label>Sub-category<select [ngModel]="newSavingsTransaction().subcategory" name="subcat" (ngModelChange)="updateSavingsField('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of savingsSubcategoriesFor(newSavingsTransaction().category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select></label>
-                <label>Account<input [ngModel]="newSavingsTransaction().account" name="acc" (ngModelChange)="updateSavingsField('account', $event)" placeholder="e.g. BPI or GCash" /></label>
-                <label>Amount<div class="amount-input"><span>₱</span><input type="number" min="0.01" step="0.01" required [ngModel]="newSavingsTransaction().amount" name="amt" (ngModelChange)="updateSavingsField('amount', $event)" placeholder="0.00" /></div></label>
-                <label>Date<input type="date" [ngModel]="newSavingsTransaction().date" name="dt" (ngModelChange)="updateSavingsField('date', $event)" required /></label>
-                <label>Notes<input [ngModel]="newSavingsTransaction().description" name="desc" (ngModelChange)="updateSavingsField('description', $event)" placeholder="e.g. Monthly transfer" /></label>
-              </div>
-              <button class="add-button" type="submit" [class.just-added]="recentlyAddedSavings()">{{ recentlyAddedSavings() ? '✓ Added!' : 'Add savings transaction' }} <span>→</span></button>
-            </form>
-          } @else {
-            <div class="form-grid" style="grid-template-columns: 1fr; max-width: 320px;">
-              <label>Target amount
-                <div class="amount-input"><span>₱</span><input type="number" min="1" [ngModel]="targetSavingsGoal()" (ngModelChange)="updateTargetSavingsGoal($event)" /></div>
-              </label>
-            </div>
-            <p class="muted" style="margin-top: 12px; font-size: 13px;">Set your target goal for tracking overall progress.</p>
-          }
-        </section>
-        }
-        @if (savingsSubPage() === 'Plan') {
-        <section class="panel savings-transactions-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="panel-heading">
-            <div>
-              <h2>Recent savings transactions</h2>
-              <p class="muted">Recent contributions and withdrawals</p>
-            </div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Date</th><th>Category</th><th>Sub-category</th><th>Transaction type</th><th class="align-right">Amount</th><th>Account</th><th>Notes</th><th></th></tr></thead>
-              <tbody>@for (transaction of recentSavingsTransactions(); track transaction.id) {<tr>
-                <td class="muted">{{ transaction.date | date:'MMM d, y' }}</td>
-                <td><span class="category-pill">{{ transaction.category }}</span></td>
-                <td>{{ transaction.subcategory || 'No sub-category' }}</td>
-                <td><span class="category-pill">{{ isSavingsContribution(transaction) ? 'Contribution' : 'Withdrawal' }}</span></td>
-                <td class="align-right" [class.income-text]="isSavingsContribution(transaction)"><strong>{{ isSavingsContribution(transaction) ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></td>
-                <td>{{ transaction.account }}</td>
-                <td>{{ transaction.description }}</td>
-                <td><button class="delete-button" type="button" aria-label="Delete savings transaction"
-                    (click)="removeTransaction(transaction.id)">×</button></td>
-              </tr>} @if (!recentSavingsTransactions().length) {<tr><td colspan="8" class="muted">Add savings transactions to see savings activity.</td></tr>}</tbody>
-            </table>
-          </div>
-        <div class="mobile-transaction-list">@for (transaction of recentSavingsTransactions(); track transaction.id) {<article class="mobile-transaction-card">
-          <div class="mobile-transaction-top"><span class="transaction-icon" [class.income-icon]="isSavingsContribution(transaction)">{{ isSavingsContribution(transaction) ? '↗' : '↘' }}</span><div><strong>{{ transaction.description }}</strong><small>{{ transaction.date | date:'MMM d, y' }}</small></div><strong class="mobile-transaction-amount" [class.income-text]="isSavingsContribution(transaction)">{{ isSavingsContribution(transaction) ? '+' : '-' }}{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
-          <div class="mobile-transaction-meta"><span class="category-pill">{{ transaction.category }}</span><span>{{ transaction.subcategory || 'No sub-category' }}</span><span>{{ isSavingsContribution(transaction) ? 'Contribution' : 'Withdrawal' }}</span><span>{{ transaction.account || 'No account' }}</span><button class="delete-button" type="button" aria-label="Delete savings transaction" (click)="removeTransaction(transaction.id)">×</button></div>
-        </article>}</div>
-        </section>
-        }
-      </section>
-      }
-      @if (activeSection() === 'Reports') {
-      <section class="reference-reports reports-overview">
-        <div class="report-page-heading">
-          <div>
-            <p class="eyebrow">PERSONAL FINANCE</p>
-            <h2>Reports dashboard</h2>
-            <p class="muted">Selected month: {{ monthLabel() }} · Currency: Philippine Peso (₱)</p>
-          </div><select class="month-button" [ngModel]="selectedMonth()" (ngModelChange)="selectMonth($event)">@for
-            (month of monthOptions(); track month) {<option [value]="month">{{ formatMonth(month) }}</option>}</select>
-        </div>
-        <div class="reference-metrics">
-          <article><span>Monthly spend</span><strong>{{ reportTotalSpent() | currency:'PHP':'symbol':'1.0-0'
-              }}</strong><small>From expense transactions</small></article>
-          <article><span>Top category</span><strong>{{ reportCategories()[0]?.category || '—' }}</strong><small>{{ reportCategories()[0]?.total ? (reportCategories()[0].total | currency:'PHP':'symbol':'1.0-0') + ' (' + ((reportCategories()[0].total / (reportTotalSpent() || 1)) * 100 | number:'1.0-0') + '%)' : 'No spending recorded' }}</small></article>
-          <article><span>Total savings</span><strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>{{ monthlySavingsSubtext() }}</small></article>
-          <article><span>Target savings progress</span><strong>{{ savingsGoalProgress() | number:'1.0-0' }}%</strong><small>Based on current savings</small></article>
-        </div>
-        <div class="reference-tiles">
-          <section class="fiori-card trend-tile">
-            <div class="tile-heading">
-              <div>
-                <h3>Monthly spend trend</h3>
-                <p>Expense activity by month</p>
-              </div><span>₱</span>
-            </div>
-            @if (hasEnoughHistoricalData() && trendData().length >= 2) {
-            <div class="trend-chart">@for (point of trendData(); track point.month) {<div class="trend-column"><i
-                  [style.height.%]="point.amount"></i><small>{{ point.month }}</small></div>}</div>
-            } @else {
-            <p class="empty-report" style="margin: 20px 0; text-align: center;">Not enough data yet. Requires at least 2 months of records.</p>
-            }
-          </section>
-          <section class="fiori-card category-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-            <div class="tile-heading">
-              <div>
-                <h3>Category breakdown</h3>
-                <p>Expense totals by category</p>
-              </div><span>≡</span>
-            </div>
-            <div class="tile-bars">@for (item of reportCategories(); track item.category; let index = $index) {<div>
-                <label><span><i class="category-dot" [style.background-color]="categoryColor(index)"></i>{{ item.category }}</span><b>{{
-                  item.total | currency:'PHP':'symbol':'0.0-0' }} <small>{{ (item.total / reportTotalSpent()) * 100 | number:'1.0-0' }}%</small></b></label><em><i
-                    [style.width.%]="(item.total / reportTotalSpent()) * 100"></i></em></div>} @if
-              (!reportCategories().length) {<p class="empty-report">Add expenses to see categories.</p>}</div>
-          </section>
-          <section class="fiori-card savings-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-            <div class="tile-heading">
-              <div>
-                <h3>Savings progress</h3>
-                <p>Progress toward your target savings</p>
-              </div><span>↗</span>
-            </div>
-            <div class="savings-number"><strong>{{ savingsGoalProgress() | number:'1.0-0' }}%</strong><small>of target savings</small></div>
-            <div class="reference-progress"><i [style.width.%]="savingsGoalProgress()"></i></div>
-            <div class="tile-foot"><span>Saved {{ savingsBalance() | currency:'PHP':'symbol':'1.0-0' }}</span><span>Target {{
-              targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }}</span></div>
-          </section>
-          <section class="fiori-card fund-tile" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-            <div class="tile-heading">
-              <div>
-                <h3>Target savings goal</h3>
-                <p>Progress toward your target savings</p>
-              </div><span>◎</span>
-            </div>
-            <div class="fund-goal"><strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.0-0' }}</strong><small>of {{
-                targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }} goal</small></div>
-              <div class="reference-progress"><i [style.width.%]="targetSavingsProgress()"></i></div>
-              <div class="tile-foot"><span>{{ targetSavingsProgress() | number:'1.0-0' }}% complete</span><span>{{
-                amountRemaining() | currency:'PHP':'symbol':'1.0-0' }} to go</span></div>
-          </section>
-        </div>
-      </section>
-      <section class="reports-dashboard">
-        <div class="report-header">
-          <div>
-            <p class="eyebrow">FINANCIAL REPORT</p>
-            <h2>Where your money goes</h2>
-            <p class="muted">A clear view of your spending and savings.</p>
-          </div><button class="export-button" type="button" (click)="exportWorkbook()">↧ Export report</button>
-        </div>
-        <div class="report-metrics">
-          <article class="fiori-card report-expense">
-            <div class="metric-top"><span>Monthly expenses</span><span class="metric-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span></div>
-            <strong>{{ reportTotalSpent() | currency:'PHP':'symbol':'1.2-2' }}</strong>
-            <p class="muted">{{ reportExpenseCount() }} transactions</p>
-          </article>
-          <article class="fiori-card report-budget">
-            <div class="metric-top"><span>Top category</span><span class="metric-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42l-8.704-8.704z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg></span></div>
-            <strong>{{ reportCategories()[0]?.category || '—' }}</strong>
-            <p class="muted">{{ reportCategories()[0]?.total ? (reportCategories()[0].total | currency:'PHP':'symbol':'1.0-0') + ' spent' : 'No data' }}</p>
-          </article>
-          <article class="fiori-card report-savings">
-            <div class="metric-top"><span>Total savings</span><span class="metric-icon income"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span></div>
-            <strong>{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
-            <p class="muted">{{ monthlySavingsSubtext() }}</p>
-          </article>
-        </div>
-        <div class="report-grid">
-          <section class="panel report-breakdown" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-            <div class="panel-heading">
-              <div>
-                <h2>Spending by category</h2>
-                <p class="muted">Your largest expense areas</p>
-              </div><span class="report-icon">⌁</span>
-            </div>@if (reportCategories().length) {<div class="report-category-list">@for (item of reportCategories();
-              track item.category; let index = $index) {<div class="report-category">
-                <div class="report-category-label"><span><i class="category-dot" [style.background-color]="categoryColor(index)"></i>{{
-                  item.category }}</span><strong>{{ item.total | currency:'PHP':'symbol':'1.2-2' }} <small>{{ (item.total / reportTotalSpent()) * 100 | number:'1.0-0' }}%</small></strong></div>
-                <div class="report-bar"><i [style.width.%]="(item.total / totalSpent()) * 100"></i></div>
-              </div>}</div>} @else {<p class="empty-report">Add an expense to see your category breakdown.</p>}
-          </section>
-          <section class="panel report-health" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-            @if (cloudDataReady()) {
-            <div class="panel-heading">
-              <div>
-                <h2>Spending summary</h2>
-                <p class="muted">{{ monthLabel() }} overview</p>
-              </div><span class="report-icon">⌁</span>
-            </div>
-            <div class="health-copy"><span>Total spent</span><strong>{{ reportTotalSpent() | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
-            <div class="health-copy"><span>Transactions</span><strong>{{ reportExpenseCount() }}</strong></div>
-            @if (reportCategories()[0]) {
-            <div class="health-copy"><span>Top category</span><strong>{{ reportCategories()[0].category }}</strong></div>
-            <div class="progress-track" style="margin-top:10px"><span [style.width.%]="reportCategories()[0]?.total && reportTotalSpent() > 0 ? (reportCategories()[0].total / reportTotalSpent()) * 100 : 0"></span></div>
-            <p class="budget-foot"><span>{{ reportCategories()[0]?.total && reportTotalSpent() > 0 ? ((reportCategories()[0].total / reportTotalSpent()) * 100 | number:'1.0-0') : 0 }}% of spend</span><span>{{ reportCategories()[0]?.total | currency:'PHP':'symbol':'1.0-0' }}</span></p>
-            }
-            <button class="view-all report-link" type="button" (click)="selectSection('Overview')">Back to overview <span>→</span></button>
-            } @else {
-            <div class="panel-heading"><div><h2>Spending summary</h2><p class="muted">Syncing with cloud storage</p></div></div>
-            <p class="muted">Loading...</p>
-            }
-          </section>
-        </div>
-
-        <!-- 6-Month Expense Trend Chart (Phase 2, Item 4) -->
-        <section class="panel expense-trend-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="panel-heading">
-            <div>
-              <h2>Expense trend</h2>
-              <p class="muted">Total monthly spending (last 6 months)</p>
-            </div>
-            <span class="report-icon">📊</span>
-          </div>
-          @if (hasEnoughHistoricalData() && trendData().length >= 2) {
-          <div class="overview-trend-chart" aria-label="Monthly expense trend chart">
-            <div class="overview-trend-bars">
-              @for (point of trendData(); track point.monthKey) {
-              <div class="overview-trend-column" [class.current-month-col]="point.isCurrent">
-                <span class="overview-trend-amount">{{ point.amount > 0 ? (point.amount | currency:'PHP':'symbol':'1.0-0') : '₱0' }}</span>
-                <div class="overview-trend-bar-track">
-                  <i class="overview-trend-bar" [style.height.%]="point.height" [title]="point.month + ': ' + (point.amount | currency:'PHP')"></i>
-                </div>
-                <small class="overview-trend-label">{{ point.month }}</small>
-              </div>
-              }
-            </div>
-          </div>
-          } @else {
-          <div class="trend-empty-state">
-            <div class="trend-empty-icon">📊</div>
-            <strong class="trend-empty-title">Not enough data yet</strong>
-            <p class="muted">Expense trends require spending records from at least 2 months. Currently showing {{ monthLabel() }}.</p>
-          </div>
-          }
-        </section>
-
-        <!-- Month-over-Month Comparison Panel (Phase 2, Item 5) -->
-        <section class="panel mom-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-          <div class="panel-heading">
-            <div>
-              <h2>Month-over-month comparison</h2>
-              <p class="muted">Top categories vs. {{ previousMonthLabel() }}</p>
-            </div>
-            <span class="report-icon">⇄</span>
-          </div>
-          @if (hasPreviousMonthData() && monthOverMonthCategories().length) {
-          <div class="mom-list">
-            @for (item of monthOverMonthCategories(); track item.category) {
-            <div class="mom-item">
-              <div class="mom-item-header">
-                <strong>{{ item.category }}</strong>
-                <span class="mom-badge" [class.mom-increase]="item.diff > 0" [class.mom-decrease]="item.diff < 0" [class.mom-same]="item.diff === 0">
-                  {{ item.diff > 0 ? '+' : '' }}{{ item.diff | currency:'PHP':'symbol':'1.0-0' }}
-                  @if (item.pct !== null) { ({{ item.pct > 0 ? '+' : '' }}{{ item.pct | number:'1.0-0' }}%) }
-                </span>
-              </div>
-              <div class="mom-item-detail">
-                <span>{{ item.currentTotal | currency:'PHP':'symbol':'1.0-0' }} this month</span>
-                <span class="muted">vs. {{ item.previousTotal | currency:'PHP':'symbol':'1.0-0' }} last month</span>
-              </div>
-            </div>
-            }
-          </div>
-          } @else {
-          <div class="mom-empty-state">
-            <div class="mom-empty-icon">⇄</div>
-            <strong class="mom-empty-title">Not enough data yet</strong>
-            <p class="muted">Month-over-month comparison requires spending records from consecutive months. Add or import transactions from {{ previousMonthLabel() }} to see spending differences.</p>
-          </div>
-          }
-        </section>
-
-        
-
-        <!-- Spending by Sub-category Section -->
-        <div class="report-header subcategory-report-header">
-          <div>
-            <p class="eyebrow">DETAILED ANALYSIS</p>
-            <h2>Spending by sub-category</h2>
-            <p class="muted">Sub-category distribution grouped by parent category and 6-month trends.</p>
+          <div class="fiori-page-actions">
+            <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddTransactionModal()">Add transaction</button>
           </div>
         </div>
 
-        <div class="report-grid subcategory-report-grid">
-          <!-- Left Panel: Sub-category Breakdown Card -->
-          <section class="panel subcategory-breakdown-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-            <div class="panel-heading">
-              <div>
-                <h2>Sub-category breakdown</h2>
-                <p class="muted">Grouped by parent category · {{ monthLabel() }}</p>
-              </div>
-              <span class="report-icon">≡</span>
-            </div>
-
-            @if (reportSubcategoriesByCategory().length) {
-            <div class="subcategory-groups-list">
-              @for (catGroup of reportSubcategoriesByCategory(); track catGroup.category; let catIndex = $index) {
-              <div class="subcategory-parent-group">
-                <div class="subcategory-parent-header">
-                  <div class="subcategory-parent-name">
-                    <i class="category-dot" [style.background-color]="categoryColor(catIndex)"></i>
-                    <strong>{{ catGroup.category }}</strong>
-                  </div>
-                  <span class="subcategory-parent-total">{{ catGroup.categoryTotal | currency:'PHP':'symbol':'1.2-2' }}</span>
-                </div>
-
-                <div class="subcategory-items-list">
-                  @for (sub of catGroup.subcategories; track sub.name; let subIndex = $index) {
-                  <div class="subcategory-item-row">
-                    <div class="subcategory-item-label">
-                      <span class="subcategory-name-text">{{ sub.name }}</span>
-                      <span class="subcategory-amount-text">
-                        <b>{{ sub.amount | currency:'PHP':'symbol':'1.2-2' }}</b>
-                        <small class="subcategory-share-pct">{{ sub.percentOfParent | number:'1.0-0' }}% of {{ catGroup.category }}</small>
-                      </span>
-                    </div>
-                    <div class="subcategory-bar-track">
-                      <i class="subcategory-bar-fill" [style.width.%]="sub.percentOfParent" [style.background-color]="categoryColor(catIndex)"></i>
-                    </div>
-                  </div>
-                  }
-                </div>
-              </div>
-              }
-            </div>
-            } @else {
-            <p class="empty-report">No sub-category spending recorded for {{ monthLabel() }}.</p>
-            }
-          </section>
-
-          <!-- Right Panel: 6-Month Sub-category Spending Trend Chart -->
-          <section class="panel subcategory-trend-panel" draggable="true" (dragstart)="startTileDrag($event)" (dragover)="allowTileDrop($event)" (drop)="dropTile($event)" (dragend)="endTileDrag()">
-            <div class="panel-heading">
-              <div>
-                <h2>Sub-category spend trend</h2>
-                <p class="muted">Stacked monthly spending by sub-category (last 6 months)</p>
-              </div>
-              <span class="report-icon">📊</span>
-            </div>
-
-            @if (hasEnoughSubcategoryHistoricalData() && reportSubcategoryTrendData().months.length >= 2) {
-            <div class="stacked-trend-container" aria-label="Sub-category 6-month stacked trend chart">
-              <div class="stacked-trend-bars">
-                @for (monthPoint of reportSubcategoryTrendData().months; track monthPoint.monthKey) {
-                <div class="stacked-bar-column" [class.current-month-col]="monthPoint.isCurrent">
-                  <span class="stacked-column-total">{{ monthPoint.total > 0 ? (monthPoint.total | currency:'PHP':'symbol':'1.0-0') : '₱0' }}</span>
-                  <div class="stacked-bar-track">
-                    <div class="stacked-bar-body" [style.height.%]="monthPoint.columnHeight">
-                      @for (seg of monthPoint.segments; track seg.name) {
-                      <div class="stacked-segment" [style.height.%]="seg.heightPercent" [style.background-color]="seg.color" [title]="seg.name + ': ' + (seg.amount | currency:'PHP':'symbol':'1.2-2')"></div>
-                      }
-                    </div>
-                  </div>
-                  <small class="stacked-column-label">{{ monthPoint.month }}</small>
-                </div>
-                }
-              </div>
-
-              <!-- Legend -->
-              <div class="stacked-legend">
-                @for (item of reportSubcategoryTrendData().legend; track item.name) {
-                <span class="stacked-legend-item">
-                  <i class="legend-swatch" [style.background-color]="item.color"></i>
-                  <span>{{ item.name }}</span>
-                </span>
-                }
-              </div>
-            </div>
-            } @else {
-            <div class="trend-empty-state">
-              <div class="trend-empty-icon">📊</div>
-              <strong class="trend-empty-title">Not enough data yet</strong>
-              <p class="muted">Sub-category trend chart requires spending history from at least 2 months to visualize trajectory. Currently showing {{ monthLabel() }}.</p>
-            </div>
-            }
-          </section>
-        </div>
-      </section>
-      }
-      @if (activeSection() === 'Transactions') {
-      <div class="spending-summary" aria-label="Regular spending summary">
-        <article><span>Spent this month</span><strong>{{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }}</strong><small>{{ regularExpenseCount() }} expense transactions</small></article>
-        <article><span>Top category</span><strong>{{ budgetCategories()[0]?.category || '—' }}</strong><small>{{ budgetCategories()[0]?.total ? (budgetCategories()[0].total | currency:'PHP':'symbol':'1.0-0') + ' spent' : 'No data' }}</small></article>
-      </div>
-      <section class="panel transaction-entry-panel" id="transaction-entry-panel">
-        <div class="panel-heading">
-          <div>
-            <h2>Add transaction</h2>
-            <p class="muted">{{ transactionFormOpen() ? 'Keep your ledger up to date' : 'Record a new expense' }}</p>
-          </div><button class="transaction-form-toggle" type="button" [attr.aria-expanded]="transactionFormOpen()"
-            (click)="toggleTransactionForm()"><span>{{ transactionFormOpen() ? 'Close form' : 'Add transaction' }}</span><span
-              class="plus-badge" [class.form-open]="transactionFormOpen()">＋</span></button>
-        </div>
-        @if (transactionFormOpen()) {
-        <form (submit)="addTransaction(); $event.preventDefault()">
-          <div class="form-grid">
-            <label>Description<input [ngModel]="newTransaction().description" name="desc"
-                (ngModelChange)="updateField('description', $event)" placeholder="e.g. Coffee with friends" /></label>
-            <label>Amount<div class="amount-input"><span>₱</span><input type="number" min="0.01" step="0.01" required
-                  [ngModel]="newTransaction().amount" name="amt" (ngModelChange)="updateField('amount', $event)"
-                  placeholder="0.00" /></div></label>
-            <label>Category<select [ngModel]="newTransaction().category" name="cat"
-                (ngModelChange)="updateField('category', $event)">@for (category of categories; track category) {<option
-                  [value]="category">{{ category }}</option>}</select></label>
-            <label>Sub-category<select [ngModel]="newTransaction().subcategory" name="subcat" (ngModelChange)="updateField('subcategory', $event)">
-                <option value="">No sub-category</option>@for (subcategory of
-                subcategoriesFor(newTransaction().category); track subcategory) {<option [value]="subcategory">{{
-                  subcategory }}</option>}
-              </select></label>
-            <label>Date<input type="date" [ngModel]="newTransaction().date" name="dt"
-                (ngModelChange)="updateField('date', $event)" required /></label>
-          </div>
-          <button class="add-button" type="submit"
-            [class.just-added]="recentlyAddedRegular()">{{ recentlyAddedRegular() ? '✓ Added!' : 'Add transaction' }} <span>→</span></button>
-        </form>
-        }
-      </section>
-      }
-      @if (activeSection() !== 'Savings' && activeSection() !== 'Categories') {
-      <section class="panel transactions-panel">
-        <div class="panel-heading">
-          <div>
-            <h2>{{ activeSection() === 'Transactions' ? 'Regular spending transactions' : 'Recent transactions' }}</h2>
-            <p class="muted">{{ activeSection() === 'Transactions' ? 'Your complete spending history' : 'Your latest
-              activity' }}</p>
-          </div>@if (activeSection() === 'Overview') {<button class="view-all" type="button"
-            (click)="selectSection('Transactions')">View all <span>→</span></button>}
-        </div>
-        <div class="table-wrap">
-          <table>
+        <section class="fiori-table-container">
+          <table class="fiori-table">
             <thead>
               <tr>
                 <th>Transaction</th>
                 <th>Category</th>
-                <th>Sub-category</th>
                 <th>Date</th>
-                <th class="align-right">Amount</th>
-                <th></th>
+                <th class="text-right">Amount</th>
+                <th class="text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>@for (transaction of regularTransactions(); track transaction.id) {<tr [class.editing-row]="editingExpenseId() === transaction.id">
-              @if (editingExpenseId() === transaction.id && editingExpense(); as expense) {
-                <td colspan="4"><div class="expense-edit-fields"><input aria-label="Edit description" [ngModel]="expense.description" (ngModelChange)="updateExpenseEdit('description', $event)" /><select aria-label="Edit category" [ngModel]="expense.category" (ngModelChange)="updateExpenseEdit('category', $event)">@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select><select aria-label="Edit sub-category" [ngModel]="expense.subcategory" (ngModelChange)="updateExpenseEdit('subcategory', $event)"><option value="">No sub-category</option>@for (subcategory of subcategoriesFor(expense.category); track subcategory) {<option [value]="subcategory">{{ subcategory }}</option>}</select><input aria-label="Edit date" type="date" [ngModel]="expense.date" (ngModelChange)="updateExpenseEdit('date', $event)" /></div></td>
-                <td class="align-right"><div class="amount-input expense-edit-amount"><span>₱</span><input aria-label="Edit amount" type="number" min="0" [ngModel]="expense.amount" (ngModelChange)="updateExpenseEdit('amount', $event)" /></div></td>
-                <td><div class="row-actions"><button class="save-row-button" type="button" (click)="saveEditingExpense()">Save</button><button class="cancel-row-button" type="button" (click)="cancelEditingExpense()">Cancel</button></div></td>
-                } @else {
-                  <td><span class="transaction-icon">↘</span><strong>{{ transaction.description }}</strong>
-                    @if (isFailedTransaction(transaction)) {
-                    <span class="failed-badge">⚠ Flagged</span>
+            <tbody>
+              @if (selectedTransactions().length === 0) {
+                <tr>
+                  <td colspan="5" style="padding:40px 20px; text-align:center; color:var(--fiori-muted);">
+                    No transactions recorded for {{ monthLabel() }}.
+                  </td>
+                </tr>
+              }
+              @for (tx of selectedTransactions(); track tx.id) {
+                <tr>
+                  <td style="font-weight:500;">
+                    {{ tx.description }}
+                    @if (tx.isFailedTransaction) {
+                      <span style="display:inline-block; margin-left:6px; padding:2px 6px; font-size:10px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-weight:700;">FLAGGED</span>
                     }
-                </td>
-                <td><span class="category-pill">{{ transaction.category }}</span></td>
-                <td class="subcategory-cell">{{ transaction.subcategory || '—' }}</td>
-                <td class="muted">{{ transaction.date | date:'MMM d, y' }}</td>
-                <td class="align-right"><strong>-{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></td>
-                <td><div class="row-actions"><button class="edit-row-button" type="button" aria-label="Edit expense" (click)="startEditingExpense(transaction)">Edit</button><button class="delete-button" type="button" aria-label="Delete transaction"
-                  (click)="removeTransaction(transaction.id)">×</button></div></td>
-                }
-              </tr>} @if (!regularTransactions().length) {<tr><td colspan="6" class="transaction-empty">No regular transactions recorded yet.</td></tr>}</tbody>
+                  </td>
+                  <td style="color:var(--fiori-muted);">
+                    <span style="display:inline-flex; align-items:center; gap:8px;">
+                      <i style="width:8px; height:8px; display:inline-block;" [style.background]="getCategoryColor(tx.category)"></i>
+                      {{ tx.category }} @if (tx.subcategory) { · {{ tx.subcategory }} }
+                    </span>
+                  </td>
+                  <td style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;">{{ tx.date | date:'MMM d, y' }}</td>
+                  <td class="text-right" style="font-variant-numeric:tabular-nums; font-weight:600;">
+                    -{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
+                  </td>
+                  <td class="text-right">
+                    <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="startEditingExpense(tx)">Edit</button>
+                    <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--fiori-red);" (click)="deleteTransaction(tx.id)">Delete</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
           </table>
-        </div>
-        <div class="mobile-transaction-list">@for (transaction of regularTransactions(); track transaction.id) {<article class="mobile-transaction-card">
-          <div class="mobile-transaction-top"><span class="transaction-icon">↘</span><div><strong>{{ transaction.description }}</strong>@if (isFailedTransaction(transaction)) {<span class="failed-badge">⚠ Flagged</span>}<small>{{ transaction.date | date:'MMM d, y' }}</small></div><strong class="mobile-transaction-amount">-{{ transaction.amount | currency:'PHP':'symbol':'1.2-2' }}</strong></div>
-          <div class="mobile-transaction-meta"><span class="category-pill">{{ transaction.category }}</span><span>{{ transaction.subcategory || 'No sub-category' }}</span><div class="row-actions"><button class="edit-row-button" type="button" aria-label="Edit expense" (click)="startEditingExpense(transaction)">Edit</button><button class="delete-button" type="button" aria-label="Delete transaction" (click)="removeTransaction(transaction.id)">×</button></div></div>
-        </article>}</div>
-      </section>
-      }
-      <p class="sync-note">↻ Changes are saved automatically in this browser <span>•</span> Excel import/export is
-        available from the top right</p>
-    </div>
-  </section>
-
-  <!-- Mobile Floating Action Button (FAB) -->
-  <button class="mobile-fab" type="button" aria-label="Add transaction" (click)="openAddTransactionModal()">
-    <span class="fab-icon">＋</span>
-  </button>
-
-  <!-- SAP Fiori-style Global Add Transaction Modal Dialog -->
-  @if (addTransactionModalOpen()) {
-  <div class="fiori-dialog-backdrop" (click)="closeAddTransactionModal()">
-    <div class="fiori-dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
-      <div class="fiori-dialog-header">
-        <div>
-          <h2 id="dialog-title">Add Transaction</h2>
-          <p class="muted">Keep your ledger up to date</p>
-        </div>
-        <button class="fiori-dialog-close" type="button" aria-label="Close dialog" (click)="closeAddTransactionModal()">×</button>
+        </section>
       </div>
+    }
 
-      <div class="fiori-dialog-body">
-        <div class="type-toggle" style="margin-bottom: 16px;">
-          <button type="button" [class.selected]="newTransaction().type === 'Expense' && !newTransaction().savings"
-            (click)="selectTransactionMode('Expense')">Expense</button>
-          <button type="button" [class.selected]="newTransaction().savings"
-            (click)="selectTransactionMode('Savings')">Savings</button>
+    <!-- SECTION: EXPECTED BILLS -->
+    @if (activeSection() === 'Bills') {
+      <div>
+        <div class="fiori-page-header">
+          <div>
+            <h1>Expected bills</h1>
+            <p class="fiori-page-subtitle">{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }} spent of {{ billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }} planned · {{ activeExpectedBills().length }} active bills</p>
+          </div>
+          <div class="fiori-page-actions">
+            <button type="button" class="fiori-btn fiori-btn-primary" (click)="toggleAddBillForm()">Add expected bill</button>
+          </div>
         </div>
 
-        @if (cloudDataReady()) {
-        <form (submit)="addTransaction(); $event.preventDefault()">
-          <div class="form-grid">
-            <label>Description
-              <input [ngModel]="newTransaction().description" name="modalduring"
-                (ngModelChange)="updateField('description', $event)"
-                placeholder="e.g. Coffee with friends" />
-            </label>
+        @if (addBillFormOpen()) {
+          <div class="fiori-panel" style="margin-bottom:24px; padding:20px;">
+            <div style="font-size:14px; font-weight:700; margin-bottom:14px;">Add New Expected Bill</div>
+            <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+              <input class="fiori-input" style="flex:1; min-width:160px;" placeholder="Bill name (e.g. Electric Bill)" [ngModel]="newBillName()" (ngModelChange)="newBillName.set($event)">
+              <select class="fiori-select" [ngModel]="newBillCategory()" (ngModelChange)="updateBillCategory($event)">
+                @for (cat of categories; track cat) {
+                  <option [value]="cat">{{ cat }}</option>
+                }
+              </select>
+              <select class="fiori-select" [ngModel]="newBillSubcategory()" (ngModelChange)="newBillSubcategory.set($event)">
+                <option value="">Choose a sub-category</option>
+                @for (sub of subcategoriesFor(newBillCategory()); track sub) {
+                  <option [value]="sub">{{ sub }}</option>
+                }
+              </select>
+              <input class="fiori-input" type="number" style="width:140px;" placeholder="Monthly amount" [ngModel]="newBillAmount()" (ngModelChange)="newBillAmount.set($event)">
+              <button type="button" class="fiori-btn fiori-btn-primary" (click)="saveNewBill()">Save bill</button>
+              <button type="button" class="fiori-btn fiori-btn-ghost" (click)="toggleAddBillForm()">Cancel</button>
+            </div>
+          </div>
+        }
 
-            <label>Amount
-              <div class="amount-input">
-                <span>₱</span>
-                <input required min="0.01" step="0.01" type="number" [ngModel]="newTransaction().amount" name="modalamt"
-                  (ngModelChange)="updateField('amount', $event)" placeholder="0.00" />
+        <section class="fiori-panel">
+          @if (billTracking().length === 0) {
+            <div style="padding:40px 20px; text-align:center; color:var(--fiori-muted);">
+              No expected bills planned. Click "Add expected bill" to configure your fixed recurring expenses.
+            </div>
+          }
+          @for (bill of billTracking(); track bill.id) {
+            <div class="fiori-bill-row">
+              <div>
+                <div class="fiori-bill-title">{{ bill.name }}</div>
+                <div class="fiori-bill-path">{{ bill.category }} → {{ bill.subcategory }}</div>
               </div>
-            </label>
+              <div class="fiori-bill-spent" [class.overspent]="bill.overspent">
+                {{ bill.spent | currency:'PHP':'symbol':'1.0-0' }}
+              </div>
+              <div class="fiori-bill-plan">
+                {{ bill.amount | currency:'PHP':'symbol':'1.0-0' }}
+              </div>
+              <div>
+                <div class="fiori-bill-bar">
+                  <i class="fiori-bill-bar-fill" [class.overspent]="bill.overspent" [style.width.%]="billProgress(bill.spent, bill.amount)"></i>
+                </div>
+                <div class="fiori-bill-status-text">
+                  {{ billStatus(bill.spent, bill.amount, bill.overspent) }}
+                </div>
+              </div>
+            </div>
+          }
+        </section>
+      </div>
+    }
 
-            <label>{{ newTransaction().savings ? 'Savings category' : 'Category' }}
-              <select [ngModel]="newTransaction().category" name="modalcat" (ngModelChange)="updateField('category', $event)">
-                @if (newTransaction().savings) {
-                  @for (category of savingsCategories; track category) {
-                  <option [value]="category">{{ category }}</option>
-                  }
-                } @else {
-                  @for (category of categories; track category) {
-                  <option [value]="category">{{ category }}</option>
-                  }
-                }
-              </select>
-            </label>
+    <!-- SECTION: SAVINGS -->
+    @if (activeSection() === 'Savings') {
+      <div>
+        <div class="fiori-page-header">
+          <div>
+            <h1>Savings</h1>
+            <p class="fiori-page-subtitle">{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }} of {{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }} target goal</p>
+          </div>
+          <div class="fiori-page-actions">
+            <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddTransactionModal()">Add contribution</button>
+          </div>
+        </div>
 
-            <label>Sub-category
-              <select [ngModel]="newTransaction().subcategory" name="modalsubcat" (ngModelChange)="updateField('subcategory', $event)">
-                <option value="">No sub-category</option>
-                @for (subcategory of (newTransaction().savings ? savingsSubcategoriesFor(newTransaction().category) : subcategoriesFor(newTransaction().category)); track subcategory) {
-                <option [value]="subcategory">{{ subcategory }}</option>
-                }
-              </select>
-            </label>
+        <!-- 3-Column Savings Summary Banner -->
+        <section class="fiori-savings-banner">
+          <div class="fiori-savings-cols">
+            <div>
+              <span class="fiori-savings-stat-label">Total savings</span>
+              <strong class="fiori-savings-stat-val green">{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+              <span class="fiori-savings-stat-sub">{{ monthlySavingsSubtext() }}</span>
+            </div>
+            <div>
+              <span class="fiori-savings-stat-label">Target goal</span>
+              <strong class="fiori-savings-stat-val">{{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+              <span class="fiori-savings-stat-sub">{{ savingsGoalProgress() | number:'1.0-0' }}% complete</span>
+            </div>
+            <div>
+              <span class="fiori-savings-stat-label">Remaining</span>
+              <strong class="fiori-savings-stat-val">{{ (targetSavingsGoal() - savingsBalance()) > 0 ? ((targetSavingsGoal() - savingsBalance()) | currency:'PHP':'symbol':'1.0-0') : '₱0' }}</strong>
+              <span class="fiori-savings-stat-sub">Building financial freedom</span>
+            </div>
+          </div>
+          <div class="fiori-savings-progress-track">
+            <i class="fiori-savings-progress-fill" [style.width.%]="savingsGoalProgress()"></i>
+          </div>
+        </section>
 
-            <label>Date
-              <input required type="date" [ngModel]="newTransaction().date" name="modaldate"
-                (ngModelChange)="updateField('date', $event)" />
-            </label>
+        <!-- Two Column Savings Grid -->
+        <div class="fiori-grid-even-2col">
+          <section class="fiori-panel fiori-panel-body">
+            <h2 style="font-size:14px; font-weight:700; margin:0 0 4px;">Net savings</h2>
+            <p style="font-size:12px; color:var(--fiori-muted); margin:0 0 18px;">Six-month trend snapshot</p>
+            <svg viewBox="0 0 320 80" style="width:100%; height:80px; display:block;" preserveAspectRatio="none">
+              <polyline points="0,58 64,46 128,38 192,50 256,26 320,12" fill="none" stroke="#0070f2" stroke-width="2"/>
+              <circle cx="320" cy="12" r="3" fill="#0070f2"/>
+            </svg>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--fiori-muted); margin-top:10px;">
+              <span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span>
+            </div>
+          </section>
 
-            @if (newTransaction().savings) {
-            <label>Account
-              <input [ngModel]="newTransaction().account" name="modalacc"
-                (ngModelChange)="updateField('account', $event)" placeholder="e.g. BPI or GCash" />
-            </label>
+          <section class="fiori-panel">
+            <div class="fiori-panel-header">
+              <h2>Funds &amp; Reserves</h2>
+            </div>
+            <div>
+              @for (fund of savingsCategoryGroups(); track fund.name) {
+                <div style="display:flex; align-items:center; gap:14px; padding:13px 20px; border-bottom:1px solid var(--fiori-row-rule);">
+                  <span style="width:10px; height:10px;" [style.background]="getCategoryColor(fund.name)"></span>
+                  <span style="flex:1; font-size:13px;">{{ fund.name }}</span>
+                  <span style="font-size:12px; color:var(--fiori-muted);">{{ fund.subcategories.length }} sub-categories</span>
+                </div>
+              }
+            </div>
+          </section>
+        </div>
+      </div>
+    }
+
+    <!-- SECTION: SAVINGS PLAN -->
+    @if (activeSection() === 'Plan') {
+      <div>
+        <div class="fiori-page-header">
+          <div>
+            <h1>Savings plan</h1>
+            <p class="fiori-page-subtitle">{{ savingsPlanSalary() | currency:'PHP':'symbol':'1.0-0' }} monthly salary · {{ savingsPlanSavingsRate() }}% savings target · split across two paychecks</p>
+          </div>
+          <div class="fiori-page-actions">
+            <button type="button" class="fiori-btn fiori-btn-ghost" (click)="toggleEditingPlanParameters()">
+              {{ editingPlanParameters() ? 'Close edit' : 'Edit parameters' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Plan Parameters -->
+        <div class="fiori-grid-3col" style="margin-bottom:24px;">
+          <div class="fiori-field">
+            <label>Monthly salary</label>
+            <div class="fiori-input-prefix-wrap">
+              <span class="fiori-input-prefix">₱</span>
+              <input class="fiori-input" style="width:100%;" type="number" [ngModel]="savingsPlanSalary()" (ngModelChange)="updateSavingsPlanSalary($event)" [disabled]="!editingPlanParameters()">
+            </div>
+          </div>
+          <div class="fiori-field">
+            <label>Savings target</label>
+            <div class="fiori-input-prefix-wrap">
+              <span class="fiori-input-prefix">%</span>
+              <input class="fiori-input" style="width:100%;" type="number" [ngModel]="savingsPlanSavingsRate()" (ngModelChange)="updateSavingsPlanRate($event)" [disabled]="!editingPlanParameters()">
+            </div>
+          </div>
+          <div class="fiori-field">
+            <label>Minimum investment</label>
+            <div class="fiori-input-prefix-wrap">
+              <span class="fiori-input-prefix">₱</span>
+              <input class="fiori-input" style="width:100%;" type="number" [ngModel]="savingsPlanInvestment()" (ngModelChange)="updateSavingsPlanInvestment($event)" [disabled]="!editingPlanParameters()">
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Connected Plan Metrics -->
+        <div class="fiori-kpi-grid" style="margin-bottom:24px;">
+          <div class="fiori-kpi-card">
+            <span class="fiori-kpi-label">Combined monthly salary</span>
+            <strong class="fiori-kpi-value">{{ savingsPlanSalary() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+            <span class="fiori-kpi-sub">Two paychecks of {{ (savingsPlanSalary() / 2) | currency:'PHP':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="fiori-kpi-card">
+            <span class="fiori-kpi-label">Fixed needs</span>
+            <strong class="fiori-kpi-value">{{ savingsPlanFixedNeeds() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+            <span class="fiori-kpi-sub">{{ savingsPlanSalary() > 0 ? ((savingsPlanFixedNeeds() / savingsPlanSalary()) * 100 | number:'1.0-0') : 0 }}% of salary</span>
+          </div>
+          <div class="fiori-kpi-card">
+            <span class="fiori-kpi-label">Monthly savings target</span>
+            <strong class="fiori-kpi-value green">{{ savingsPlanGoal() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+            <span class="fiori-kpi-sub">{{ savingsPlanSavingsRate() }}% of salary</span>
+          </div>
+          <div class="fiori-kpi-card">
+            <span class="fiori-kpi-label">Variable allowance</span>
+            <strong class="fiori-kpi-value">{{ savingsPlanVariableAllowance() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+            <span class="fiori-kpi-sub">After savings and fixed needs</span>
+          </div>
+        </div>
+
+        <!-- Paycheck Allocation Table -->
+        <section class="fiori-table-container" style="margin-bottom:24px;">
+          <table class="fiori-table">
+            <thead>
+              <tr>
+                <th>Allocation</th>
+                <th class="text-right">Paycheck 1</th>
+                <th class="text-right">Paycheck 2</th>
+                <th class="text-right">Monthly</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of savingsPlanAllocations(); track row.name) {
+                <tr>
+                  <td style="font-weight:500;">{{ row.name }}</td>
+                  <td class="text-right" style="font-variant-numeric:tabular-nums; color:var(--fiori-muted);">{{ row.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
+                  <td class="text-right" style="font-variant-numeric:tabular-nums; color:var(--fiori-muted);">{{ row.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
+                  <td class="text-right" style="font-variant-numeric:tabular-nums; font-weight:600;">{{ row.monthly | currency:'PHP':'symbol':'1.0-0' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Roadmap & Buckets -->
+        <div class="fiori-grid-even-2col" style="margin-bottom:24px;">
+          <section class="fiori-panel">
+            <div class="fiori-panel-header">
+              <h2>Allocation detail</h2>
+            </div>
+            <div>
+              @for (b of savingsPlanBuckets(); track b.name) {
+                <div style="padding:14px 20px; border-bottom:1px solid var(--fiori-row-rule);">
+                  <div style="display:flex; justify-content:space-between; font-size:13px;">
+                    <span style="font-weight:500;">{{ b.name }}</span>
+                    <b style="font-variant-numeric:tabular-nums;">{{ b.monthly | currency:'PHP':'symbol':'1.0-0' }}</b>
+                  </div>
+                  <div style="height:4px; background:var(--fiori-track); margin:10px 0 8px;">
+                    <i style="display:block; height:100%; background:var(--fiori-accent);" [style.width.%]="savingsPlanGoal() > 0 ? (b.monthly / savingsPlanGoal()) * 100 : 0"></i>
+                  </div>
+                  <div style="font-size:11px; color:var(--fiori-muted);">{{ b.perPayday | currency:'PHP':'symbol':'1.0-0' }} per payday · {{ b.purpose }}</div>
+                </div>
+              }
+            </div>
+          </section>
+
+          <section class="fiori-panel">
+            <div class="fiori-panel-header">
+              <h2>Emergency fund roadmap</h2>
+            </div>
+            <div>
+              @for (r of savingsPlanRoadmap(); track r.milestone) {
+                <div style="padding:16px 20px; border-bottom:1px solid var(--fiori-row-rule);">
+                  <div style="display:flex; justify-content:space-between; font-size:13px;">
+                    <span style="font-weight:500;">{{ r.milestone }}</span>
+                    <b style="font-variant-numeric:tabular-nums;">{{ r.target | currency:'PHP':'symbol':'1.0-0' }}</b>
+                  </div>
+                  <div style="height:4px; background:var(--fiori-track); margin:10px 0 8px;">
+                    <i style="display:block; height:100%; background:var(--fiori-green);" [style.width.%]="r.target > 0 ? (savingsBalance() / r.target) * 100 : 0"></i>
+                  </div>
+                  <div style="font-size:11px; color:var(--fiori-muted);">{{ savingsPlanEmergencyReserve() | currency:'PHP':'symbol':'1.0-0' }} monthly reserve · {{ r.estimatedMonths }} months to reach</div>
+                </div>
+              }
+            </div>
+          </section>
+        </div>
+      </div>
+    }
+
+    <!-- SECTION: REPORTS -->
+    @if (activeSection() === 'Reports') {
+      <div>
+        <div class="fiori-page-header">
+          <div>
+            <h1>Reports</h1>
+            <p class="fiori-page-subtitle">{{ monthLabel() }} · Philippine Peso (PHP)</p>
+          </div>
+          <div class="fiori-page-actions">
+            <button type="button" class="fiori-btn fiori-btn-ghost" (click)="exportWorkbook()">Export .xlsx</button>
+          </div>
+        </div>
+
+        <div class="fiori-grid-even-2col" style="margin-bottom:24px;">
+          <section class="fiori-panel fiori-panel-body">
+            <h2 style="font-size:14px; font-weight:700; margin:0 0 4px;">Monthly spend</h2>
+            <p style="font-size:12px; color:var(--fiori-muted); margin:0 0 18px;">Six-month trend · {{ totalSpent() | currency:'PHP':'symbol':'1.0-0' }} in {{ monthLabel() }}</p>
+            <svg viewBox="0 0 320 90" style="width:100%; height:90px; display:block;" preserveAspectRatio="none">
+              <polyline points="0,40 64,30 128,54 192,20 256,34 320,16" fill="none" stroke="#0070f2" stroke-width="2"/>
+              <circle cx="320" cy="16" r="3" fill="#0070f2"/>
+            </svg>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--fiori-muted); margin-top:10px;">
+              <span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span>
+            </div>
+          </section>
+
+          <section class="fiori-panel fiori-panel-body">
+            <h2 style="font-size:14px; font-weight:700; margin:0 0 4px;">Month over month</h2>
+            <p style="font-size:12px; color:var(--fiori-muted); margin:0 0 14px;">Comparison against previous month</p>
+            @for (item of monthOverMonthComparison(); track item.category) {
+              <div style="display:flex; align-items:baseline; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--fiori-row-rule);">
+                <span style="font-size:13px; font-weight:500;">{{ item.category }}</span>
+                <span style="font-size:13px; font-variant-numeric:tabular-nums;" [style.color]="item.diff > 0 ? 'var(--fiori-red)' : 'var(--fiori-green)'">
+                  {{ item.diff > 0 ? '+' : '' }}{{ item.diff | currency:'PHP':'symbol':'1.0-0' }}
+                </span>
+              </div>
             }
+          </section>
+        </div>
+
+        <section class="fiori-panel" style="margin-bottom:24px;">
+          <div class="fiori-panel-header">
+            <h2>Category breakdown</h2>
+          </div>
+          <div>
+            @for (cat of budgetCategories(); track cat.category) {
+              <div style="display:grid; grid-template-columns:14px minmax(0,1fr) 110px 200px 60px; align-items:center; gap:14px; padding:13px 20px; border-bottom:1px solid var(--fiori-row-rule);">
+                <span style="width:10px; height:10px;" [style.background]="getCategoryColor(cat.category)"></span>
+                <span style="font-size:13px; font-weight:500;">{{ cat.category }}</span>
+                <span style="font-size:13px; text-align:right; font-variant-numeric:tabular-nums;">{{ cat.total | currency:'PHP':'symbol':'1.2-2' }}</span>
+                <span style="height:4px; background:var(--fiori-track); display:block;">
+                  <i style="display:block; height:100%;" [style.background]="getCategoryColor(cat.category)" [style.width.%]="cat.percentOfSpend"></i>
+                </span>
+                <span style="font-size:12px; color:var(--fiori-muted); text-align:right; font-variant-numeric:tabular-nums;">{{ cat.percentOfSpend | number:'1.0-0' }}%</span>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+    }
+
+    <!-- SECTION: CATEGORIES -->
+    @if (activeSection() === 'Categories') {
+      <div>
+        <div class="fiori-page-header">
+          <div>
+            <h1>Categories</h1>
+            <p class="fiori-page-subtitle">{{ filteredCategoryGroups().length }} categories directory</p>
+          </div>
+          <div class="fiori-page-actions">
+            <input class="fiori-input" style="width:200px;" placeholder="Search categories" [ngModel]="categorySearch()" (ngModelChange)="categorySearch.set($event)">
+          </div>
+        </div>
+
+        <section class="fiori-panel">
+          @for (group of filteredCategoryGroups(); track group.name) {
+            <div class="fiori-cat-card">
+              <div class="fiori-cat-card-header">
+                <span style="width:10px; height:10px;" [style.background]="getCategoryColor(group.name)"></span>
+                <strong style="font-size:13px;">{{ group.name }}</strong>
+                <span style="font-size:11px; color:var(--fiori-muted);">{{ group.subcategories.length }} sub-categories</span>
+              </div>
+              <div class="fiori-chip-list">
+                @for (sub of group.subcategories; track sub) {
+                  <span class="fiori-chip">{{ sub }}</span>
+                }
+              </div>
+            </div>
+          }
+        </section>
+      </div>
+    }
+
+    <!-- SECTION: DATA (EXCEL IMPORT / EXPORT) -->
+    @if (activeSection() === 'Data') {
+      <div>
+        <div class="fiori-page-header">
+          <div>
+            <h1>Excel data</h1>
+            <p class="fiori-page-subtitle">Import a workbook or export your ledger transactions</p>
+          </div>
+        </div>
+
+        <!-- 3 Steps Strip -->
+        <div class="fiori-steps-strip">
+          <div class="fiori-step-item">
+            <span class="fiori-step-badge">1</span>
+            <div>
+              <div class="fiori-step-title">Choose file</div>
+              <div class="fiori-step-sub">.xlsx, .xls or .csv</div>
+            </div>
+          </div>
+          <div class="fiori-step-item">
+            <span class="fiori-step-badge">2</span>
+            <div>
+              <div class="fiori-step-title">Check the preview</div>
+              <div class="fiori-step-sub">Mapped columns and skipped rows</div>
+            </div>
+          </div>
+          <div class="fiori-step-item">
+            <span class="fiori-step-badge pending">3</span>
+            <div>
+              <div class="fiori-step-title">Import</div>
+              <div class="fiori-step-sub">Added to your ledger</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fiori-grid-2col">
+          <!-- Left: Import Action -->
+          <section class="fiori-panel">
+            <div class="fiori-panel-header">
+              <h2>Import workbook</h2>
+              <label class="fiori-btn fiori-btn-primary" style="cursor:pointer;">
+                Choose file
+                <input type="file" accept=".xlsx,.xls,.csv" (change)="importWorkbook($event)" style="display:none;" />
+              </label>
+            </div>
+            <div class="fiori-panel-body">
+              <p style="font-size:13px; color:var(--fiori-muted); margin:0 0 14px;">
+                Upload your transactions from Excel or Google Sheets. The ledger reads Date, Description, Category, Subcategory, and Amount columns.
+              </p>
+              <div style="font-size:12px; color:var(--fiori-muted);">
+                Rows are added to your active ledger while keeping existing transactions safe.
+              </div>
+            </div>
+          </section>
+
+          <!-- Right: Export & Sync -->
+          <div style="display:flex; flex-direction:column; gap:24px;">
+            <section class="fiori-panel">
+              <div class="fiori-panel-header">
+                <h2>Export</h2>
+              </div>
+              <div class="fiori-panel-body">
+                <p style="font-size:13px; color:var(--fiori-muted); margin:0 0 14px;">
+                  Writes <b>ledger-transactions.xlsx</b> with complete transaction details.
+                </p>
+                <button type="button" class="fiori-btn fiori-btn-primary" (click)="exportWorkbook()">Export .xlsx</button>
+              </div>
+            </section>
+
+            <section class="fiori-panel">
+              <div class="fiori-panel-header">
+                <h2>Sync status</h2>
+              </div>
+              <div class="fiori-panel-body" style="display:flex; flex-direction:column; gap:10px; font-size:13px;">
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--fiori-muted);">This browser</span>
+                  <b>Saved locally</b>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--fiori-muted);">Cloud workbook</span>
+                  <b style="color:var(--fiori-green);">Up to date</b>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--fiori-muted);">Current month</span>
+                  <b>{{ monthLabel() }}</b>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- SECTION: STATES (SHOWCASE) -->
+    @if (activeSection() === 'States') {
+      <div>
+        <div class="fiori-page-header">
+          <div>
+            <h1>States</h1>
+            <p class="fiori-page-subtitle">Empty, loading, inline edit, interaction, dark</p>
+          </div>
+        </div>
+
+        <div class="fiori-grid-even-2col">
+          <section class="fiori-panel">
+            <div class="fiori-panel-header"><h2>Empty</h2></div>
+            <div style="padding:40px 20px; text-align:left;">
+              <div style="width:28px; height:2px; background:var(--fiori-rule); margin-bottom:14px;"></div>
+              <strong style="display:block; font-size:14px;">No spending recorded</strong>
+              <p style="font-size:13px; color:var(--fiori-muted); margin:6px 0 16px; max-width:34ch;">Add a transaction or import an Excel workbook to start tracking.</p>
+              <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddTransactionModal()">Add transaction</button>
+            </div>
+          </section>
+
+          <section class="fiori-panel">
+            <div class="fiori-panel-header">
+              <h2>Loading / syncing</h2>
+              <span style="font-size:11px; font-weight:600; color:var(--fiori-accent); text-transform:uppercase;">Syncing</span>
+            </div>
+            <div style="padding:20px; display:flex; flex-direction:column; gap:12px;">
+              <div style="height:14px; width:60%; background:var(--fiori-track);"></div>
+              <div style="height:28px; width:40%; background:var(--fiori-track);"></div>
+              <div style="height:10px; width:100%; background:var(--fiori-bg);"></div>
+              <div style="height:10px; width:85%; background:var(--fiori-bg);"></div>
+              <div style="height:10px; width:70%; background:var(--fiori-bg);"></div>
+            </div>
+          </section>
+
+          <section class="fiori-panel">
+            <div class="fiori-panel-header"><h2>Inline row edit</h2></div>
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) 110px 110px; gap:10px; align-items:center; padding:14px 20px; background:var(--fiori-accent-tint); border-bottom:1px solid var(--fiori-row-rule); box-shadow:inset 2px 0 0 #0070f2;">
+              <input class="fiori-input" value="Grocery run" style="border-color:var(--fiori-accent);">
+              <input class="fiori-input" value="4250" style="text-align:right; border-color:var(--fiori-accent);">
+              <span style="display:flex; gap:8px;">
+                <button type="button" class="fiori-btn fiori-btn-primary" style="height:32px; flex:1;">Save</button>
+                <button type="button" class="fiori-btn fiori-btn-ghost" style="height:32px; flex:1;">Cancel</button>
+              </span>
+            </div>
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) 110px 110px; gap:10px; align-items:center; padding:14px 20px; font-size:13px;">
+              <span>Coffee with friends</span>
+              <span style="text-align:right; font-variant-numeric:tabular-nums;">-₱180.00</span>
+              <span></span>
+            </div>
+          </section>
+
+          <section class="fiori-panel">
+            <div class="fiori-panel-header"><h2>Hover &amp; focus</h2></div>
+            <div style="padding:20px; display:flex; flex-direction:column; gap:14px; align-items:flex-start;">
+              <button type="button" class="fiori-btn fiori-btn-primary">Primary button</button>
+              <button type="button" class="fiori-btn fiori-btn-ghost">Secondary button</button>
+              <input class="fiori-input" placeholder="Focus me" style="width:220px;">
+              <div style="width:100%; padding:12px 14px; border:1px solid var(--fiori-border); font-size:13px;" class="fiori-zebra-row">
+                Row hover — background tints, clean borders
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    }
+
+  </main>
+
+  <!-- Mobile Bottom Tab Bar (Fixed at bottom on <= 768px) -->
+  <nav class="fiori-mobile-bottom-nav" aria-label="Mobile Navigation">
+    <button type="button" class="fiori-bottom-tab" [class.active]="activeSection() === 'Overview'" (click)="selectSection('Overview')">
+      <span class="fiori-bottom-tab-icon">◈</span>
+      <span class="fiori-bottom-tab-label">Overview</span>
+    </button>
+    <button type="button" class="fiori-bottom-tab" [class.active]="activeSection() === 'Spending' || activeSection() === 'Transactions'" (click)="selectSection('Spending')">
+      <span class="fiori-bottom-tab-icon">↔</span>
+      <span class="fiori-bottom-tab-label">Spending</span>
+    </button>
+    <div class="fiori-bottom-add-wrap">
+      <button type="button" class="fiori-bottom-add-btn" (click)="openAddTransactionModal()" aria-label="Add transaction">
+        ＋
+      </button>
+    </div>
+    <button type="button" class="fiori-bottom-tab" [class.active]="activeSection() === 'Savings'" (click)="selectSection('Savings')">
+      <span class="fiori-bottom-tab-icon">◎</span>
+      <span class="fiori-bottom-tab-label">Savings</span>
+    </button>
+    <button type="button" class="fiori-bottom-tab" [class.active]="activeSection() === 'Reports'" (click)="selectSection('Reports')">
+      <span class="fiori-bottom-tab-icon">⌁</span>
+      <span class="fiori-bottom-tab-label">Reports</span>
+    </button>
+  </nav>
+
+  <!-- Add Transaction Modal Dialog -->
+  @if (addTransactionModalOpen()) {
+    <div class="fiori-dialog-backdrop" (click)="closeAddTransactionModal()">
+      <div class="fiori-dialog" (click)="$event.stopPropagation()">
+        <div class="fiori-dialog-header">
+          <h2>Add transaction</h2>
+          <button type="button" class="fiori-dialog-close" (click)="closeAddTransactionModal()">×</button>
+        </div>
+        <form (ngSubmit)="submitNewTransactionModal()" style="margin:0;">
+          <div class="fiori-dialog-body">
+            <div class="fiori-segmented-toggle">
+              <button type="button" [class.active]="newTransaction().type === 'Expense'" (click)="updateField('type', 'Expense')">Expense</button>
+              <button type="button" [class.active]="newTransaction().type === 'Income'" (click)="updateField('type', 'Income')">Savings</button>
+            </div>
+
+            <div class="fiori-field">
+              <label>Description</label>
+              <input class="fiori-input" placeholder="e.g. Coffee with friends" [ngModel]="newTransaction().description" name="desc" (ngModelChange)="updateField('description', $event)" required>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <div class="fiori-field">
+                <label>Amount</label>
+                <div class="fiori-input-prefix-wrap">
+                  <span class="fiori-input-prefix">₱</span>
+                  <input class="fiori-input" style="width:100%;" type="number" min="0" step="0.01" placeholder="0.00" [ngModel]="newTransaction().amount" name="amount" (ngModelChange)="updateField('amount', $event)" required>
+                </div>
+              </div>
+
+              <div class="fiori-field">
+                <label>Date</label>
+                <input class="fiori-input" type="date" [ngModel]="newTransaction().date" name="date" (ngModelChange)="updateField('date', $event)" required>
+              </div>
+
+              <div class="fiori-field">
+                <label>Category</label>
+                <select class="fiori-select" [ngModel]="newTransaction().category" name="cat" (ngModelChange)="updateField('category', $event)" required>
+                  @for (category of categories; track category) {
+                    <option [value]="category">{{ category }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="fiori-field">
+                <label>Sub-category</label>
+                <select class="fiori-select" [ngModel]="newTransaction().subcategory" name="subcat" (ngModelChange)="updateField('subcategory', $event)">
+                  <option value="">Choose a sub-category</option>
+                  @for (subcategory of subcategoriesFor(newTransaction().category); track subcategory) {
+                    <option [value]="subcategory">{{ subcategory }}</option>
+                  }
+                </select>
+              </div>
+            </div>
           </div>
 
           <div class="fiori-dialog-footer">
-            <button type="button" class="cancel-row-button" (click)="closeAddTransactionModal()">Cancel</button>
-            <button class="add-button dialog-submit-button" type="submit" [class.just-added]="recentlyAddedRegular()">
-              {{ recentlyAddedRegular() ? '✓ Added!' : 'Add transaction' }}
-            </button>
+            <button type="button" class="fiori-btn fiori-btn-ghost" (click)="closeAddTransactionModal()">Cancel</button>
+            <button type="submit" class="fiori-btn fiori-btn-primary">Add transaction</button>
           </div>
         </form>
-        } @else {
-        <p class="muted">Loading categories and sub-categories from cloud storage...</p>
-        }
       </div>
     </div>
-  </div>
   }
-</main>
+</div>

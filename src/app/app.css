@@ -1,591 +1,963 @@
 /* ==========================================================================
-   SAP Fiori Horizon Design System - Personal Finance Ledger
-   Minimalist, accessible, enterprise-grade global UI standard
+   SAP Fiori Horizon & Minimalist Modernism Design System
+   Source of truth based on Claude Design Artifact (f484eaca-3fe2-4cd6-9639-89f89c714d52)
    ========================================================================== */
 
+:root {
+  --fiori-canvas: #eceef1;
+  --fiori-bg: #f4f5f7;
+  --fiori-surface: #ffffff;
+  --fiori-chip: #f4f5f7;
+  --fiori-border: #e4e7eb;
+  --fiori-row-rule: #f1f3f5;
+  --fiori-rule: #16191d;
+  --fiori-track: #eceef1;
+  --fiori-input-border: #d7dbe0;
+  --fiori-ink: #16191d;
+  --fiori-muted: #6b7280;
+  --fiori-accent: #0070f2;
+  --fiori-accent-ink: #0057be;
+  --fiori-accent-tint: #eef5fc;
+  --fiori-accent-border: #cfe2f8;
+  --fiori-green: #107e3e;
+  --fiori-red: #c5221f;
+  --fiori-zebra: #fafbfc;
+  --fiori-shadow-sm: 0 1px 2px rgba(22, 25, 29, 0.06);
+  --fiori-shadow-md: 0 4px 12px rgba(22, 25, 29, 0.08);
+  --fiori-shadow-lg: 0 12px 32px rgba(22, 25, 29, 0.16);
+}
+
+[data-theme="dark"],
+:host-context([data-theme="dark"]) {
+  --fiori-canvas: #0f1216;
+  --fiori-bg: #14171b;
+  --fiori-surface: #1c2026;
+  --fiori-chip: #23282f;
+  --fiori-border: #2a2f36;
+  --fiori-row-rule: #23282f;
+  --fiori-rule: #6b7683;
+  --fiori-track: #2a2f36;
+  --fiori-input-border: #333a42;
+  --fiori-ink: #e6e9ed;
+  --fiori-muted: #9aa4b0;
+  --fiori-accent: #4c9aff;
+  --fiori-accent-ink: #8cbcff;
+  --fiori-accent-tint: #1b2c42;
+  --fiori-accent-border: #2d4a6e;
+  --fiori-green: #4ade80;
+  --fiori-red: #ff6b6b;
+  --fiori-zebra: #1f242a;
+  --fiori-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --fiori-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --fiori-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.7);
+}
+
+/* Base Reset & Typography */
 :host {
   display: block;
   min-height: 100vh;
   font-family: '72', '72full', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  color: #1d2d3e;
-  background-color: #f5f6f7;
+  color: var(--fiori-ink);
+  background: var(--fiori-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* --------------------------------------------------------------------------
-   App Shell & Layout
-   -------------------------------------------------------------------------- */
-.app-shell {
-  display: flex;
-  height: 100vh;
-  overflow: hidden;
-  background: #f5f6f7;
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-/* --------------------------------------------------------------------------
-   SAP Fiori Side Navigation
-   -------------------------------------------------------------------------- */
-.sidebar {
-  width: 240px;
-  min-width: 240px;
-  height: 100%;
-  position: relative;
-  background: #ffffff;
-  border-right: 1px solid #e2e8f0;
+.fiori-app-root {
+  min-height: 100vh;
+  background: var(--fiori-bg);
+  color: var(--fiori-ink);
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
-  z-index: 100;
-  flex-shrink: 0;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.brand {
+/* --------------------------------------------------------------------------
+   Desktop Shell Bar Navigation
+   -------------------------------------------------------------------------- */
+.fiori-shell-bar {
+  min-height: 52px;
+  background: var(--fiori-surface);
+  border-bottom: 1px solid var(--fiori-border);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  padding: 8px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 500;
+}
+
+.fiori-shell-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.fiori-brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 60px;
-  padding: 0 18px;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1d2d3e;
-  letter-spacing: -0.01em;
+  cursor: pointer;
+  user-select: none;
 }
 
-.brand-mark {
+.fiori-brand-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   background: #0070f2;
   color: #ffffff;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 112, 242, 0.25);
   flex-shrink: 0;
 }
 
-.brand-mark svg {
-  display: block;
-}
-
-.mobile-menu-toggle {
-  display: none;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #334155;
-  cursor: pointer;
-  margin: 10px 14px;
-}
-
-.nav-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #64748b;
-  letter-spacing: 0.08em;
-  padding: 20px 18px 8px;
-  text-transform: uppercase;
-}
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  margin: 2px 10px;
-  border-radius: 6px;
-  color: #475569;
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  position: relative;
-}
-
-.nav-link:hover {
-  background: #f8fafc;
-  color: #1d2d3e;
-}
-
-.nav-link.active {
-  background: #eef5fc;
-  color: #0070f2;
-  font-weight: 600;
-}
-
-.nav-link.active::before {
-  content: '';
-  position: absolute;
-  left: -10px;
-  top: 4px;
-  bottom: 4px;
-  width: 4px;
-  background: #0070f2;
-  border-radius: 0 4px 4px 0;
-}
-
-.nav-icon {
+.fiori-brand-title {
   font-size: 15px;
-  width: 20px;
-  text-align: center;
-  color: inherit;
-  opacity: 0.85;
-}
-
-.sidebar-bottom {
-  margin-top: auto;
-  padding: 14px 16px;
-  border-top: 1px solid #f1f5f9;
-}
-
-.profile {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.avatar {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #eef5fc;
-  color: #0070f2;
-  font-size: 11px;
   font-weight: 700;
-  border: 1px solid #bfdbfe;
+  letter-spacing: -0.01em;
+  color: var(--fiori-ink);
 }
 
-.profile strong {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: #1d2d3e;
-}
-
-.profile small {
-  display: block;
-  font-size: 11px;
-  color: #64748b;
-  margin-top: 1px;
-}
-
-.dots {
-  margin-left: auto;
-  color: #64748b;
-  letter-spacing: 2px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.row-actions {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-.edit-row-button,
-.save-row-button,
-.cancel-row-button {
-  min-height: 32px;
-  min-width: 32px;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.edit-row-button,
-.save-row-button {
-  border: 1px solid #bfdbfe;
-  background: #eef5fc;
-  color: #0070f2;
-}
-
-.cancel-row-button {
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #64748b;
-}
-
-.expense-edit-fields {
-  display: grid;
-  grid-template-columns: minmax(140px, 1.5fr) minmax(110px, 1fr) minmax(120px, 1fr) minmax(120px, 1fr);
-  gap: 6px;
-}
-
-.expense-edit-fields input,
-.expense-edit-fields select,
-.expense-edit-amount input {
-  width: 100%;
-  height: 32px;
-  min-height: 32px;
-  box-sizing: border-box;
-  padding: 4px 8px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  background: #ffffff;
-  color: #1d2d3e;
-  font: inherit;
-  font-size: 12px;
-}
-
-.expense-edit-amount {
-  min-width: 110px;
-}
-
-.editing-row {
-  background: #f8fafc;
-}
-
-/* --------------------------------------------------------------------------
-   Workspace & Shell Topbar
-   -------------------------------------------------------------------------- */
-.workspace {
-  flex: 1;
-  min-width: 0;
+.fiori-shell-nav {
   display: flex;
-  flex-direction: column;
-  background: #f5f6f7;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.topbar {
-  height: 56px;
-  min-height: 56px;
-  padding: 0 32px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-}
-
-.breadcrumbs {
-  font-size: 13px;
-  font-weight: 500;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-}
-
-.breadcrumbs span {
-  margin: 0 8px;
-  color: #cbd5e1;
-}
-
-.top-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.import-button,
-.export-button,
-.month-button,
-.more-button,
-.view-all {
-  font-family: inherit;
-  font-size: 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.import-button {
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #334155;
-  padding: 7px 14px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-}
-
-.import-button:hover {
-  background: #f8fafc;
-  border-color: #64748b;
-}
-
-.import-button input {
-  display: none;
-}
-
-.export-button {
-  border: 1px solid #0070f2;
-  background: #0070f2;
-  color: #ffffff;
-  padding: 7px 14px;
-  font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0, 112, 242, 0.2);
-}
-
-.export-button:hover {
-  background: #0057be;
-  border-color: #0057be;
-}
-
-.month-button {
-  padding: 7px 14px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #1d2d3e;
-  font-weight: 500;
-  outline: none;
-}
-
-.month-button:focus {
-  border-color: #0070f2;
-  box-shadow: 0 0 0 2px rgba(0, 112, 242, 0.15);
-}
-
-.more-button {
-  padding: 4px 8px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: #64748b;
-  border-radius: 4px;
-}
-
-.more-button:hover {
-  background: #f1f5f9;
-  color: #1d2d3e;
-}
-
-.view-all {
-  border: none;
-  background: transparent;
-  color: #0070f2;
-  font-weight: 600;
-  padding: 4px 6px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
+  align-items: stretch;
+  flex-wrap: wrap;
   gap: 4px;
 }
 
-.view-all:hover {
-  background: #eef5fc;
+.fiori-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  color: var(--fiori-muted);
+  font-weight: 500;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.fiori-nav-item:hover {
+  color: var(--fiori-ink);
+}
+
+.fiori-nav-item.active {
+  border-bottom-color: var(--fiori-accent);
+  color: var(--fiori-ink);
+  font-weight: 600;
+}
+
+.fiori-shell-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.fiori-avatar-badge {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  background: var(--fiori-accent-tint);
+  color: var(--fiori-accent);
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--fiori-accent-border);
+  user-select: none;
 }
 
 /* --------------------------------------------------------------------------
-   Page Content & Typography
+   Mobile Top Header (<= 768px)
    -------------------------------------------------------------------------- */
-.page-content {
-  max-width: 1360px;
-  width: 100%;
-  box-sizing: border-box;
-  margin: 0 auto;
-  padding: 24px 32px 36px;
+.fiori-mobile-header {
+  display: none;
+  height: 44px;
+  background: var(--fiori-surface);
+  border-bottom: 1px solid var(--fiori-border);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  z-index: 500;
 }
 
-.page-heading {
+.fiori-mobile-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Fixed Mobile Bottom Tab Bar (<= 768px)
+   -------------------------------------------------------------------------- */
+.fiori-mobile-bottom-nav {
+  display: none;
+  height: 64px;
+  background: var(--fiori-surface);
+  border-top: 1px solid var(--fiori-border);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: center;
+}
+
+.fiori-bottom-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 100%;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--fiori-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+
+.fiori-bottom-tab.active {
+  color: var(--fiori-accent);
+  font-weight: 600;
+}
+
+.fiori-bottom-tab-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.fiori-bottom-tab-label {
+  font-size: 10px;
+}
+
+.fiori-bottom-add-wrap {
+  display: grid;
+  place-items: center;
+}
+
+.fiori-bottom-add-btn {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  background: #0070f2;
+  color: #ffffff;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 400;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 112, 242, 0.35);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.fiori-bottom-add-btn:active {
+  transform: scale(0.95);
+  background: #0057be;
+}
+
+/* --------------------------------------------------------------------------
+   Main Content Layout
+   -------------------------------------------------------------------------- */
+.fiori-main-content {
+  flex: 1;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 24px 40px;
+}
+
+/* Page Header */
+.fiori-page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 22px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--fiori-rule);
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.eyebrow {
-  font-size: 11px;
+.fiori-page-header h1 {
+  font-size: 26px;
   font-weight: 700;
-  color: #0070f2;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin: 0 0 4px;
-}
-
-.page-heading h1,
-.report-page-heading h2,
-.category-manager-heading h2 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #1d2d3e;
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  color: var(--fiori-ink);
+  line-height: 1.15;
 }
 
-.muted {
+.fiori-page-subtitle {
+  font-size: 13px;
+  color: var(--fiori-muted);
+  margin: 6px 0 0;
+}
+
+.fiori-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fiori-page-status {
   font-size: 12px;
-  color: #64748b;
-  margin: 4px 0 0;
+  color: var(--fiori-muted);
 }
 
 /* --------------------------------------------------------------------------
-   SAP Fiori KPI Tiles & Metric Cards
+   Connected KPI Grid (4-Column Strip)
    -------------------------------------------------------------------------- */
-.metric-grid {
+.fiori-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--fiori-border);
+  border: 1px solid var(--fiori-border);
+  margin-bottom: 28px;
 }
 
-.clickable-tile {
-  cursor: pointer;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
-}
-
-.clickable-tile:hover {
-  border-color: #0854a0;
-  box-shadow: 0 4px 12px rgba(8, 84, 160, 0.08);
-  transform: translateY(-1px);
-}
-
-.metric-target {
-  font-size: 16px;
-  font-weight: 500;
-  color: #64748b;
-}
-
-
-
-.fiori-card:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.balance-card {
-  background: #f8fafc;
-  border-color: #bfdbfe;
-}
-
-.savings-card {
-  background: #f0faf2;
-  border-color: #bbf7d0;
-}
-
-.savings-card strong {
-  color: #107e3e !important;
-}
-
-.metric-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #64748b;
-}
-
-.fiori-card strong {
-  display: block;
-  font-size: 26px;
-  font-weight: 700;
-  
-  margin: 10px 0 4px;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-
-.metric-icon {
-  display: grid !important;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  background: #eef5fc;
-  color: #0070f2;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.fiori-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 18px 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+.fiori-kpi-card {
+  background: var(--fiori-surface);
+  padding: 18px 20px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.fiori-kpi-card.clickable {
+  cursor: pointer;
+}
+
+.fiori-kpi-card.clickable:hover {
+  background: var(--fiori-accent-tint);
+}
+
+.fiori-kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fiori-muted);
+}
+
+.fiori-kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin-top: 8px;
+  white-space: nowrap;
+  color: var(--fiori-ink);
+  line-height: 1.1;
+}
+
+.fiori-kpi-value.green {
+  color: var(--fiori-green) !important;
+}
+
+.fiori-kpi-value.red {
+  color: var(--fiori-red) !important;
+}
+
+.fiori-kpi-sub {
+  font-size: 12px;
+  color: var(--fiori-muted);
+  margin-top: 2px;
+}
+
+.fiori-kpi-footer {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   Panels, Grids, and Lists
+   -------------------------------------------------------------------------- */
+.fiori-grid-2col {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.fiori-grid-even-2col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.fiori-grid-3col {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.fiori-panel {
+  background: var(--fiori-surface);
+  border: 1px solid var(--fiori-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.fiori-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--fiori-border);
+  gap: 12px;
+}
+
+.fiori-panel-header h2,
+.fiori-panel-header h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.01em;
+  color: var(--fiori-ink);
+}
+
+.fiori-panel-meta {
+  font-size: 12px;
+  color: var(--fiori-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.fiori-panel-body {
+  padding: 20px;
+}
+
+.fiori-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fiori-accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.fiori-link:hover {
+  text-decoration: underline;
+  color: var(--fiori-accent-ink);
+}
+
+/* --------------------------------------------------------------------------
+   Category & Transaction Rows
+   -------------------------------------------------------------------------- */
+.fiori-cat-row {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) 96px 120px;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--fiori-row-rule);
+  background: var(--fiori-surface);
+  transition: background 0.1s ease;
+}
+
+.fiori-cat-row:nth-child(even) {
+  background: var(--fiori-zebra);
+}
+
+.fiori-cat-row:hover {
+  background: var(--fiori-accent-tint);
+}
+
+.fiori-cat-dot {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+}
+
+.fiori-cat-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fiori-ink);
+}
+
+.fiori-cat-amount {
+  font-size: 13px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--fiori-ink);
+}
+
+.fiori-cat-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fiori-cat-track {
   flex: 1;
-}
-
-.metric-icon.income {
-  background: #edf7ee;
-  color: #107e3e;
-}
-
-.metric-icon.expense {
-  background: #fdf1f0;
-  color: #c5221f;
-}
-
-
-
-.metric-progress-wrap {
-  margin: 6px 0 8px;
-}
-
-.metric-progress-bar {
-  width: 100%;
-  height: 6px;
-  border-radius: 999px;
-  background: #dcfce7;
+  height: 4px;
+  background: var(--fiori-track);
+  display: block;
   overflow: hidden;
 }
 
-.metric-progress-fill {
+.fiori-cat-fill {
+  display: block;
   height: 100%;
-  border-radius: 999px;
-  background: #107e3e;
-  transition: width 0.3s ease;
 }
 
-.metric-progress-label {
-  display: block;
+.fiori-cat-share {
   font-size: 11px;
+  color: var(--fiori-muted);
+  width: 30px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Recent Transaction Rows */
+.fiori-tx-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--fiori-row-rule);
+  background: var(--fiori-surface);
+  transition: background 0.1s ease;
+}
+
+.fiori-tx-row:nth-child(even) {
+  background: var(--fiori-zebra);
+}
+
+.fiori-tx-row:hover {
+  background: var(--fiori-accent-tint);
+}
+
+.fiori-tx-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fiori-tx-desc {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fiori-ink);
+}
+
+.fiori-tx-meta {
+  font-size: 11px;
+  color: var(--fiori-muted);
+  margin-top: 2px;
+}
+
+.fiori-tx-amount {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
-  color: #107e3e;
-  margin-top: 4px;
+  color: var(--fiori-ink);
+  white-space: nowrap;
 }
 
 /* --------------------------------------------------------------------------
-   Fiori Alert Strip & Warning Badges
+   Data Tables
+   -------------------------------------------------------------------------- */
+.fiori-table-container {
+  background: var(--fiori-surface);
+  border: 1px solid var(--fiori-border);
+  overflow-x: auto;
+}
+
+.fiori-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.fiori-table th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fiori-muted);
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--fiori-rule);
+  background: var(--fiori-surface);
+  white-space: nowrap;
+}
+
+.fiori-table th.text-right,
+.fiori-table td.text-right {
+  text-align: right;
+}
+
+.fiori-table td {
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--fiori-row-rule);
+  color: var(--fiori-ink);
+}
+
+.fiori-table tr:nth-child(even) {
+  background: var(--fiori-zebra);
+}
+
+.fiori-table tr:hover {
+  background: var(--fiori-accent-tint);
+}
+
+/* --------------------------------------------------------------------------
+   Bills Rows Layout
+   -------------------------------------------------------------------------- */
+.fiori-bill-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 120px 220px;
+  align-items: center;
+  gap: 20px;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--fiori-row-rule);
+  background: var(--fiori-surface);
+  transition: background 0.1s ease;
+}
+
+.fiori-bill-row:nth-child(even) {
+  background: var(--fiori-zebra);
+}
+
+.fiori-bill-row:hover {
+  background: var(--fiori-accent-tint);
+}
+
+.fiori-bill-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fiori-ink);
+}
+
+.fiori-bill-path {
+  font-size: 11px;
+  color: var(--fiori-muted);
+  margin-top: 2px;
+}
+
+.fiori-bill-spent {
+  text-align: right;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.fiori-bill-spent.overspent {
+  color: var(--fiori-red) !important;
+}
+
+.fiori-bill-plan {
+  text-align: right;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fiori-muted);
+}
+
+.fiori-bill-bar {
+  height: 4px;
+  background: var(--fiori-track);
+  overflow: hidden;
+}
+
+.fiori-bill-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--fiori-accent);
+}
+
+.fiori-bill-bar-fill.overspent {
+  background: var(--fiori-red);
+}
+
+.fiori-bill-status-text {
+  font-size: 11px;
+  color: var(--fiori-muted);
+  margin-top: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   Savings Banner & Roadmap
+   -------------------------------------------------------------------------- */
+.fiori-savings-banner {
+  background: var(--fiori-surface);
+  border: 1px solid var(--fiori-border);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.fiori-savings-cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.fiori-savings-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fiori-muted);
+}
+
+.fiori-savings-stat-val {
+  display: block;
+  font-size: 30px;
+  font-weight: 700;
+  margin-top: 8px;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--fiori-ink);
+  line-height: 1.1;
+}
+
+.fiori-savings-stat-val.green {
+  color: var(--fiori-green) !important;
+}
+
+.fiori-savings-stat-sub {
+  font-size: 12px;
+  color: var(--fiori-muted);
+  margin-top: 4px;
+  display: block;
+}
+
+.fiori-savings-progress-track {
+  margin-top: 24px;
+  height: 6px;
+  background: var(--fiori-track);
+  overflow: hidden;
+}
+
+.fiori-savings-progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--fiori-green);
+}
+
+/* --------------------------------------------------------------------------
+   Categories Manager Chips
+   -------------------------------------------------------------------------- */
+.fiori-cat-card {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--fiori-row-rule);
+  background: var(--fiori-surface);
+}
+
+.fiori-cat-card:last-child {
+  border-bottom: none;
+}
+
+.fiori-cat-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fiori-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-left: 22px;
+}
+
+.fiori-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--fiori-chip);
+  border: 1px solid var(--fiori-border);
+  font-size: 12px;
+  color: var(--fiori-muted);
+}
+
+.fiori-chip-add {
+  padding: 4px 10px;
+  border: 1px dashed #b9c0c8;
+  background: var(--fiori-surface);
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--fiori-accent);
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   Data Import & Steps
+   -------------------------------------------------------------------------- */
+.fiori-steps-strip {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 24px;
+  border: 1px solid var(--fiori-border);
+  background: var(--fiori-surface);
+}
+
+.fiori-step-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-right: 1px solid var(--fiori-border);
+}
+
+.fiori-step-item:last-child {
+  border-right: none;
+}
+
+.fiori-step-badge {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  background: var(--fiori-accent);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.fiori-step-badge.pending {
+  background: var(--fiori-chip);
+  color: var(--fiori-muted);
+}
+
+.fiori-step-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fiori-ink);
+}
+
+.fiori-step-sub {
+  font-size: 11px;
+  color: var(--fiori-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons & Inputs
+   -------------------------------------------------------------------------- */
+.fiori-btn {
+  height: 32px;
+  padding: 0 14px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--fiori-input-border);
+  background: var(--fiori-surface);
+  color: var(--fiori-ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 0;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.fiori-btn:hover {
+  background: var(--fiori-accent-tint);
+  border-color: var(--fiori-accent);
+  color: var(--fiori-accent-ink);
+}
+
+.fiori-btn-primary {
+  background: #0070f2 !important;
+  border-color: #0070f2 !important;
+  color: #ffffff !important;
+}
+
+.fiori-btn-primary:hover {
+  background: #0057be !important;
+  border-color: #0057be !important;
+}
+
+.fiori-btn-ghost {
+  border: 1px solid var(--fiori-input-border);
+  background: transparent;
+  color: var(--fiori-ink);
+}
+
+.fiori-btn-ghost:hover {
+  background: var(--fiori-accent-tint);
+  color: var(--fiori-accent);
+  border-color: var(--fiori-accent-border);
+}
+
+.fiori-input,
+.fiori-select {
+  height: 32px;
+  padding: 0 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--fiori-surface);
+  color: var(--fiori-ink);
+  border: 1px solid var(--fiori-input-border);
+  border-radius: 0;
+  transition: border-color 0.15s ease, outline 0.15s ease;
+}
+
+.fiori-input:focus,
+.fiori-select:focus {
+  border-color: var(--fiori-accent);
+  outline: 2px solid var(--fiori-accent);
+  outline-offset: 0;
+}
+
+.fiori-month-select {
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   Alert Strip (Failed / Flagged Transactions)
    -------------------------------------------------------------------------- */
 .fiori-alert-strip {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 18px;
-  font-size: 13px;
-  line-height: 1.4;
-  border: 1px solid transparent;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  border: 1px solid #fed7aa;
+  background: #fffbeb;
+  color: #9a3412;
 }
 
-.fiori-alert-warning {
-  background: #fffbeb;
-  border-color: #fde68a;
-  color: #92400e;
+[data-theme="dark"] .fiori-alert-strip {
+  border-color: #7c2d12;
+  background: #2b170e;
+  color: #fdba74;
 }
 
 .fiori-alert-icon {
-  font-size: 18px;
-  line-height: 1;
+  font-size: 16px;
+  font-weight: 700;
   flex-shrink: 0;
-  margin-top: 1px;
 }
 
 .fiori-alert-body {
@@ -595,3304 +967,231 @@
 .fiori-alert-title {
   font-size: 13px;
   font-weight: 700;
-  color: #78350f;
-  margin-bottom: 2px;
-}
-
-.fiori-alert-body p {
-  margin: 0 0 6px;
-  color: #92400e;
+  margin-bottom: 4px;
 }
 
 .fiori-alert-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: 8px;
 }
 
 .fiori-alert-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  background: #fef3c7;
-  border: 1px solid #fcd34d;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #78350f;
-}
-
-.fiori-alert-chip small {
-  color: #a16207;
-  font-size: 11px;
-}
-
-.failed-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
-  font-size: 11px;
-  font-weight: 600;
-  margin-left: 6px;
-  vertical-align: middle;
-}
-
-/* --------------------------------------------------------------------------
-   Month-over-Month (MoM) Indicators & Expense Trend Chart
-   -------------------------------------------------------------------------- */
-.category-row-group {
-  margin-bottom: 8px;
-}
-
-.category-mom-subtext {
-  padding-left: 18px;
-  margin-top: 2px;
-  margin-bottom: 6px;
-}
-
-.mom-text {
-  font-size: 11px;
-  color: #64748b;
-  font-style: italic;
-}
-
-/* 6-Month Expense Trend Chart */
-.expense-trend-panel {
-  display: flex;
-  flex-direction: column;
-}
-
-.overview-trend-chart {
-  display: flex;
-  flex-direction: column;
-  height: 200px;
-  margin-top: 10px;
-}
-
-.overview-trend-bars {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 8px;
-  flex: 1;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.overview-trend-column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  height: 100%;
-  justify-content: flex-end;
-  gap: 6px;
-}
-
-.overview-trend-amount {
-  font-size: 10px;
-  font-weight: 600;
-  color: #64748b;
-  white-space: nowrap;
-}
-
-.overview-trend-bar-track {
-  width: 100%;
-  max-width: 36px;
-  flex: 1;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.overview-trend-bar {
-  width: 100%;
-  border-radius: 4px 4px 0 0;
-  background: linear-gradient(180deg, #60a5fa 0%, #0070f2 100%);
-  min-height: 4px;
-  transition: height 0.3s ease, filter 0.2s ease;
-  cursor: pointer;
-}
-
-.overview-trend-bar:hover {
-  filter: brightness(1.15);
-}
-
-.current-month-col .overview-trend-bar {
-  background: linear-gradient(180deg, #f87171 0%, #c5221f 100%);
-}
-
-.current-month-col .overview-trend-amount {
-  color: #c5221f;
-  font-weight: 700;
-}
-
-.current-month-col .overview-trend-label {
-  color: #1d2d3e;
-  font-weight: 700;
-}
-
-.overview-trend-label {
-  font-size: 11px;
-  color: #64748b;
-  margin-top: 2px;
-}
-
-/* Month-over-Month Comparison Panel */
-.mom-panel {
-  display: flex;
-  flex-direction: column;
-}
-
-.mom-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 4px;
-}
-
-.mom-item {
-  padding: 10px 12px;
-  border-radius: 6px;
-  background: #f8fafc;
-  border: 1px solid #f1f5f9;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.mom-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.mom-item-header strong {
-  font-size: 13px;
-  color: #1d2d3e;
-}
-
-.mom-item-detail {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
-  color: #475569;
-}
-
-.mom-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.mom-badge.mom-increase {
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
-
-.mom-badge.mom-decrease {
-  background: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-}
-
-.mom-badge.mom-same {
-  background: #f1f5f9;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
-}
-
-/* Empty states for Trend and MoM */
-.trend-empty-state,
-.mom-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 32px 16px;
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  border-radius: 8px;
-  margin-top: 10px;
-  min-height: 180px;
-}
-
-.trend-empty-icon,
-.mom-empty-icon {
-  font-size: 26px;
-  margin-bottom: 8px;
-  opacity: 0.6;
-}
-
-.trend-empty-title,
-.mom-empty-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #334155;
-  margin-bottom: 4px;
-}
-
-.trend-empty-state p,
-.mom-empty-state p {
-  font-size: 12px;
-  color: #64748b;
-  max-width: 280px;
-  margin: 0;
-  line-height: 1.4;
-}
-
-/* Distinguishing Category & Subcategory action buttons */
-.edit-category-btn {
-  background: #eff6ff !important;
-  color: #1d4ed8 !important;
-  border: 1px solid #bfdbfe !important;
-  font-size: 13px !important;
-}
-
-.edit-category-btn:hover {
-  background: #dbeafe !important;
-  border-color: #93c5fd !important;
-  color: #1e40af !important;
-}
-
-.edit-subcategory-button {
-  background: #f8fafc !important;
-  color: #0070f2 !important;
-  border: 1px solid #e2e8f0 !important;
-}
-
-.edit-subcategory-button:hover {
-  background: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-}
-
-/* --------------------------------------------------------------------------
-   SAP Cards & Dashboard Panels
-   -------------------------------------------------------------------------- */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.panel {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-[draggable="true"] {
-  cursor: grab;
-  touch-action: pan-y;
-}
-
-.tile-dragging {
-  opacity: 0.45;
-  cursor: grabbing;
-}
-
-.panel-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-}
-
-.panel h2,
-.panel h3 {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1d2d3e;
-  margin: 0;
-  letter-spacing: -0.01em;
-}
-
-/* Spending total row (replaces budget editor in category panel) */
-.spending-total-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  margin-bottom: 6px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.spending-total-row span {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #64748b;
-}
-
-.spending-total-row strong {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1d2d3e;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Budget Card */
-.budget-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-top: 14px;
-}
-
-.budget-total span,
-.spent-copy span {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.budget-edit {
-  font-family: inherit;
-  font-size: 18px;
-  font-weight: 700;
-  color: #0070f2;
-  background: #eef5fc;
-  border: 1px solid #bfdbfe;
-  border-radius: 4px;
-  padding: 3px 8px;
-  margin-top: 4px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.budget-edit:hover {
-  background: #dbeafe;
-}
-
-.budget-edit .edit-hint {
-  font-size: 12px;
-  color: #64748b;
-  margin-left: 4px;
-  opacity: 0.7;
-}
-
-.budget-edit:hover .edit-hint {
-  opacity: 1;
-  color: #0070f2;
-}
-
-.inline-budget-edit-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
-  padding: 10px 12px;
-  background: #f8fafc;
-  border: 1px solid #dbeafe;
-  border-radius: 6px;
-}
-
-.inline-budget-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.inline-budget-input-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.inline-budget-input-row .amount-input {
-  max-width: 170px;
-}
-
-.inline-budget-input-row .amount-input input {
-  height: 32px;
-  padding: 4px 8px 4px 22px;
-  font-size: 14px;
-  font-weight: 700;
-  color: #1d2d3e;
-  border: 1px solid #0070f2;
-  border-radius: 4px;
-  background: #ffffff;
-}
-
-.link-plan-allowance-btn {
-  background: #eff6ff;
-  border: 1px dashed #3b82f6;
-  color: #1d4ed8;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.15s ease;
-  width: fit-content;
-}
-
-.link-plan-allowance-btn:hover {
-  background: #dbeafe;
-  border-color: #2563eb;
-}
-
-.spent-copy {
-  text-align: right;
-}
-
-.spent-copy strong {
-  display: block;
-  font-size: 20px;
-  font-weight: 700;
-  color: #1d2d3e;
-  margin-top: 4px;
-  font-variant-numeric: tabular-nums;
-}
-
-.progress-track {
-  height: 8px;
-  background: #e2e8f0;
-  border-radius: 4px;
-  overflow: hidden;
-  margin: 16px 0 10px;
-}
-
-.progress-track span {
-  display: block;
-  height: 100%;
-  background: #0070f2;
-  border-radius: 4px;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.budget-foot {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  font-weight: 500;
-  color: #64748b;
-  margin-bottom: 16px;
-}
-
-.category-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 14px;
-  border-top: 1px solid #f1f5f9;
-  padding-top: 14px;
-}
-
-.spending-summary {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.spending-summary article {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 5px;
-  padding: 14px 16px;
-  border: 1px solid #dbe5f0;
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(30, 64, 96, 0.05);
-}
-
-.spending-summary span,
-.spending-summary small {
-  color: #64748b;
-  font-size: 11px;
-}
-
-.spending-summary span {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.spending-summary strong {
-  color: #1d2d3e;
-  font-size: 21px;
-  font-variant-numeric: tabular-nums;
-}
-
-.transaction-empty {
-  padding: 28px 14px !important;
-  color: #64748b;
-  text-align: center;
-}
-
-.category-empty {
-  margin: 8px 0 2px;
-  font-size: 12px;
-}
-
-.category-row {
-  display: grid;
-  grid-template-columns: 8px 1fr auto 64px;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-}
-
-.category-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-/* SAP Chart Color Palette */
-.dot-0, .bar-0 { background: #0070f2; }
-.dot-1, .bar-1 { background: #0f828f; }
-.dot-2, .bar-2 { background: #107e3e; }
-.dot-3, .bar-3 { background: #e9730c; }
-.dot-4, .bar-4 { background: #8e44ad; }
-.dot-5, .bar-5 { background: #df3d82; }
-.dot-6, .bar-6 { background: #c0392b; }
-.dot-7, .bar-7 { background: #16a085; }
-.dot-8, .bar-8 { background: #d4a017; }
-.dot-9, .bar-9 { background: #34495e; }
-.dot-10, .bar-10 { background: #7f8c8d; }
-.dot-11, .bar-11 { background: #6c5ce7; }
-
-.category-name {
-  color: #334155;
-  font-weight: 500;
-}
-
-.category-amount {
-  color: #1d2d3e;
-  font-weight: 600;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.category-bar {
-  height: 5px;
-  background: #f1f5f9;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.category-bar i {
-  display: block;
-  height: 100%;
-  background: #0070f2;
-  border-radius: 3px;
-}
-
-/* Sub-category overview */
-.overview-side-column {
-  display: contents;
-}
-
-.subcategory-overview {
-  min-height: 220px;
-  grid-column: span 3;
-}
-
-.subcategory-chart {
-  display: flex;
-  gap: 10px;
-  height: 115px;
-  margin-top: 14px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.subcategory-chart-scale {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  color: #64748b;
-  font-size: 10px;
-  font-weight: 500;
-  padding-bottom: 18px;
-}
-
-.subcategory-bars {
-  display: flex;
-  flex: 1;
-  align-items: stretch;
-  justify-content: space-around;
-  gap: 8px;
-}
-
-.subcategory-column {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.subcategory-bar-group {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 3px;
-  width: 100%;
-  height: 90px;
-}
-
-.subcategory-bar {
-  display: block;
-  width: 12px;
-  min-height: 4px;
-  border-radius: 2px 2px 0 0;
-  transition: height 0.3s ease;
-}
-
-.subcategory-column small {
-  margin-top: 6px;
-  color: #64748b;
-  font-size: 10px;
-  font-weight: 500;
-}
-
-.subcategory-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 12px;
-  color: #64748b;
-  font-size: 11px;
-}
-
-.legend-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 4px;
-}
-
-.trend-arrow {
-  color: #0070f2;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.subcategory-empty {
-  margin-top: 24px;
-}
-
-/* --------------------------------------------------------------------------
-   SAP SimpleForm & Input Controls
-   -------------------------------------------------------------------------- */
-.type-toggle {
-  display: inline-flex;
-  background: #f1f5f9;
-  padding: 3px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 16px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.type-toggle button {
-  flex: 1;
-  padding: 7px 12px;
-  border: none;
-  background: transparent;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.type-toggle button.selected {
-  background: #ffffff;
-  color: #0070f2;
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-.savings-subpage-tabs {
-  width: min(360px, 100%);
-  margin: 0 0 20px;
-}
-
-.savings-subpage-tabs button {
-  padding: 10px 14px;
-  font-size: 13px;
-}
-
-.savings-details-toggle {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0 0 14px;
-  padding: 12px 14px;
-  border: 1px solid #dbe5f0;
-  border-radius: 6px;
-  background: #f8fafc;
-  color: #1e40af;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-}
-
-.savings-details-toggle:hover {
-  background: #eff6ff;
-}
-
-.cloud-status {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding: 10px 14px;
-  border: 1px solid #bfdbfe;
-  border-radius: 6px;
-  background: #eff6ff;
-  color: #1e40af;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.cloud-status-error {
-  border-color: #fecaca;
-  background: #fef2f2;
-  color: #991b1b;
-}
-
-.cloud-status-syncing {
-  border-color: #fef08a;
-  background: #fefce8;
-  color: #854d0e;
-}
-
-.cloud-status button {
-  padding: 6px 10px;
-  border: 1px solid currentColor;
-  border-radius: 4px;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.form-grid label,
-.category-form-panel label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #475569;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.form-grid input,
-.form-grid select,
-.category-form-panel input,
-.category-form-panel select,
-.fiori-dialog input,
-.fiori-dialog select {
-  font-family: inherit;
-  width: 100%;
-  height: 36px;
-  min-height: 36px;
-  box-sizing: border-box;
-  padding: 6px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 13px;
-  color: #1d2d3e;
-  background: #ffffff;
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.form-grid input:focus,
-.form-grid select:focus,
-.category-form-panel input:focus,
-.category-form-panel select:focus,
-.fiori-dialog input:focus,
-.fiori-dialog select:focus {
-  border-color: #0057be;
-  box-shadow: inset 0 -2px 0 0 #0070f2;
-}
-
-.amount-input {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.amount-input span {
-  position: absolute;
-  left: 10px;
-  color: #64748b;
-  font-weight: 600;
-  font-size: 13px;
-  pointer-events: none;
-}
-
-.amount-input input {
-  padding-left: 24px;
-}
-
-.add-button {
-  width: 100%;
-  margin-top: 16px;
-  padding: 10px 16px;
-  background: #0070f2;
-  color: #ffffff;
-  border: 1px solid #0070f2;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  box-shadow: 0 1px 2px rgba(0, 112, 242, 0.2);
-}
-
-.add-button:hover {
-  background: #0057be;
-  border-color: #0057be;
-}
-
-.add-button:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-  background: #64748b;
-  border-color: #64748b;
-  box-shadow: none;
-}
-
-.add-button.just-added {
-  background: #107e3e !important;
-  border-color: #107e3e !important;
-  box-shadow: 0 1px 3px rgba(16, 126, 62, 0.3) !important;
-}
-
-.quick-presets {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
-.presets-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.preset-chips {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.preset-chip {
-  padding: 4px 10px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #1d2d3e;
-  border-radius: 14px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  line-height: 1.2;
-}
-
-.preset-chip:hover {
-  background: #f1f5f9;
-  border-color: #64748b;
-}
-
-.preset-chip.plan-chip {
-  background: #eef5fc;
-  border-color: #bfdbfe;
-  color: #0070f2;
-}
-
-.preset-chip.plan-chip:hover {
-  background: #dbeafe;
-  border-color: #93c5fd;
-}
-
-.plus-badge {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  background: #eef5fc;
-  color: #0070f2;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.transaction-form-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #0070f2;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.transaction-form-toggle .plus-badge {
-  transition: transform 0.15s ease;
-}
-
-.transaction-form-toggle .plus-badge.form-open {
-  transform: rotate(45deg);
-}
-
-.mobile-quick-add {
-  display: none;
-}
-
-/* --------------------------------------------------------------------------
-   SAP Fiori Responsive Tables
-   -------------------------------------------------------------------------- */
-.table-wrap {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin-top: 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  background: #ffffff;
-  max-width: 100%;
-}
-
-.mobile-transaction-list {
-  display: none;
-}
-
-.mobile-transaction-card {
-  padding: 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  background: #ffffff;
-}
-
-.mobile-transaction-top,
-.mobile-transaction-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mobile-transaction-top > div {
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.mobile-transaction-top strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mobile-transaction-top small {
-  color: #64748b;
-  font-size: 11px;
-}
-
-.mobile-transaction-amount {
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-.mobile-transaction-meta {
-  flex-wrap: wrap;
-  margin-top: 10px;
-  padding-left: 28px;
-  color: #64748b;
-  font-size: 11px;
-}
-
-.mobile-transaction-meta .row-actions {
-  margin-left: auto;
-}
-
-table {
-  width: 100%;
-  min-width: 580px;
-  border-collapse: collapse;
-  font-size: 13px;
-  text-align: left;
-}
-
-thead th {
-  background: #f8fafc;
-  color: #64748b;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 11px 14px;
-  border-bottom: 1px solid #e2e8f0;
-  white-space: nowrap;
-}
-
-tbody td {
-  padding: 11px 14px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
-  vertical-align: middle;
-}
-
-tbody tr:last-child td {
-  border-bottom: none;
-}
-
-tbody tr:hover {
-  background: #f8fafc;
-}
-
-.align-right {
-  text-align: right;
-}
-
-.income-text {
-  color: #107e3e !important;
-}
-
-/* SAP ObjectStatus Pills */
-.category-pill {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-}
-
-.subcategory-cell {
-  color: #64748b;
-  font-size: 12px;
-}
-
-.transaction-icon {
-  display: inline-grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 4px;
-  background: #fdf1f0;
-  color: #c5221f;
-  margin-right: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  vertical-align: middle;
-}
-
-.transaction-icon.income-icon {
-  background: #edf7ee;
-  color: #107e3e;
-}
-
-.delete-button {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: #64748b;
-  font-size: 18px;
-  cursor: pointer;
-  display: inline-grid;
-  place-items: center;
-  transition: all 0.15s ease;
-}
-
-.delete-button:hover {
-  background: #fdf1f0;
-  color: #c5221f;
-  border-color: #f6c4c2;
-}
-
-/* --------------------------------------------------------------------------
-   Savings & Target Savings Section
-   -------------------------------------------------------------------------- */
-.reference-reports {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.report-page-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 8px;
-}
-
-.reference-metrics {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-
-.reference-metrics article {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 16px 18px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-.reference-metrics span {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #64748b;
-}
-
-.reference-metrics strong {
-  display: block;
-  font-size: 22px;
-  font-weight: 700;
-  color: #1d2d3e;
-  margin: 8px 0 4px;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-}
-
-.reference-metrics small {
-  display: block;
-  font-size: 11px;
-  color: #64748b;
-}
-
-.reports-overview .reference-metrics article {
-  border-top: 3px solid #0070f2;
-}
-
-.reports-overview .reference-metrics article:nth-child(2) {
-  border-top-color: #e9730c;
-}
-
-.reports-overview .reference-metrics article:nth-child(3) {
-  border-top-color: #107e3e;
-}
-
-.reports-overview .reference-metrics article:nth-child(4) {
-  border-top-color: #8e44ad;
-}
-
-/* Savings page — unified overview tile */
-.savings-overview-tile {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 18px 22px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-.savings-overview-metrics {
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-
-
-.fiori-card.primary {
-  flex: 1.15;
-}
-
-.savings-overview-divider {
-  width: 1px;
-  background: #e2e8f0;
-  margin: 2px 0;
-  align-self: stretch;
-}
-
-.savings-overview-label {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #64748b;
-  margin-bottom: 6px;
-}
-
-.savings-overview-value {
-  display: block;
-  font-size: 24px;
-  font-weight: 700;
-  color: #1d2d3e;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-}
-
-.savings-overview-value.total-val {
-  color: #107e3e !important;
-}
-
-.savings-overview-sub {
-  display: block;
-  font-size: 11px;
-  color: #64748b;
-  margin-top: 6px;
-}
-
-.savings-overview-progress {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid #f1f5f9;
-}
-
-.savings-progress-bar {
-  height: 6px;
-  background: #e2e8f0;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.savings-progress-bar span {
-  display: block;
-  height: 100%;
-  background: #107e3e;
-  border-radius: 3px;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Savings page — 3-column tile grid */
-.savings-tiles-3col {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-}
-
-/* Middle tile: this-month breakdown */
-.savings-month-tile {
-  background: #fafbfc;
-}
-
-.savings-amount {
-  color: #107e3e;
-}
-
-.withdrawal-amount {
-  color: #c5221f;
-}
-
-.savings-month-divider {
-  height: 1px;
-  background: #e2e8f0;
-  margin: 16px 0 12px;
-}
-
-.savings-month-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.savings-month-footer b {
-  font-size: 14px;
-  font-weight: 700;
-  color: #1d2d3e;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Goal progress big number */
-.savings-goal-big {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin: 14px 0 10px;
-}
-
-.savings-goal-big strong {
-  font-size: 40px;
-  font-weight: 800;
-  color: #107e3e;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.savings-goal-big strong small {
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.savings-goal-big > span {
-  font-size: 12px;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.bills-layout {
-  display: grid;
-  grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.6fr);
-  align-items: stretch;
-  gap: 16px;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-.bills-summary-tile {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-.bill-summary-item {
-  min-width: 0;
-}
-
-.bill-summary-item span,
-.bill-summary-item small {
-  display: block;
-}
-
-.bill-summary-item span {
-  color: #64748b;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.bill-summary-item strong {
-  display: block;
-  color: #1d2d3e;
-  font-size: 22px;
-  font-variant-numeric: tabular-nums;
-  margin: 8px 0 4px;
-}
-
-.bill-summary-item small {
-  color: #64748b;
-  font-size: 11px;
-}
-
-.bills-page,
-.bills-page > * {
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-.bills-metrics strong.expense-text,
-.bill-overspent .bill-status {
-  color: #c5221f !important;
-}
-
-.bill-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 4px;
-  max-height: 420px;
-}
-
-.bill-list-panel {
-  height: auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.bill-list-panel .bill-list {
-  flex: 0 1 420px;
-}
-
-.bill-row {
-  padding: 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  background: #f8fafc;
-}
-
-.bill-row.bill-overspent {
-  border-color: #f1b8b5;
-  background: #fff8f7;
-}
-
-.bill-row-heading,
-.bill-amounts {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.bill-edit-fields {
-  display: grid;
-  grid-template-columns: minmax(130px, 1.4fr) minmax(120px, 1fr) minmax(130px, 1fr) minmax(90px, 0.8fr) minmax(70px, 0.6fr);
-  gap: 6px;
-}
-
-.bill-edit-fields input,
-.bill-edit-fields select {
-  width: 100%;
-  min-height: 30px;
-  padding: 5px 6px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  background: #ffffff;
-  color: #1d2d3e;
-  font: inherit;
-  font-size: 11px;
-  box-sizing: border-box;
-}
-
-.bill-edit-actions {
-  margin-top: 8px;
-}
-
-.bill-row-heading strong,
-.bill-row-heading small,
-.bill-status {
-  display: block;
-}
-
-.bill-row-heading small,
-.bill-status {
-  color: #64748b;
-  font-size: 11px;
-  margin-top: 3px;
-}
-
-.bill-amounts {
-  font-size: 11px;
-  color: #64748b;
-  margin-top: 10px;
-}
-
-.bill-amounts b {
-  color: #1d2d3e;
-  font-variant-numeric: tabular-nums;
-}
-
-.bill-row .progress-track {
-  margin: 10px 0 0;
-  height: 6px;
-}
-
-.bill-row .progress-track span.expense-progress {
-  background: #c5221f;
-}
-
-.bill-empty {
-  padding: 16px 0;
-}
-
-.fiori-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-
-
-.tile-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-
-.tile-heading h3 {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1d2d3e;
-  margin: 0;
-}
-
-.tile-heading p {
-  font-size: 12px;
-  color: #64748b;
-  margin: 3px 0 0;
-}
-
-.tile-heading > span {
-  font-size: 16px;
-  font-weight: 700;
-  color: #0070f2;
-}
-
-.trend-chart {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-around;
-  height: 140px;
-  margin-top: 14px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.trend-column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  height: 100%;
-  flex: 1;
-  gap: 6px;
-}
-
-.trend-column i {
-  display: block;
-  width: 22px;
-  max-width: 80%;
-  min-height: 4px;
-  background: #0070f2;
-  border-radius: 3px 3px 0 0;
-  transition: height 0.3s ease, background-color 0.15s ease;
-}
-
-.trend-column i:hover {
-  background: #0057be;
-}
-
-.trend-column small {
-  color: #64748b;
-  font-size: 10px;
-  font-weight: 500;
-}
-
-.tile-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.tile-bars label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #334155;
-  font-weight: 500;
-}
-
-.tile-bars b {
-  color: #1d2d3e;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.tile-bars em {
-  display: block;
-  height: 6px;
-  background: #e2e8f0;
-  border-radius: 3px;
-  overflow: hidden;
-  margin-top: 4px;
-  font-style: normal;
-}
-
-.tile-bars em i {
-  display: block;
-  height: 100%;
-  background: #0070f2;
-  border-radius: 3px;
-}
-
-.savings-number {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1d2d3e;
-  margin: 18px 0 12px;
-}
-
-.reference-progress {
-  height: 8px;
-  background: #e2e8f0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.reference-progress i {
-  display: block;
-  height: 100%;
-  background: #107e3e;
-  border-radius: 4px;
-}
-
-.tile-foot {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: #64748b;
-  margin-top: 8px;
-}
-
-.fund-tile {
-  background: #f8fafc;
-}
-
-/* --------------------------------------------------------------------------
-   Savings Plan Editing & Forms
-   -------------------------------------------------------------------------- */
-.plan-params-toggle {
-  padding: 6px 14px;
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid #bfdbfe;
-  background: #eef5fc;
-  color: #0070f2;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-
-.plan-params-toggle:hover {
-  background: #dbeafe;
-  border-color: #93c5fd;
-}
-
-.savings-plan-params-form {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 16px 20px;
-  margin-bottom: 20px;
-}
-
-.savings-plan-params-form .form-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.savings-plan-params-form label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.plan-params-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid #e2e8f0;
-  gap: 10px;
-}
-
-.reset-plan-button {
-  background: transparent;
-  border: 1px dashed #cbd5e1;
-  color: #64748b;
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.reset-plan-button:hover {
-  border-color: #64748b;
-  color: #334155;
-  background: #ffffff;
-}
-
-.done-plan-button {
-  background: #0070f2;
-  border: 1px solid #0070f2;
-  color: #ffffff;
-  padding: 6px 20px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.done-plan-button:hover {
-  background: #0057be;
-  border-color: #0057be;
-}
-
-.savings-plan-panel tr.editing-row td input {
-  width: 100%;
-  height: 32px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(154, 52, 18, 0.2);
   padding: 4px 8px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  font-size: 13px;
-  box-sizing: border-box;
-}
-
-.savings-plan-panel tr.editing-row td input:focus {
-  outline: none;
-  border-color: #0070f2;
-  box-shadow: 0 0 0 2px rgba(0, 112, 242, 0.15);
-}
-
-.savings-plan-panel tr.editing-row td .amount-input input {
-  padding-left: 20px;
-}
-
-.savings-plan-panel .table-wrap table th:last-child,
-.savings-plan-panel .table-wrap table td:last-child {
-  width: 90px;
-  text-align: right;
-}
-
-.add-savings-bill-form {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  padding: 16px 20px;
-  margin-top: 14px;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-  border-radius: 0 0 8px 8px;
-}
-
-.add-savings-bill-form label {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
   font-size: 11px;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
-.add-savings-bill-form input {
-  height: 38px;
-  padding: 6px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 13px;
-  color: #1d2d3e;
-  background: #ffffff;
-  box-sizing: border-box;
-  width: 100%;
-}
-
-.add-savings-bill-form input:focus {
-  outline: none;
-  border-color: #0070f2;
-  box-shadow: 0 0 0 3px rgba(0, 112, 242, 0.15);
-}
-
-.add-savings-bill-form .amount-input input {
-  padding-left: 24px;
-}
-
-.add-bill-button {
-  height: 38px;
-  padding: 0 18px;
-  background: #0070f2;
-  color: #ffffff;
-  border: 1px solid #0070f2;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s ease;
-  box-shadow: 0 1px 2px rgba(0, 112, 242, 0.2);
-}
-
-.add-bill-button:hover {
-  background: #0057be;
-  border-color: #0057be;
+[data-theme="dark"] .fiori-alert-chip {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(253, 186, 116, 0.3);
 }
 
 /* --------------------------------------------------------------------------
-   Categories Manager
-   -------------------------------------------------------------------------- */
-.category-manager {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.category-manager-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.category-form-panel {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-.category-form-panel label {
-  margin-top: 12px;
-}
-
-.category-form-panel label:first-of-type {
-  margin-top: 14px;
-}
-
-.optional {
-  color: #64748b;
-  font-size: 10px;
-  font-weight: 400;
-  text-transform: none;
-}
-
-.category-directory {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-.category-directory-list {
-  display: flex;
-  flex-direction: column;
-  margin-top: 14px;
-}
-
-.category-table-wrap {
-  margin-top: 14px;
-  max-height: 390px;
-  overflow: auto;
-}
-
-.category-table {
-  min-width: 680px;
-}
-
-.category-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: #f8fafc;
-}
-
-.category-search {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  max-width: 520px;
-}
-
-.category-search label {
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.category-search input {
-  width: 100%;
-  min-height: 36px;
-  padding: 8px 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #1d2d3e;
-  font: inherit;
-  font-size: 13px;
-  box-sizing: border-box;
-}
-
-.category-table th,
-.category-table td {
-  vertical-align: middle;
-}
-
-.category-table .category-actions {
-  justify-content: flex-end;
-  flex-wrap: wrap;
-}
-
-.category-directory-row {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 16px;
-  align-items: center;
-  padding: 12px 0;
-  border-top: 1px solid #f1f5f9;
-}
-
-.category-directory-row:first-child {
-  border-top: none;
-}
-
-.category-directory-row > strong {
-  font-size: 13px;
-  font-weight: 600;
-  color: #1d2d3e;
-}
-
-.category-directory-title {
-  display: flex !important;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.category-actions {
-  display: inline-flex !important;
-  align-items: center;
-  gap: 6px;
-}
-
-.category-actions .icon-action {
-  display: inline-grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  min-height: 28px;
-  padding: 0;
-  border-radius: 5px;
-  font-size: 14px;
-  line-height: 1;
-}
-
-.category-delete-button,
-.delete-subcategory-button {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #c5221f;
-  font: inherit;
-  font-size: 10px;
-  cursor: pointer;
-}
-
-.category-directory-row > div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.category-directory-row span {
-  display: inline-block;
-  padding: 3px 8px;
-  background: #f1f5f9;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-}
-
-.category-directory-row span .edit-subcategory-button {
-  display: inline;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #0070f2;
-  font: inherit;
-  font-size: 10px;
-  cursor: pointer;
-}
-
-.category-directory-row .edit-row-button,
-.category-directory-row .edit-subcategory-button:hover,
-.category-delete-button:hover,
-.delete-subcategory-button:hover {
-  text-decoration: underline;
-}
-
-.category-directory-row .empty-category {
-  color: #64748b;
-  background: transparent;
-  border: none;
-  font-style: italic;
-}
-
-/* --------------------------------------------------------------------------
-   Reports Dashboard & Budget Health
-   -------------------------------------------------------------------------- */
-/* Reports Dashboard wrapper */
-.reports-dashboard {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 28px 32px;
-}
-
-.report-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-/* KPI summary strip — 3 equal cards */
-.report-metrics {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-/* Report card: label on top, value bold middle, sub-label small bottom */
-
-
-.fiori-card span {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.fiori-card strong {
-  display: block;
-  font-size: 22px;
-  font-weight: 700;
-  
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
-}
-
-.fiori-card small {
-  display: block;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.fiori-card.report-expense strong { color: #b00020 !important; }
-.fiori-card.report-budget strong { color: #0070f2 !important; }
-.fiori-card.report-savings strong { color: #0a7140 !important; }
-
-/* Two-column report grid (breakdown + health) */
-.report-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.report-breakdown,
-.report-health {
-  min-height: 0;
-}
-
-
-.report-category-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.report-category-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  color: #334155;
-  margin-bottom: 4px;
-}
-
-.report-category-label > span,
-.tile-bars label > span {
-  display: inline-flex;
-  min-width: 0;
-  align-items: center;
-  gap: 8px;
-}
-
-.report-category-label > span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.report-category-label .category-dot,
-.tile-bars label .category-dot {
-  flex: 0 0 8px;
-  margin: 0;
-}
-
-.report-category-label strong {
-  color: #1d2d3e;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.report-category-label strong small,
-.tile-bars label b small {
-  color: #64748b;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.report-bar {
-  height: 6px;
-  background: #e2e8f0;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.report-bar i {
-  display: block;
-  height: 100%;
-  background: #0070f2;
-  border-radius: 3px;
-}
-
-.empty-report {
-  color: #64748b;
-  font-size: 12px;
-  margin-top: 16px;
-}
-
-/* Fiori Budget Health Ring */
-.health-ring {
-  position: relative;
-  isolation: isolate;
-  display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  color: #0070f2;
-  font-size: 11px;
-  font-weight: 700;
-  background: conic-gradient(#0070f2 calc(var(--progress, 0) * 1%), #e2e8f0 0);
-}
-
-.health-ring::before {
-  content: '';
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #ffffff;
-  z-index: -1;
-}
-
-.health-copy {
-  margin-top: 20px;
-}
-
-.health-copy span {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-}
-
-.health-copy strong {
-  display: block;
-  font-size: 16px;
-  font-weight: 700;
-  color: #1d2d3e;
-  margin-top: 4px;
-}
-
-.report-link {
-  margin-top: 16px;
-}
-
-.report-icon {
-  font-size: 16px;
-  color: #0070f2;
-}
-
-/* --------------------------------------------------------------------------
-   Sub-category Spending Breakdown & Stacked Trend
-   -------------------------------------------------------------------------- */
-.subcategory-report-header {
-  margin-top: 32px;
-}
-
-.subcategory-breakdown-panel,
-.subcategory-trend-panel {
-  min-height: 0;
-}
-
-.subcategory-groups-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 16px;
-}
-
-.subcategory-parent-group {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 12px 14px;
-  box-sizing: border-box;
-}
-
-.subcategory-parent-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #edf2f7;
-}
-
-.subcategory-parent-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #1d2d3e;
-}
-
-.subcategory-parent-total {
-  font-weight: 700;
-  font-size: 13px;
-  color: #1d2d3e;
-  font-variant-numeric: tabular-nums;
-}
-
-.subcategory-items-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.subcategory-item-row {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.subcategory-item-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 12px;
-  color: #334155;
-}
-
-.subcategory-name-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 500;
-}
-
-.subcategory-amount-text {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.subcategory-share-pct {
-  color: #64748b;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.subcategory-bar-track {
-  height: 6px;
-  background: #e2e8f0;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.subcategory-bar-fill {
-  display: block;
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-/* Stacked 6-Month Trend Chart */
-.stacked-trend-container {
-  display: flex;
-  flex-direction: column;
-  height: 260px;
-  margin-top: 16px;
-}
-
-.stacked-trend-bars {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 8px;
-  flex: 1;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.stacked-bar-column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  height: 100%;
-  justify-content: flex-end;
-  gap: 6px;
-  min-width: 0;
-}
-
-.stacked-column-total {
-  font-size: 10px;
-  font-weight: 600;
-  color: #64748b;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-.current-month-col .stacked-column-total {
-  color: #0070f2;
-  font-weight: 700;
-}
-
-.current-month-col .stacked-column-label {
-  color: #1d2d3e;
-  font-weight: 700;
-}
-
-.stacked-bar-track {
-  width: 100%;
-  max-width: 36px;
-  flex: 1;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.stacked-bar-body {
-  width: 100%;
-  display: flex;
-  flex-direction: column-reverse; /* Bottom-to-top segment stacking */
-  border-radius: 4px 4px 0 0;
-  overflow: hidden;
-  min-height: 4px;
-  transition: height 0.3s ease;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
-}
-
-.stacked-segment {
-  width: 100%;
-  cursor: pointer;
-  transition: filter 0.15s ease;
-}
-
-.stacked-segment:hover {
-  filter: brightness(1.18);
-}
-
-.stacked-column-label {
-  font-size: 11px;
-  color: #64748b;
-  margin-top: 2px;
-}
-
-.stacked-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid #f1f5f9;
-}
-
-.stacked-legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: #475569;
-  font-weight: 500;
-}
-
-.legend-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-/* --------------------------------------------------------------------------
-   Sync Note & Footer
-   -------------------------------------------------------------------------- */
-.sync-note {
-  font-size: 12px;
-  color: #64748b;
-  text-align: center;
-  margin: 28px 0 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.sync-note span {
-  color: #cbd5e1;
-}
-
-/* --------------------------------------------------------------------------
-   Responsive Layout (Media Queries)
-   -------------------------------------------------------------------------- */
-@media (max-width: 1024px) {
-  .metric-grid,
-  .spending-summary,
-  .reference-metrics,
-  .report-metrics {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .savings-tiles-3col {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-grid,
-  .report-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .subcategory-overview {
-    grid-column: span 1 !important;
-  }
-
-  .fiori-cards {
-    grid-template-columns: 1fr;
-  }
-
-  .bills-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .bill-list-panel {
-    height: 420px;
-    max-height: 420px;
-  }
-}
-
-@media (max-width: 768px) {
-  .app-shell {
-    flex-direction: column;
-    height: 100vh;
-    min-width: 0;
-    width: 100%;
-    overflow: hidden;
-  }
-
-  [draggable="true"] {
-    /* Disable drag-and-drop to fix mobile scroll hijacking */
-    user-drag: none;
-    -webkit-user-drag: none;
-    pointer-events: auto;
-  }
-
-  /* Sticky Mobile Top Header */
-  .sidebar {
-    width: 100%;
-    min-width: 100%;
-    height: auto;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background: #ffffff;
-    border-right: none;
-    border-bottom: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 12px;
-    box-sizing: border-box;
-  }
-
-  .brand {
-    height: 50px;
-    padding: 0;
-    border-bottom: none;
-    margin: 0;
-  }
-
-  .mobile-menu-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 40px;
-    padding: 0 12px;
-    margin: 0;
-    background: #f1f5f9;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #1d2d3e;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-  }
-
-  .mobile-menu-toggle:active {
-    background: #e2e8f0;
-  }
-
-  /* When menu is closed on mobile */
-  .sidebar:not(.menu-open) .nav-label,
-  .sidebar:not(.menu-open) .nav-link,
-  .sidebar:not(.menu-open) .sidebar-bottom {
-    display: none !important;
-  }
-
-  /* When menu is open on mobile */
-  .sidebar.menu-open {
-    max-height: calc(100vh - 54px);
-    overflow-y: auto;
-    padding-bottom: 14px;
-  }
-
-  .sidebar.menu-open .nav-label {
-    width: 100%;
-    padding: 12px 6px 6px;
-    border-top: 1px solid #f1f5f9;
-    margin: 0;
-  }
-
-  .sidebar.menu-open .nav-link {
-    width: 100%;
-    margin: 3px 0;
-    padding: 12px 14px;
-    box-sizing: border-box;
-  }
-
-  .sidebar.menu-open .sidebar-bottom {
-    width: 100%;
-    padding: 12px 6px 0;
-    margin-top: 8px;
-    border-top: 1px solid #f1f5f9;
-    box-sizing: border-box;
-  }
-
-  /* Workspace & Shell Topbar */
-  .workspace {
-    width: 100%;
-    min-width: 0;
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .topbar {
-    height: auto;
-    min-height: 0;
-    flex-shrink: 0;
-    padding: 8px 12px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    background: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
-    position: relative;
-    z-index: 1;
-    box-sizing: border-box;
-  }
-
-  .breadcrumbs {
-    font-size: 11px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .top-actions {
-    display: flex;
-    width: 100%;
-    gap: 8px;
-    align-items: stretch;
-  }
-
-  .import-button,
-  .export-button {
-    flex: 1;
-    min-width: 0;
-    justify-content: center;
-    text-align: center;
-    padding: 8px 6px;
-    font-size: 12px;
-    min-height: 42px;
-    box-sizing: border-box;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* Page Content */
-  .page-content {
-    width: 100%;
-    max-width: 100%;
-    padding: 16px 12px 32px;
-    box-sizing: border-box;
-  }
-
-  .page-heading,
-  .report-page-heading {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    margin-top: 0;
-    margin-bottom: 14px;
-  }
-
-  .page-heading > div,
-  .report-page-heading > div {
-    min-width: 0;
-  }
-
-  .page-heading h1,
-  .report-page-heading h2,
-  .category-manager-heading h2 {
-    font-size: 20px;
-  }
-
-  .month-button {
-    width: 100%;
-    min-height: 40px;
-    font-size: 13px;
-    box-sizing: border-box;
-  }
-
-  .page-heading-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .mobile-quick-add {
-    display: inline-flex;
-    min-height: 42px;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 12px;
-    border: 1px solid #0070f2;
-    border-radius: 6px;
-    background: #0070f2;
-    color: #ffffff;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  /* KPI & Metric Grids */
-  .metric-grid,
-  .reference-metrics,
-  .report-metrics,
-  .report-grid,
-  .dashboard-grid,
-  .fiori-cards,
-  .category-manager-grid,
-  .bills-layout,
-  .bills-summary-tile {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-
-  .savings-overview-metrics {
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .savings-overview-divider {
-    width: 100%;
-    height: 1px;
-    margin: 0;
-  }
-
-  .reports-dashboard {
-    padding: 16px 14px;
-    gap: 14px;
-  }
-
-  .report-header {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .fiori-card,
-  .reference-metrics article,
-  .fiori-card,
-  .panel,
-  .fiori-card,
-  .category-form-panel,
-  .category-directory {
-    padding: 12px 16px;
-    box-sizing: border-box;
-    min-width: 0;
-  }
-
-  .panel-heading {
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .panel-heading > div {
-    min-width: 0;
-  }
-
-  .panel-heading h2,
-  .panel-heading h3 {
-    line-height: 1.25;
-  }
-
-  .panel-heading .transaction-form-toggle,
-  .panel-heading .export-button {
-    flex-shrink: 0;
-  }
-
-  .fiori-card strong,
-  .reference-metrics strong {
-    font-size: 22px;
-    overflow-wrap: break-word;
-    min-width: 0;
-    line-height: 1.2;
-  }
-
-  .reference-metrics small {
-    overflow-wrap: anywhere;
-  }
-
-  .cloud-status {
-    align-items: flex-start;
-    flex-wrap: wrap;
-    line-height: 1.4;
-  }
-
-  .cloud-status button {
-    min-height: 38px;
-  }
-
-  .budget-total > div {
-    min-width: 0;
-  }
-
-  .budget-edit {
-    max-width: 100%;
-    overflow-wrap: anywhere;
-    white-space: normal;
-  }
-
-  /* Form Grids on Mobile */
-  .form-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .form-grid input,
-  .form-grid select,
-  .category-form-panel input,
-  .category-form-panel select,
-  .fiori-dialog input,
-  .fiori-dialog select {
-    font-size: 16px; /* Prevents iOS auto-zoom */
-    min-height: 44px;
-    height: 44px;
-  }
-
-  .amount-input span {
-    font-size: 15px;
-  }
-
-  .type-toggle button {
-    min-height: 44px;
-    font-size: 14px;
-  }
-
-  .savings-subpage-tabs,
-  .unified-savings-panel .type-toggle {
-    width: 100%;
-    max-width: none;
-  }
-
-  .add-button {
-    min-height: 44px;
-    font-size: 14px;
-  }
-
-  /* Touch targets for all action buttons (min 44px per SAP Cozy & Mobile standard) */
-  .delete-button,
-  .edit-row-button,
-  .save-row-button,
-  .cancel-row-button,
-  .icon-action {
-    min-width: 44px;
-    min-height: 44px;
-    width: 44px;
-    height: 44px;
-    font-size: 18px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* Responsive card-style layout for Category Manager & Savings Plan tables (no horizontal scrolling) */
-  .category-table-wrap,
-  .savings-plan-panel .table-wrap {
-    overflow-x: visible;
-  }
-
-  .category-table,
-  .category-table tbody,
-  .category-table tr,
-  .category-table td,
-  .savings-plan-panel table,
-  .savings-plan-panel tbody,
-  .savings-plan-panel tr,
-  .savings-plan-panel td {
-    display: block;
-    width: 100%;
-    min-width: 0 !important;
-    box-sizing: border-box;
-  }
-
-  .category-table thead,
-  .savings-plan-panel thead {
-    display: none;
-  }
-
-  .category-table tr,
-  .savings-plan-panel tr {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    padding: 12px 14px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  }
-
-  .category-table tr.inline-add-row {
-    background: #f8fafc;
-    border-style: dashed;
-  }
-
-  .category-table td[data-label]::before,
-  .savings-plan-panel td[data-label]::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 2px;
-  }
-
-  .category-table td,
-  .savings-plan-panel td {
-    padding: 4px 0;
-    border: none;
-    text-align: left !important;
-  }
-
-  .category-table td.align-right,
-  .savings-plan-panel td.align-right {
-    margin-top: 6px;
-  }
-
-  .category-table .category-actions {
-    justify-content: flex-start;
-    gap: 8px;
-  }
-
-  .category-col-label {
-    margin-bottom: 4px;
-    color: #0070f2;
-    font-size: 13px;
-  }
-
-  /* Budget summary */
-  .budget-total {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .budget-foot {
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  .category-row {
-    grid-template-columns: 8px minmax(0, 1fr) auto 48px;
-    gap: 8px;
-  }
-
-  .category-name {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* Transaction tables become readable cards on mobile. */
-  .transactions-panel .table-wrap,
-  .savings-transactions-panel .table-wrap {
-    display: none;
-  }
-
-  .transactions-panel .mobile-transaction-list,
-  .savings-transactions-panel .mobile-transaction-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 10px;
-  }
-
-  table {
-    min-width: 0;
-  }
-
-  thead th,
-  tbody td {
-    padding: 9px 10px;
-    font-size: 12px;
-  }
-
-  /* Charts */
-  .trend-chart {
-    height: 120px;
-  }
-
-  .trend-column i {
-    width: 16px;
-  }
-
-  .subcategory-chart {
-    height: 100px;
-    gap: 6px;
-  }
-
-  .subcategory-bars {
-    min-width: 220px;
-  }
-
-  .subcategory-bar {
-    width: 9px;
-  }
-
-  /* Directory rows */
-  .category-directory-row {
-    grid-template-columns: 1fr;
-    gap: 6px;
-    padding: 10px 0;
-  }
-
-  /* Sync Note */
-  .sync-note {
-    flex-direction: column;
-    gap: 4px;
-    font-size: 11px;
-    text-align: center;
-    padding: 0 8px;
-  }
-
-  .sync-note span {
-    display: none;
-  }
-
-  .bill-list-panel {
-    height: 360px;
-    max-height: 360px;
-  }
-
-  .bill-list-panel .bill-list {
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  .add-savings-bill-form {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 14px 12px;
-  }
-
-  .add-bill-button {
-    width: 100%;
-    min-height: 40px;
-  }
-
-  .plan-params-actions {
-    flex-direction: column-reverse;
-    align-items: stretch;
-  }
-
-  .plan-params-actions button {
-    width: 100%;
-    min-height: 40px;
-  }
-}
-
-@media (max-width: 380px) {
-  .brand {
-    font-size: 15px;
-  }
-
-  .brand-mark {
-    width: 26px;
-    height: 26px;
-  }
-
-  .mobile-menu-toggle {
-    padding: 0 8px;
-    font-size: 11px;
-  }
-
-  .fiori-card strong,
-  .reference-metrics strong {
-    font-size: 20px;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   SAP Fiori Header Add Button & Mobile FAB (Requirement 7)
-   -------------------------------------------------------------------------- */
-.topbar-add-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 0 14px;
-  background: #0070f2;
-  color: #ffffff;
-  border: 1px solid #0070f2;
-  border-radius: 6px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 112, 242, 0.2);
-  transition: all 0.15s ease;
-}
-
-.topbar-add-button:hover {
-  background: #0057be;
-  border-color: #0057be;
-}
-
-.mobile-fab {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .topbar-add-button {
-    display: none;
-  }
-
-  .mobile-fab {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    bottom: 24px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: #0070f2;
-    color: #ffffff;
-    border: none;
-    box-shadow: 0 4px 14px rgba(0, 112, 242, 0.45);
-    cursor: pointer;
-    z-index: 1500;
-    transition: transform 0.15s ease, background-color 0.15s ease;
-  }
-
-  .mobile-fab:active {
-    transform: scale(0.92);
-    background: #0057be;
-  }
-
-  .fab-icon {
-    font-size: 28px;
-    line-height: 1;
-    margin-top: -2px;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   SAP Fiori Dialog Overlay (Requirement 7)
+   Modal Dialog
    -------------------------------------------------------------------------- */
 .fiori-dialog-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(29, 45, 62, 0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  inset: 0;
+  background: rgba(22, 25, 29, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2500;
-  padding: 16px;
-  box-sizing: border-box;
+  z-index: 2000;
+  padding: 24px;
 }
 
 .fiori-dialog {
-  background: #ffffff;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+  background: var(--fiori-surface);
+  border: 1px solid var(--fiori-rule);
   width: 100%;
-  max-width: 480px;
-  max-height: 90vh;
+  max-width: 460px;
+  box-shadow: var(--fiori-shadow-lg);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  animation: fioriDialogPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes fioriDialogPop {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
 }
 
 .fiori-dialog-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   padding: 18px 20px;
-  border-bottom: 1px solid #f1f5f9;
-  background: #ffffff;
+  border-bottom: 2px solid var(--fiori-rule);
 }
 
 .fiori-dialog-header h2 {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1d2d3e;
+  font-size: 16px;
+  font-weight: 700;
   margin: 0;
+  color: var(--fiori-ink);
 }
 
 .fiori-dialog-close {
-  background: transparent;
+  width: 28px;
+  height: 28px;
   border: none;
-  font-size: 22px;
-  line-height: 1;
-  color: #64748b;
+  background: transparent;
+  font-size: 18px;
+  color: var(--fiori-muted);
   cursor: pointer;
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  border-radius: 4px;
-  transition: background-color 0.15s ease;
-}
-
-.fiori-dialog-close:hover {
-  background: #f1f5f9;
-  color: #1d2d3e;
 }
 
 .fiori-dialog-body {
   padding: 20px;
-  overflow-y: auto;
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .fiori-dialog-footer {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #f1f5f9;
+  padding: 16px 20px;
+  border-top: 1px solid var(--fiori-border);
 }
 
-.dialog-submit-button {
-  margin-top: 0 !important;
-  width: auto !important;
-  min-width: 130px;
+.fiori-segmented-toggle {
+  display: flex;
+  border: 1px solid var(--fiori-input-border);
 }
 
+.fiori-segmented-toggle button {
+  flex: 1;
+  height: 34px;
+  border: none;
+  background: var(--fiori-surface);
+  color: var(--fiori-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.fiori-segmented-toggle button.active {
+  background: #0070f2;
+  color: #ffffff;
+}
+
+.fiori-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fiori-field label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fiori-muted);
+}
+
+.fiori-input-prefix-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fiori-input-prefix {
+  position: absolute;
+  left: 12px;
+  color: var(--fiori-muted);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.fiori-input-prefix-wrap input {
+  padding-left: 26px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Layout (Mobile & Tablet)
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .fiori-shell-bar {
+    display: none !important;
+  }
+
+  .fiori-mobile-header {
+    display: flex !important;
+  }
+
+  .fiori-mobile-bottom-nav {
+    display: grid !important;
+  }
+
+  .fiori-main-content {
+    padding: 18px 16px 84px !important;
+  }
+
+  .fiori-kpi-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .fiori-grid-2col,
+  .fiori-grid-even-2col,
+  .fiori-grid-3col {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .fiori-cat-row {
+    grid-template-columns: 10px 1fr auto !important;
+    gap: 10px !important;
+    padding: 12px 14px !important;
+  }
+
+  .fiori-cat-bar-wrap {
+    display: none !important;
+  }
+
+  .fiori-bill-row {
+    grid-template-columns: 1fr auto !important;
+    gap: 10px !important;
+    padding: 12px 14px !important;
+  }
+
+  .fiori-bill-plan {
+    display: none !important;
+  }
+
+  .fiori-bill-bar {
+    grid-column: 1 / -1;
+  }
+
+  .fiori-bill-status-text {
+    grid-column: 1 / -1;
+  }
+
+  .fiori-savings-cols {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .fiori-steps-strip {
+    flex-direction: column !important;
+  }
+
+  .fiori-step-item {
+    border-right: none !important;
+    border-bottom: 1px solid var(--fiori-border);
+  }
+
+  .fiori-step-item:last-child {
+    border-bottom: none;
+  }
+
+  .fiori-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .fiori-dialog-backdrop {
+    padding: 12px;
+  }
+}
