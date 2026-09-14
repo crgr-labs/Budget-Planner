@@ -22,7 +22,6 @@
         <a class="fiori-nav-item" [class.active]="activeSection() === 'Reports'" (click)="selectSection('Reports')">Reports</a>
         <a class="fiori-nav-item" [class.active]="activeSection() === 'Categories'" (click)="selectSection('Categories')">Categories</a>
         <a class="fiori-nav-item" [class.active]="activeSection() === 'Data'" (click)="selectSection('Data')">Data</a>
-        <a class="fiori-nav-item" [class.active]="activeSection() === 'States'" (click)="selectSection('States')">States</a>
       </nav>
     </div>
 
@@ -935,73 +934,6 @@
               </div>
             </section>
           </div>
-        </div>
-      </div>
-    }
-
-    <!-- SECTION: STATES (SHOWCASE) -->
-    @if (activeSection() === 'States') {
-      <div>
-        <div class="fiori-page-header">
-          <div>
-            <h1>States</h1>
-            <p class="fiori-page-subtitle">Empty, loading, inline edit, interaction, dark</p>
-          </div>
-        </div>
-
-        <div class="fiori-grid-even-2col">
-          <section class="fiori-panel">
-            <div class="fiori-panel-header"><h2>Empty</h2></div>
-            <div style="padding:40px 20px; text-align:left;">
-              <div style="width:28px; height:2px; background:var(--fiori-rule); margin-bottom:14px;"></div>
-              <strong style="display:block; font-size:14px;">No spending recorded</strong>
-              <p style="font-size:13px; color:var(--fiori-muted); margin:6px 0 16px; max-width:34ch;">Add a transaction or import an Excel workbook to start tracking.</p>
-              <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddTransactionModal()">Add transaction</button>
-            </div>
-          </section>
-
-          <section class="fiori-panel">
-            <div class="fiori-panel-header">
-              <h2>Loading / syncing</h2>
-              <span style="font-size:11px; font-weight:600; color:var(--fiori-accent); text-transform:uppercase;">Syncing</span>
-            </div>
-            <div style="padding:20px; display:flex; flex-direction:column; gap:12px;">
-              <div style="height:14px; width:60%; background:var(--fiori-track);"></div>
-              <div style="height:28px; width:40%; background:var(--fiori-track);"></div>
-              <div style="height:10px; width:100%; background:var(--fiori-bg);"></div>
-              <div style="height:10px; width:85%; background:var(--fiori-bg);"></div>
-              <div style="height:10px; width:70%; background:var(--fiori-bg);"></div>
-            </div>
-          </section>
-
-          <section class="fiori-panel">
-            <div class="fiori-panel-header"><h2>Inline row edit</h2></div>
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) 110px 110px; gap:10px; align-items:center; padding:14px 20px; background:var(--fiori-accent-tint); border-bottom:1px solid var(--fiori-row-rule); box-shadow:inset 2px 0 0 #0070f2;">
-              <input class="fiori-input" value="Grocery run" style="border-color:var(--fiori-accent);">
-              <input class="fiori-input" value="4250" style="text-align:right; border-color:var(--fiori-accent);">
-              <span style="display:flex; gap:8px;">
-                <button type="button" class="fiori-btn fiori-btn-primary" style="height:32px; flex:1;">Save</button>
-                <button type="button" class="fiori-btn fiori-btn-ghost" style="height:32px; flex:1;">Cancel</button>
-              </span>
-            </div>
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) 110px 110px; gap:10px; align-items:center; padding:14px 20px; font-size:13px;">
-              <span>Coffee with friends</span>
-              <span style="text-align:right; font-variant-numeric:tabular-nums;">-₱180.00</span>
-              <span></span>
-            </div>
-          </section>
-
-          <section class="fiori-panel">
-            <div class="fiori-panel-header"><h2>Hover &amp; focus</h2></div>
-            <div style="padding:20px; display:flex; flex-direction:column; gap:14px; align-items:flex-start;">
-              <button type="button" class="fiori-btn fiori-btn-primary">Primary button</button>
-              <button type="button" class="fiori-btn fiori-btn-ghost">Secondary button</button>
-              <input class="fiori-input" placeholder="Focus me" style="width:220px;">
-              <div style="width:100%; padding:12px 14px; border:1px solid var(--fiori-border); font-size:13px;" class="fiori-zebra-row">
-                Row hover — background tints, clean borders
-              </div>
-            </div>
-          </section>
         </div>
       </div>
     }
