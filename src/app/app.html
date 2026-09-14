@@ -361,7 +361,7 @@
             <p class="fiori-page-subtitle">{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }} of {{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }} target goal</p>
           </div>
           <div class="fiori-page-actions">
-            <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddTransactionModal()">Add contribution</button>
+            <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddTransactionModal('Savings')">Add contribution</button>
           </div>
         </div>
 
@@ -390,19 +390,49 @@
         </section>
 
         <!-- Two Column Savings Grid -->
-        <div class="fiori-grid-even-2col">
-          <section class="fiori-panel fiori-panel-body">
-            <h2 style="font-size:14px; font-weight:700; margin:0 0 4px;">Net savings</h2>
-            <p style="font-size:12px; color:var(--fiori-muted); margin:0 0 18px;">Six-month trend snapshot</p>
-            <svg viewBox="0 0 320 80" style="width:100%; height:80px; display:block;" preserveAspectRatio="none">
-              <polyline points="0,58 64,46 128,38 192,50 256,26 320,12" fill="none" stroke="#0070f2" stroke-width="2"/>
-              <circle cx="320" cy="12" r="3" fill="#0070f2"/>
-            </svg>
-            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--fiori-muted); margin-top:10px;">
-              <span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span>
+        <div class="fiori-grid-even-2col" style="margin-bottom:24px;">
+          <!-- Monthly Net Savings Breakdown -->
+          <section class="fiori-panel">
+            <div class="fiori-panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <h2>Monthly Net Savings</h2>
+              <span style="font-size:12px; color:var(--fiori-muted);">{{ monthLabel() }}</span>
+            </div>
+            <div style="padding:0; overflow-x:auto;">
+              <table class="fiori-table" style="font-size:12px; margin:0;">
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th class="text-right">Deposited</th>
+                    <th class="text-right">Withdrawn</th>
+                    <th class="text-right">Net</th>
+                    <th class="text-right">Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if (savingsSummary().length === 0) {
+                    <tr>
+                      <td colspan="5" style="padding:24px 16px; text-align:center; color:var(--fiori-muted);">
+                        No savings history yet.
+                      </td>
+                    </tr>
+                  }
+                  @for (row of savingsSummary().slice(0, 5); track row.month) {
+                    <tr>
+                      <td style="font-weight:500;">{{ formatMonth(row.month) }}</td>
+                      <td class="text-right" style="color:var(--fiori-green); font-variant-numeric:tabular-nums;">+{{ row.contributions | currency:'PHP':'symbol':'1.0-0' }}</td>
+                      <td class="text-right" style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;">{{ row.withdrawals > 0 ? ('-' + (row.withdrawals | currency:'PHP':'symbol':'1.0-0')) : '₱0' }}</td>
+                      <td class="text-right" style="font-weight:600; font-variant-numeric:tabular-nums;" [style.color]="row.netSavings >= 0 ? 'var(--fiori-green)' : 'var(--fiori-red)'">
+                        {{ row.netSavings >= 0 ? '+' : '' }}{{ row.netSavings | currency:'PHP':'symbol':'1.0-0' }}
+                      </td>
+                      <td class="text-right" style="font-weight:600; font-variant-numeric:tabular-nums;">{{ row.runningBalance | currency:'PHP':'symbol':'1.0-0' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
           </section>
 
+          <!-- Funds & Reserves -->
           <section class="fiori-panel">
             <div class="fiori-panel-header">
               <h2>Funds &amp; Reserves</h2>
@@ -411,13 +441,150 @@
               @for (fund of savingsCategoryGroups(); track fund.name) {
                 <div style="display:flex; align-items:center; gap:14px; padding:13px 20px; border-bottom:1px solid var(--fiori-row-rule);">
                   <span style="width:10px; height:10px;" [style.background]="getCategoryColor(fund.name)"></span>
-                  <span style="flex:1; font-size:13px;">{{ fund.name }}</span>
+                  <span style="flex:1; font-size:13px; font-weight:500;">{{ fund.name }}</span>
                   <span style="font-size:12px; color:var(--fiori-muted);">{{ fund.subcategories.length }} sub-categories</span>
                 </div>
               }
             </div>
           </section>
         </div>
+
+        <!-- Savings Activity & Contributions Table -->
+        <section class="fiori-table-container" style="margin-bottom:24px;">
+          <div class="fiori-panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--fiori-border);">
+            <div>
+              <h2 style="font-size:15px; font-weight:700; margin:0;">Savings activity &amp; contributions</h2>
+              <p style="font-size:12px; color:var(--fiori-muted); margin:4px 0 0;">All recorded deposits, transfers, and withdrawals across your savings funds.</p>
+            </div>
+            <button type="button" class="fiori-btn fiori-btn-ghost" style="font-size:12px; height:28px; padding:0 10px;" (click)="openAddTransactionModal('Savings')">＋ Add entry</button>
+          </div>
+          <table class="fiori-table fiori-responsive-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Sub-category</th>
+                <th>Action</th>
+                <th>Account</th>
+                <th>Description</th>
+                <th class="text-right">Amount</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (sortedSavingsTransactions().length === 0) {
+                <tr>
+                  <td colspan="8" style="padding:48px 20px; text-align:center; color:var(--fiori-muted);">
+                    <div style="font-size:14px; font-weight:600; margin-bottom:6px; color:var(--fiori-ink);">No savings activity recorded yet</div>
+                    <div style="font-size:12px; margin-bottom:14px;">Record contributions or withdrawals to start tracking your savings progress.</div>
+                    <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddTransactionModal('Savings')">Add contribution</button>
+                  </td>
+                </tr>
+              }
+              @for (tx of sortedSavingsTransactions(); track tx.id) {
+                <tr>
+                  <td style="color:var(--fiori-muted); font-variant-numeric:tabular-nums; white-space:nowrap;" data-label="Date">{{ tx.date | date:'MMM d, y' }}</td>
+                  <td data-label="Category">
+                    <span style="display:inline-flex; align-items:center; gap:8px;">
+                      <i style="width:8px; height:8px; display:inline-block;" [style.background]="getCategoryColor(tx.category)"></i>
+                      <strong style="font-weight:600;">{{ tx.category }}</strong>
+                    </span>
+                  </td>
+                  <td style="color:var(--fiori-muted);" data-label="Sub-category">{{ tx.subcategory || '—' }}</td>
+                  <td data-label="Action">
+                    <span [class]="isSavingsContribution(tx) ? 'fiori-badge fiori-badge-success' : 'fiori-badge fiori-badge-warning'">
+                      {{ isSavingsContribution(tx) ? 'Contribution' : 'Withdrawal' }}
+                    </span>
+                  </td>
+                  <td style="color:var(--fiori-muted);" data-label="Account">{{ tx.account || '—' }}</td>
+                  <td style="font-weight:500;" data-label="Description">{{ tx.description || '—' }}</td>
+                  <td class="text-right" style="font-variant-numeric:tabular-nums; font-weight:700; white-space:nowrap;" [style.color]="isSavingsContribution(tx) ? 'var(--fiori-green)' : 'var(--fiori-red)'" data-label="Amount">
+                    {{ isSavingsContribution(tx) ? '+' : '-' }}{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
+                  </td>
+                  <td class="text-right" data-label="Actions">
+                    <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--fiori-red);" (click)="deleteTransaction(tx.id)" title="Delete transaction">Delete</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Fixed Needs and Bills Section (Synced with Expected Bills) -->
+        <section class="fiori-table-container" style="margin-bottom:24px;">
+          <div class="fiori-panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--fiori-border);">
+            <div>
+              <h2 style="font-size:15px; font-weight:700; margin:0;">Fixed needs and bills</h2>
+              <p style="font-size:12px; color:var(--fiori-muted); margin:4px 0 0;">Monthly reserve split evenly across both paychecks · Total: <strong>{{ savingsPlanFixedNeeds() | currency:'PHP':'symbol':'1.0-0' }}</strong></p>
+            </div>
+          </div>
+          <table class="fiori-table fiori-responsive-table">
+            <thead>
+              <tr>
+                <th>Fixed need / bill</th>
+                <th class="text-right">Monthly</th>
+                <th class="text-right">Paycheck 1</th>
+                <th class="text-right">Paycheck 2</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (savingsPlanBillsView().length === 0) {
+                <tr>
+                  <td colspan="5" style="padding:32px 20px; text-align:center; color:var(--fiori-muted);">
+                    No active fixed needs or bills found.
+                  </td>
+                </tr>
+              }
+              @for (bill of savingsPlanBillsView(); track bill.id) {
+                @if (editingBillId() === bill.id && editingSavingsBillView(); as editBill) {
+                  <tr style="background:var(--fiori-sidebar-bg);">
+                    <td data-label="Fixed need / bill">
+                      <input class="fiori-input" style="width:100%; max-width:240px;" aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateEditingSavingsBill('name', $event)" />
+                    </td>
+                    <td class="text-right" data-label="Monthly">
+                      <div class="fiori-input-prefix-wrap" style="display:inline-flex; max-width:140px;">
+                        <span class="fiori-input-prefix">₱</span>
+                        <input class="fiori-input" style="width:100%;" aria-label="Edit monthly amount" type="number" min="0" [ngModel]="editBill.monthly" (ngModelChange)="updateEditingSavingsBill('monthly', $event)" />
+                      </div>
+                    </td>
+                    <td class="text-right" style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 1">{{ (editBill.monthly / 2) | currency:'PHP':'symbol':'1.0-0' }}</td>
+                    <td class="text-right" style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 2">{{ (editBill.monthly / 2) | currency:'PHP':'symbol':'1.0-0' }}</td>
+                    <td class="text-right" data-label="Actions">
+                      <button type="button" class="fiori-btn fiori-btn-primary" style="height:26px; padding:0 8px; font-size:11px; margin-right:6px;" (click)="saveEditingSavingsBill()">Save</button>
+                      <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="cancelEditingSavingsBill()">Cancel</button>
+                    </td>
+                  </tr>
+                } @else {
+                  <tr>
+                    <td style="font-weight:500;" data-label="Fixed need / bill">{{ bill.name }}</td>
+                    <td class="text-right" style="font-weight:600; font-variant-numeric:tabular-nums;" data-label="Monthly">{{ bill.monthly | currency:'PHP':'symbol':'1.0-0' }}</td>
+                    <td class="text-right" style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 1">{{ bill.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
+                    <td class="text-right" style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 2">{{ bill.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
+                    <td class="text-right" data-label="Actions">
+                      <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; margin-right:4px;" (click)="startEditingSavingsBill(bill)">Edit</button>
+                      <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--fiori-red);" (click)="removeSavingsPlanBill(bill.id)">Delete</button>
+                    </td>
+                  </tr>
+                }
+              }
+              <!-- Inline Add Fixed Need Form -->
+              <tr style="background:var(--fiori-bg);">
+                <td colspan="5" style="padding:12px 20px;">
+                  <form (submit)="addSavingsPlanBill(); $event.preventDefault()" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:0;">
+                    <span style="font-size:12px; font-weight:600; color:var(--fiori-ink); white-space:nowrap;">+ Add fixed need:</span>
+                    <input class="fiori-input" style="flex:1; min-width:180px; max-width:260px;" placeholder="e.g. WiFi, Car loan, Tuition" [ngModel]="newSavingsBillName()" (ngModelChange)="newSavingsBillName.set($event)" name="newSavBillName" required />
+                    <div class="fiori-input-prefix-wrap" style="width:140px;">
+                      <span class="fiori-input-prefix">₱</span>
+                      <input class="fiori-input" style="width:100%;" type="number" min="0" placeholder="0" [ngModel]="newSavingsBillAmount()" (ngModelChange)="newSavingsBillAmount.set($event ? +$event : null)" name="newSavBillAmt" required />
+                    </div>
+                    <button type="submit" class="fiori-btn fiori-btn-primary" style="height:32px; padding:0 12px; font-size:12px;">Add fixed need</button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
       </div>
     }
 
@@ -839,19 +1006,19 @@
     <div class="fiori-dialog-backdrop" (click)="closeAddTransactionModal()">
       <div class="fiori-dialog" (click)="$event.stopPropagation()">
         <div class="fiori-dialog-header">
-          <h2>Add transaction</h2>
+          <h2>{{ newTransaction().savings ? 'Add savings entry' : 'Add transaction' }}</h2>
           <button type="button" class="fiori-dialog-close" (click)="closeAddTransactionModal()">×</button>
         </div>
         <form (ngSubmit)="submitNewTransactionModal()" style="margin:0;">
           <div class="fiori-dialog-body">
             <div class="fiori-segmented-toggle">
-              <button type="button" [class.active]="newTransaction().type === 'Expense'" (click)="updateField('type', 'Expense')">Expense</button>
-              <button type="button" [class.active]="newTransaction().type === 'Income'" (click)="updateField('type', 'Income')">Savings</button>
+              <button type="button" [class.active]="!newTransaction().savings" (click)="selectTransactionMode('Expense')">Expense</button>
+              <button type="button" [class.active]="newTransaction().savings" (click)="selectTransactionMode('Savings')">Savings</button>
             </div>
 
             <div class="fiori-field">
-              <label>Description</label>
-              <input class="fiori-input" placeholder="e.g. Coffee with friends" [ngModel]="newTransaction().description" name="desc" (ngModelChange)="updateField('description', $event)" required>
+              <label>{{ newTransaction().savings ? 'Description / Notes' : 'Description' }}</label>
+              <input class="fiori-input" [placeholder]="newTransaction().savings ? 'e.g. Monthly emergency fund deposit' : 'e.g. Coffee with friends'" [ngModel]="newTransaction().description" name="desc" (ngModelChange)="updateField('description', $event)">
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
@@ -868,30 +1035,64 @@
                 <input class="fiori-input" type="date" [ngModel]="newTransaction().date" name="date" (ngModelChange)="updateField('date', $event)" required>
               </div>
 
-              <div class="fiori-field">
-                <label>Category</label>
-                <select class="fiori-select" [ngModel]="newTransaction().category" name="cat" (ngModelChange)="updateField('category', $event)" required>
-                  @for (category of categories; track category) {
-                    <option [value]="category">{{ category }}</option>
-                  }
-                </select>
-              </div>
+              @if (newTransaction().savings) {
+                <div class="fiori-field">
+                  <label>Fund Category</label>
+                  <select class="fiori-select" [ngModel]="newTransaction().category" name="cat" (ngModelChange)="updateField('category', $event)" required>
+                    @for (category of savingsCategories; track category) {
+                      <option [value]="category">{{ category }}</option>
+                    }
+                  </select>
+                </div>
 
-              <div class="fiori-field">
-                <label>Sub-category</label>
-                <select class="fiori-select" [ngModel]="newTransaction().subcategory" name="subcat" (ngModelChange)="updateField('subcategory', $event)">
-                  <option value="">Choose a sub-category</option>
-                  @for (subcategory of subcategoriesFor(newTransaction().category); track subcategory) {
-                    <option [value]="subcategory">{{ subcategory }}</option>
-                  }
-                </select>
-              </div>
+                <div class="fiori-field">
+                  <label>Sub-category</label>
+                  <select class="fiori-select" [ngModel]="newTransaction().subcategory" name="subcat" (ngModelChange)="updateField('subcategory', $event)">
+                    <option value="">Choose a sub-category</option>
+                    @for (subcategory of savingsSubcategoriesFor(newTransaction().category); track subcategory) {
+                      <option [value]="subcategory">{{ subcategory }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="fiori-field">
+                  <label>Action / Type</label>
+                  <select class="fiori-select" [ngModel]="newTransaction().fundType || 'Contribution'" name="fundType" (ngModelChange)="updateSavingsFundType($event)">
+                    <option value="Contribution">Contribution (Deposit)</option>
+                    <option value="Withdrawal">Withdrawal</option>
+                  </select>
+                </div>
+
+                <div class="fiori-field">
+                  <label>Account / Bank</label>
+                  <input class="fiori-input" placeholder="e.g. Maya, Seabank, BDO" [ngModel]="newTransaction().account" name="account" (ngModelChange)="updateField('account', $event)">
+                </div>
+              } @else {
+                <div class="fiori-field">
+                  <label>Category</label>
+                  <select class="fiori-select" [ngModel]="newTransaction().category" name="cat" (ngModelChange)="updateField('category', $event)" required>
+                    @for (category of categories; track category) {
+                      <option [value]="category">{{ category }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="fiori-field">
+                  <label>Sub-category</label>
+                  <select class="fiori-select" [ngModel]="newTransaction().subcategory" name="subcat" (ngModelChange)="updateField('subcategory', $event)">
+                    <option value="">Choose a sub-category</option>
+                    @for (subcategory of subcategoriesFor(newTransaction().category); track subcategory) {
+                      <option [value]="subcategory">{{ subcategory }}</option>
+                    }
+                  </select>
+                </div>
+              }
             </div>
           </div>
 
           <div class="fiori-dialog-footer">
             <button type="button" class="fiori-btn fiori-btn-ghost" (click)="closeAddTransactionModal()">Cancel</button>
-            <button type="submit" class="fiori-btn fiori-btn-primary">Add transaction</button>
+            <button type="submit" class="fiori-btn fiori-btn-primary">{{ newTransaction().savings ? 'Save contribution' : 'Add transaction' }}</button>
           </div>
         </form>
       </div>
