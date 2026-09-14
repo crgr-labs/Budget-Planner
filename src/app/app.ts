@@ -589,6 +589,10 @@ export class App {
     return Math.min(100, Math.max(0, (this.savingsBalance() / goal) * 100));
   });
   protected readonly savingsTransactions = computed(() => this.transactions().filter((item) => item.savings));
+  protected readonly sortedSavingsTransactions = computed(() =>
+    [...this.savingsTransactions()].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  );
+  protected readonly Math = Math;
   protected readonly savingsBalance = computed(() =>
     this.savingsTransactions().reduce((sum, item) => {
       if (this.isSavingsContribution(item)) return sum + item.amount;
@@ -1014,9 +1018,36 @@ export class App {
   }
 
   protected selectTransactionMode(mode: 'Expense' | 'Savings'): void {
-    this.newTransaction.update((form) => mode === 'Savings'
-      ? { ...form, type: 'Income', savings: true, category: this.savingsCategories[0] || 'Emergency Fund', subcategory: this.savingsSubcategoriesFor(this.savingsCategories[0] || 'Emergency Fund')[0] || '' }
-      : { ...form, type: 'Expense', savings: false, category: form.savings ? (this.categories[0] || 'Food') : form.category, subcategory: form.savings ? (this.subcategoriesFor(this.categories[0] || 'Food')[0] || '') : form.subcategory });
+    if (mode === 'Savings') {
+      const cat = this.newTransaction().savings && this.newTransaction().category ? this.newTransaction().category : (this.savingsCategories[0] || 'Emergency Fund');
+      this.newTransaction.update((form) => ({
+        ...form,
+        type: form.fundType === 'Withdrawal' ? 'Expense' : 'Income',
+        fundType: form.fundType || 'Contribution',
+        savings: true,
+        category: cat,
+        subcategory: this.savingsSubcategoriesFor(cat)[0] || '',
+      }));
+    } else {
+      const cat = !this.newTransaction().savings && this.newTransaction().category ? this.newTransaction().category : (this.categories[0] || 'Food');
+      this.newTransaction.update((form) => ({
+        ...form,
+        type: 'Expense',
+        savings: false,
+        fundType: undefined,
+        category: cat,
+        subcategory: this.subcategoriesFor(cat)[0] || '',
+      }));
+    }
+  }
+
+  protected updateSavingsFundType(fundType: 'Contribution' | 'Withdrawal' | string): void {
+    const normalized = fundType === 'Withdrawal' ? 'Withdrawal' : 'Contribution';
+    this.newTransaction.update((form) => ({
+      ...form,
+      fundType: normalized,
+      type: normalized === 'Withdrawal' ? 'Expense' : 'Income',
+    }));
   }
 
   protected updateSavingsField(field: keyof NewTransaction, value: string | number | null): void {
@@ -1547,8 +1578,29 @@ export class App {
     requestAnimationFrame(() => document.getElementById('transaction-entry-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
-  protected openAddTransactionModal(): void {
-    this.newTransaction.set(this.emptyTransaction());
+  protected openAddTransactionModal(mode: 'Expense' | 'Savings' = 'Expense'): void {
+    if (mode === 'Savings') {
+      const defaultCategory = this.savingsCategories[0] || 'Emergency Fund';
+      this.newTransaction.set({
+        ...this.emptyTransaction(),
+        type: 'Income',
+        savings: true,
+        fundType: 'Contribution',
+        category: defaultCategory,
+        subcategory: this.savingsSubcategoriesFor(defaultCategory)[0] || '',
+        account: '',
+      });
+    } else {
+      const defaultCategory = this.categories[0] || 'Food';
+      this.newTransaction.set({
+        ...this.emptyTransaction(),
+        type: 'Expense',
+        savings: false,
+        fundType: undefined,
+        category: defaultCategory,
+        subcategory: this.subcategoriesFor(defaultCategory)[0] || '',
+      });
+    }
     this.addTransactionModalOpen.set(true);
   }
 
@@ -1597,27 +1649,40 @@ export class App {
     const entry = this.newTransaction();
     const amount = Number(entry.amount);
     if (!Number.isFinite(amount) || amount <= 0) return;
-    const category = entry.category || (entry.savings ? (this.savingsCategories[0] || 'Emergency Fund') : (this.categories[0] || 'Food'));
+    const isSavings = Boolean(entry.savings);
+    const category = entry.category || (isSavings ? (this.savingsCategories[0] || 'Emergency Fund') : (this.categories[0] || 'Food'));
     const description = entry.description?.trim() || entry.subcategory || category;
     const date = entry.date || new Date().toISOString().slice(0, 10);
+    const fundType = isSavings ? (entry.fundType || 'Contribution') : undefined;
+    const type: TransactionType = isSavings
+      ? (fundType === 'Withdrawal' ? 'Expense' : 'Income')
+      : (entry.type || 'Expense');
+
     this.transactions.update((items) => [{
       ...entry,
       id: Date.now(),
-      type: entry.savings ? 'Income' : 'Expense',
-      fundType: entry.savings ? 'Contribution' : undefined,
-      savings: entry.savings ?? false,
+      type,
+      fundType,
+      savings: isSavings,
       description,
       category,
       date,
       amount,
+      account: entry.account?.trim() || '',
     }, ...items]);
     this.persist();
-    if (this.regularAddedTimer) clearTimeout(this.regularAddedTimer);
-    this.recentlyAddedRegular.set(true);
-    this.regularAddedTimer = setTimeout(() => this.recentlyAddedRegular.set(false), 1600);
+    if (isSavings) {
+      if (this.savingsAddedTimer) clearTimeout(this.savingsAddedTimer);
+      this.recentlyAddedSavings.set(true);
+      this.savingsAddedTimer = setTimeout(() => this.recentlyAddedSavings.set(false), 1600);
+    } else {
+      if (this.regularAddedTimer) clearTimeout(this.regularAddedTimer);
+      this.recentlyAddedRegular.set(true);
+      this.regularAddedTimer = setTimeout(() => this.recentlyAddedRegular.set(false), 1600);
+    }
     this.syncToApi();
     if (this.addTransactionModalOpen()) {
-      setTimeout(() => this.closeAddTransactionModal(), 800);
+      this.closeAddTransactionModal();
     }
     this.newTransaction.set(this.emptyTransaction());
   }
