@@ -813,11 +813,9 @@
                   <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="openAddSubcategoryModal(group.name)">
                     ＋ Add sub-category
                   </button>
-                  @if (isUserCategory(group.name, false)) {
-                    <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 6px; font-size:11px; color:var(--fiori-red);" (click)="deleteCategory(group.name, false)" title="Delete category">
-                      Delete
-                    </button>
-                  }
+                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 6px; font-size:11px; color:var(--fiori-red);" (click)="deleteCategory(group.name, false)" title="Delete category">
+                    Delete
+                  </button>
                 </div>
               </div>
               <div class="fiori-chip-list">
