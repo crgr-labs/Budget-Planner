@@ -89,7 +89,7 @@
         <div class="fiori-page-header">
           <div>
             <h1>Overview</h1>
-            <p class="fiori-page-subtitle">{{ monthLabel() }} · {{ selectedTransactions().length }} transactions</p>
+            <p class="fiori-page-subtitle">{{ monthLabel() }} · {{ allSelectedTransactions().length }} transactions</p>
           </div>
           <span class="fiori-page-status">Saved automatically</span>
         </div>
@@ -197,15 +197,20 @@
               <a class="fiori-link" (click)="selectSection('Spending')">View all</a>
             </div>
             <div>
-              @if (selectedTransactions().length === 0) {
+              @if (allSelectedTransactions().length === 0) {
                 <div style="padding:32px 20px; text-align:center; color:var(--fiori-muted); font-size:13px;">
                   No transactions recorded for this month.
                 </div>
               }
-              @for (tx of selectedTransactions().slice(0, 7); track tx.id) {
+              @for (tx of allSelectedTransactions().slice(0, 7); track tx.id) {
                 <div class="fiori-tx-row">
                   <div class="fiori-tx-info">
-                    <div class="fiori-tx-desc">{{ tx.description }}</div>
+                    <div class="fiori-tx-desc">
+                      {{ tx.description }}
+                      @if (isFailedTransaction(tx)) {
+                        <span style="display:inline-block; margin-left:6px; padding:2px 6px; font-size:10px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-weight:700;">FLAGGED</span>
+                      }
+                    </div>
                     <div class="fiori-tx-meta">{{ tx.category }} @if (tx.subcategory) { · {{ tx.subcategory }} } · {{ tx.date | date:'MMM d' }}</div>
                   </div>
                   <span class="fiori-tx-amount">-{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}</span>
@@ -223,7 +228,7 @@
         <div class="fiori-page-header">
           <div>
             <h1>Regular spending</h1>
-            <p class="fiori-page-subtitle">{{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }} across {{ selectedTransactions().length }} transactions · {{ monthLabel() }}</p>
+            <p class="fiori-page-subtitle">{{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }} across {{ allSelectedTransactions().length }} transactions · {{ monthLabel() }}</p>
           </div>
           <div class="fiori-page-actions">
             <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddTransactionModal()">Add transaction</button>
@@ -242,18 +247,18 @@
               </tr>
             </thead>
             <tbody>
-              @if (selectedTransactions().length === 0) {
+              @if (allSelectedTransactions().length === 0) {
                 <tr>
                   <td colspan="5" style="padding:40px 20px; text-align:center; color:var(--fiori-muted);">
                     No transactions recorded for {{ monthLabel() }}.
                   </td>
                 </tr>
               }
-              @for (tx of selectedTransactions(); track tx.id) {
+              @for (tx of allSelectedTransactions(); track tx.id) {
                 <tr>
                   <td style="font-weight:500;">
                     {{ tx.description }}
-                    @if (tx.isFailedTransaction) {
+                    @if (isFailedTransaction(tx)) {
                       <span style="display:inline-block; margin-left:6px; padding:2px 6px; font-size:10px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-weight:700;">FLAGGED</span>
                     }
                   </td>
