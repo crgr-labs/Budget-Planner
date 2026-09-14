@@ -255,7 +255,7 @@
                 </tr>
               }
               @for (tx of allSelectedTransactions(); track tx.id) {
-                <tr>
+                <tr [style.background]="editingExpenseId() === tx.id ? 'var(--fiori-accent-tint)' : null">
                   <td style="font-weight:500;">
                     {{ tx.description }}
                     @if (isFailedTransaction(tx)) {
@@ -1213,6 +1213,65 @@
           <div class="fiori-dialog-footer">
             <button type="button" class="fiori-btn fiori-btn-ghost" (click)="closeAddSubcategoryModal()">Cancel</button>
             <button type="submit" class="fiori-btn fiori-btn-primary">Add sub-category</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Edit Transaction Modal Dialog -->
+  @if (editingExpenseId() !== null && editingExpense(); as editTx) {
+    <div class="fiori-dialog-backdrop" (click)="cancelEditingExpense()">
+      <div class="fiori-dialog" (click)="$event.stopPropagation()">
+        <div class="fiori-dialog-header">
+          <h2>Edit transaction</h2>
+          <button type="button" class="fiori-dialog-close" (click)="cancelEditingExpense()" aria-label="Close dialog">×</button>
+        </div>
+        <form (ngSubmit)="saveEditingExpense()" style="margin:0;">
+          <div class="fiori-dialog-body">
+            <div class="fiori-field">
+              <label>Description</label>
+              <input class="fiori-input" placeholder="e.g. Grocery run, Dinner" [ngModel]="editTx.description" name="editDescription" (ngModelChange)="updateExpenseEdit('description', $event)" required autofocus>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <div class="fiori-field">
+                <label>Amount</label>
+                <div class="fiori-input-prefix-wrap">
+                  <span class="fiori-input-prefix">₱</span>
+                  <input class="fiori-input" style="width:100%;" type="number" min="0" step="0.01" placeholder="0.00" [ngModel]="editTx.amount" name="editAmount" (ngModelChange)="updateExpenseEdit('amount', $event)" required>
+                </div>
+              </div>
+
+              <div class="fiori-field">
+                <label>Date</label>
+                <input class="fiori-input" type="date" [ngModel]="editTx.date" name="editDate" (ngModelChange)="updateExpenseEdit('date', $event)" required>
+              </div>
+
+              <div class="fiori-field">
+                <label>Category</label>
+                <select class="fiori-select" [ngModel]="editTx.category" name="editCategory" (ngModelChange)="updateExpenseEdit('category', $event)" required>
+                  @for (category of categories; track category) {
+                    <option [value]="category">{{ category }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="fiori-field">
+                <label>Sub-category</label>
+                <select class="fiori-select" [ngModel]="editTx.subcategory" name="editSubcategory" (ngModelChange)="updateExpenseEdit('subcategory', $event)">
+                  <option value="">Choose a sub-category</option>
+                  @for (subcategory of subcategoriesFor(editTx.category); track subcategory) {
+                    <option [value]="subcategory">{{ subcategory }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="fiori-dialog-footer">
+            <button type="button" class="fiori-btn fiori-btn-ghost" (click)="cancelEditingExpense()">Cancel</button>
+            <button type="submit" class="fiori-btn fiori-btn-primary">Save changes</button>
           </div>
         </form>
       </div>
