@@ -62,7 +62,7 @@ html, body {
   padding: 0;
   min-height: 100%;
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
   font-family: '72', '72full', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background: var(--fiori-bg);
   color: var(--fiori-ink);
