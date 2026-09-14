@@ -338,7 +338,7 @@ export class App {
     return [
       { name: 'Minimum Investment', perPayday: investment / 2, monthly: investment, purpose: 'Build long-term income-replacement assets.' },
       { name: 'Emergency Fund', perPayday: emergency / 2, monthly: emergency, purpose: 'Build the 3-6 month safety net first.' },
-      { name: 'Total Savings', perPayday: total / 2, monthly: total, purpose: 'Automatic transfer immediately after payday.' },
+      { name: 'Total Savings', perPayday: total / 2, monthly: total, purpose: 'Automatic transfer immediately after cut off.' },
     ];
   });
 
