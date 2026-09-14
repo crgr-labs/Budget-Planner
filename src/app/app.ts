@@ -1869,7 +1869,7 @@ export class App {
       date: transaction.date,
       description: transaction.description,
       category: transaction.category,
-      subcategory: transaction.subcategory,
+      subcategory: transaction.subcategory || '',
       type: 'Expense',
       amount: transaction.amount,
       savings: false,
@@ -1877,7 +1877,20 @@ export class App {
   }
 
   protected updateExpenseEdit(field: keyof NewTransaction, value: string | number | null): void {
-    this.editingExpense.update((expense) => expense ? { ...expense, [field]: value } : expense);
+    this.editingExpense.update((expense) => {
+      if (!expense) return null;
+      if (field === 'category') {
+        const cat = String(value);
+        const validSubs = this.subcategoriesFor(cat);
+        const currentSub = expense.subcategory || '';
+        const newSub = validSubs.includes(currentSub) ? currentSub : (validSubs[0] || '');
+        return { ...expense, category: cat, subcategory: newSub };
+      }
+      if (field === 'amount') {
+        return { ...expense, amount: value !== null && value !== '' ? Number(value) : null };
+      }
+      return { ...expense, [field]: value };
+    });
   }
 
   protected cancelEditingExpense(): void {
@@ -1888,13 +1901,23 @@ export class App {
   protected saveEditingExpense(): void {
     const id = this.editingExpenseId();
     const expense = this.editingExpense();
-    if (id === null || !expense || !expense.description?.trim() || !expense.date || !expense.category || !expense.amount || expense.amount <= 0) return;
+    if (
+      id === null ||
+      !expense ||
+      !expense.description?.trim() ||
+      !expense.date ||
+      !expense.category ||
+      expense.amount === null ||
+      Number(expense.amount) <= 0
+    ) {
+      return;
+    }
     this.transactions.update((items) => items.map((item) => item.id === id ? {
       ...item,
       date: expense.date,
       description: expense.description.trim(),
       category: expense.category,
-      subcategory: expense.subcategory,
+      subcategory: expense.subcategory || '',
       amount: Number(expense.amount),
     } : item));
     this.persist();
