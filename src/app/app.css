@@ -3,15 +3,18 @@
    Source of truth based on Claude Design Artifact (f484eaca-3fe2-4cd6-9639-89f89c714d52)
    ========================================================================== */
 
+:host,
+.fiori-app-root,
+[data-theme="light"],
 :root {
   --fiori-canvas: #eceef1;
   --fiori-bg: #f4f5f7;
   --fiori-surface: #ffffff;
   --fiori-chip: #f4f5f7;
-  --fiori-border: #e4e7eb;
-  --fiori-row-rule: #f1f3f5;
+  --fiori-border: #d7dbe0;
+  --fiori-row-rule: #edf0f2;
   --fiori-rule: #16191d;
-  --fiori-track: #eceef1;
+  --fiori-track: #e2e5e9;
   --fiori-input-border: #d7dbe0;
   --fiori-ink: #16191d;
   --fiori-muted: #6b7280;
@@ -21,14 +24,16 @@
   --fiori-accent-border: #cfe2f8;
   --fiori-green: #107e3e;
   --fiori-red: #c5221f;
+  --fiori-orange: #e9730c;
   --fiori-zebra: #fafbfc;
-  --fiori-shadow-sm: 0 1px 2px rgba(22, 25, 29, 0.06);
-  --fiori-shadow-md: 0 4px 12px rgba(22, 25, 29, 0.08);
-  --fiori-shadow-lg: 0 12px 32px rgba(22, 25, 29, 0.16);
+  --fiori-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --fiori-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --fiori-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 [data-theme="dark"],
-:host-context([data-theme="dark"]) {
+:host-context([data-theme="dark"]),
+.fiori-app-root[data-theme="dark"] {
   --fiori-canvas: #0f1216;
   --fiori-bg: #14171b;
   --fiori-surface: #1c2026;
@@ -46,6 +51,7 @@
   --fiori-accent-border: #2d4a6e;
   --fiori-green: #4ade80;
   --fiori-red: #ff6b6b;
+  --fiori-orange: #fb923c;
   --fiori-zebra: #1f242a;
   --fiori-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --fiori-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
@@ -331,21 +337,21 @@
 .fiori-kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1px;
-  background: var(--fiori-border);
-  border: 1px solid var(--fiori-border);
+  gap: 16px;
   margin-bottom: 28px;
 }
 
 .fiori-kpi-card {
   background: var(--fiori-surface);
+  border: 1px solid var(--fiori-border);
+  box-shadow: var(--fiori-shadow-sm);
   padding: 18px 20px 16px;
   display: flex;
   flex-direction: column;
   gap: 2px;
   text-decoration: none;
   color: inherit;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .fiori-kpi-card.clickable {
@@ -353,7 +359,8 @@
 }
 
 .fiori-kpi-card.clickable:hover {
-  background: var(--fiori-accent-tint);
+  border-color: var(--fiori-accent);
+  box-shadow: var(--fiori-shadow-md);
 }
 
 .fiori-kpi-label {
@@ -421,6 +428,7 @@
 .fiori-panel {
   background: var(--fiori-surface);
   border: 1px solid var(--fiori-border);
+  box-shadow: var(--fiori-shadow-sm);
   display: flex;
   flex-direction: column;
 }
@@ -585,7 +593,9 @@
 .fiori-table-container {
   background: var(--fiori-surface);
   border: 1px solid var(--fiori-border);
+  box-shadow: var(--fiori-shadow-sm);
   overflow-x: auto;
+  margin-bottom: 24px;
 }
 
 .fiori-table {
@@ -706,6 +716,7 @@
 .fiori-savings-banner {
   background: var(--fiori-surface);
   border: 1px solid var(--fiori-border);
+  box-shadow: var(--fiori-shadow-sm);
   padding: 24px;
   margin-bottom: 24px;
 }
@@ -1130,6 +1141,7 @@
 
   .fiori-kpi-grid {
     grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
   }
 
   .fiori-grid-2col,
