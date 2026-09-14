@@ -64,6 +64,16 @@ interface SubcategoryItem {
   percentOfParent: number;
 }
 
+interface SubcategorySparklineTrend {
+  name: string;
+  category: string;
+  color: string;
+  currentAmount: number;
+  points: string;
+  startMonth: string;
+  endMonth: string;
+}
+
 interface CategorySubcategoryGroup {
   category: string;
   categoryTotal: number;
@@ -751,6 +761,124 @@ export class App {
         const maximum = Math.max(...trend.points, 1);
         return { ...trend, points: trend.points.map((point) => point ? Math.max(12, (point / maximum) * 100) : 4) };
       });
+  });
+
+  protected getSixMonthRange(baseMonthKey: string): string[] {
+    const base = baseMonthKey || new Date().toISOString().slice(0, 7);
+    const [yStr, mStr] = base.split('-');
+    const year = Number(yStr) || new Date().getFullYear();
+    const month = Number(mStr) || (new Date().getMonth() + 1);
+    const months: string[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(Date.UTC(year, month - 1 - i, 1));
+      const y = d.getUTCFullYear();
+      const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+      months.push(`${y}-${m}`);
+    }
+    return months;
+  }
+
+  protected readonly reportMonthlySpendTrend = computed(() => {
+    const months = this.getSixMonthRange(this.selectedMonth());
+    const monthly = months.map((monthKey) => {
+      const amount = this.transactions()
+        .filter((t) => !t.savings && (t.type === 'Expense' || !t.type) && this.matchesMonth(t.date, monthKey) && !this.isFailedTransaction(t))
+        .reduce((sum, t) => sum + Math.abs(Number(t.amount) || 0), 0);
+      const shortMonth = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(new Date(`${monthKey}-01T00:00:00Z`));
+      return { monthKey, shortMonth, amount };
+    });
+
+    const maxVal = Math.max(...monthly.map((m) => m.amount), 1);
+    const minVal = Math.min(...monthly.map((m) => m.amount));
+    const range = maxVal - minVal || 1;
+
+    const width = 320;
+    const step = width / (months.length - 1);
+
+    const points = monthly.map((m, i) => {
+      const x = Math.round(i * step);
+      const y = Math.round(75 - ((m.amount - minVal) / range) * 55);
+      return `${x},${y}`;
+    }).join(' ');
+
+    const lastPoint = monthly.length > 0
+      ? { x: 320, y: Math.round(75 - ((monthly[monthly.length - 1].amount - minVal) / range) * 55) }
+      : { x: 320, y: 40 };
+
+    return {
+      monthly,
+      points,
+      lastPoint,
+    };
+  });
+
+  protected readonly reportTopSubcategoryTrends = computed<SubcategorySparklineTrend[]>(() => {
+    const months = this.getSixMonthRange(this.selectedMonth());
+    const startMonth = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(new Date(`${months[0]}-01T00:00:00Z`));
+    const endMonth = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(new Date(`${months[months.length - 1]}-01T00:00:00Z`));
+
+    const subMap = new Map<string, { category: string; current: number; monthly: number[] }>();
+
+    for (const t of this.transactions()) {
+      if (t.savings || (t.type && t.type !== 'Expense')) continue;
+      const sub = (t.subcategory && t.subcategory.trim()) || '';
+      if (!sub) continue;
+      const cat = (t.category && t.category.trim()) || 'Other';
+      const amount = Math.abs(Number(t.amount) || 0);
+      if (amount <= 0) continue;
+
+      if (!subMap.has(sub)) {
+        subMap.set(sub, { category: cat, current: 0, monthly: months.map(() => 0) });
+      }
+      const entry = subMap.get(sub)!;
+      const tMonth = this.getTransactionMonth(t.date);
+      const mIdx = months.indexOf(tMonth);
+      if (mIdx >= 0) {
+        entry.monthly[mIdx] += amount;
+      }
+      if (this.matchesMonth(t.date, this.selectedMonth())) {
+        entry.current += amount;
+      }
+    }
+
+    const sorted = [...subMap.entries()]
+      .map(([name, data]) => ({
+        name,
+        category: data.category,
+        currentAmount: data.current,
+        totalSixMonth: data.monthly.reduce((sum, a) => sum + a, 0),
+        monthly: data.monthly,
+      }))
+      .filter((s) => s.totalSixMonth > 0)
+      .sort((a, b) => (b.currentAmount - a.currentAmount) || (b.totalSixMonth - a.totalSixMonth))
+      .slice(0, 3);
+
+    return sorted.map((item, idx) => {
+      const maxVal = Math.max(...item.monthly, 1);
+      const minVal = Math.min(...item.monthly);
+      const range = maxVal - minVal || 1;
+
+      const width = 300;
+      const step = width / (months.length - 1);
+
+      const points = item.monthly.map((amt, i) => {
+        const x = Math.round(i * step);
+        const y = Math.round(34 - ((amt - minVal) / range) * 26);
+        return `${x},${y}`;
+      }).join(' ');
+
+      const color = this.getCategoryColor(item.category) || this.subcategoryColor(idx);
+
+      return {
+        name: item.name,
+        category: item.category,
+        color,
+        currentAmount: item.currentAmount > 0 ? item.currentAmount : item.monthly[item.monthly.length - 1],
+        points,
+        startMonth,
+        endMonth,
+      };
+    });
   });
 
   protected readonly reportSubcategoriesByCategory = computed<CategorySubcategoryGroup[]>(() => {
