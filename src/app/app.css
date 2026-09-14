@@ -431,6 +431,9 @@
   box-shadow: var(--fiori-shadow-sm);
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .fiori-panel-header {
