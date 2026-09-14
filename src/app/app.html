@@ -692,7 +692,7 @@
                   <div style="height:6px; background:var(--fiori-track); margin:10px 0 8px; border-radius:999px; overflow:hidden; width:100%; max-width:100%; box-sizing:border-box; min-width:0;">
                     <i style="display:block; height:100%; background:var(--fiori-accent); border-radius:inherit; max-width:100%; transition:width 0.3s ease;" [style.width.%]="Math.min(100, Math.max(0, savingsPlanGoal() > 0 ? (b.monthly / savingsPlanGoal()) * 100 : 0))"></i>
                   </div>
-                  <div style="font-size:11px; color:var(--fiori-muted);">{{ b.perPayday | currency:'PHP':'symbol':'1.0-0' }} per payday · {{ b.purpose }}</div>
+                  <div style="font-size:11px; color:var(--fiori-muted);">{{ b.perPayday | currency:'PHP':'symbol':'1.0-0' }} per cut off · {{ b.purpose }}</div>
                 </div>
               }
             </div>
