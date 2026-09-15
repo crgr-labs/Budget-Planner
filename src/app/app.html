@@ -952,6 +952,9 @@
                 <strong style="font-size:13px; color:var(--fiori-ink);">{{ group.name }}</strong>
                 <span style="font-size:11px; color:var(--fiori-muted);">{{ group.subcategories.length }} sub-categories</span>
                 <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
+                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="editCategory(group.name, false)" title="Rename {{ group.name }}">
+                    Edit
+                  </button>
                   <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="openAddSubcategoryModal(group.name)">
                     ＋ Add sub-category
                   </button>
@@ -963,7 +966,8 @@
               <div class="fiori-chip-list">
                 @for (sub of group.subcategories; track sub) {
                   <span class="fiori-chip" style="display:inline-flex; align-items:center; gap:6px;">
-                    {{ sub }}
+                    <span (click)="editSubcategory(group.name, sub, false)" title="Click to rename {{ sub }}" style="cursor:pointer;">{{ sub }}</span>
+                    <button type="button" (click)="editSubcategory(group.name, sub, false)" title="Rename {{ sub }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:11px; color:var(--fiori-muted); line-height:1;">✎</button>
                     <button type="button" (click)="deleteSubcategory(group.name, sub, false)" title="Remove {{ sub }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:13px; color:var(--fiori-muted); line-height:1;">×</button>
                   </span>
                 }
