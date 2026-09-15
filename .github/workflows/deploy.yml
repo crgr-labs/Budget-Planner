@@ -30,6 +30,16 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Configure environment secrets
+        env:
+          GOOGLE_SHEETS_URL: ${{ secrets.GOOGLE_SHEETS_URL }}
+        run: |
+          node -e "
+            const fs = require('fs');
+            const url = process.env.GOOGLE_SHEETS_URL || '';
+            const content = 'export const environment = {\n  production: true,\n  googleSheetsUrl: ' + JSON.stringify(url) + ',\n};\n';
+            fs.writeFileSync('src/environments/environment.ts', content);
+          "
       - name: Build Angular app
         run: npm run build -- --base-href "/${{ github.event.repository.name }}/"
       - name: Configure Pages

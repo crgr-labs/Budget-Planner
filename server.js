@@ -5,10 +5,16 @@ const path = require('node:path');
 const XLSX = require('xlsx');
 
 const port = 3000;
+const MAX_BODY_BYTES = 10 * 1024 * 1024; // 10MB
 const workbookPath = path.join(__dirname, 'data', 'transactions.xlsx');
 
 function send(response, status, body) {
-  response.writeHead(status, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:4200', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'GET,PUT,DELETE,OPTIONS' });
+  response.writeHead(status, {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': 'http://localhost:4200',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET,PUT,DELETE,OPTIONS'
+  });
   response.end(JSON.stringify(body));
 }
 
@@ -37,13 +43,25 @@ const server = createServer(async (request, response) => {
     if (request.method === 'GET') return send(response, 200, transactions);
     if (request.method === 'PUT') {
       let body = '';
-      for await (const chunk of request) body += chunk;
-      transactions = JSON.parse(body);
+      let receivedBytes = 0;
+      for await (const chunk of request) {
+        receivedBytes += chunk.length;
+        if (receivedBytes > MAX_BODY_BYTES) {
+          return send(response, 413, { error: 'Payload too large' });
+        }
+        body += chunk;
+      }
+      const parsed = JSON.parse(body);
+      if (!Array.isArray(parsed)) {
+        return send(response, 400, { error: 'Expected array of transactions' });
+      }
+      transactions = parsed;
       await writeTransactions(transactions);
       return send(response, 200, transactions);
     }
     if (request.method === 'DELETE') {
       const id = Number(request.url.split('/').pop());
+      if (isNaN(id)) return send(response, 400, { error: 'Invalid transaction ID' });
       await writeTransactions(transactions.filter((item) => Number(item.id) !== id));
       return send(response, 204, {});
     }
