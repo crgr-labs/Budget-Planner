@@ -1365,4 +1365,44 @@
   .ledger-dialog-backdrop {
     padding: 12px;
   }
+
+  .ledger-responsive-table thead {
+    display: none;
+  }
+
+  .ledger-responsive-table,
+  .ledger-responsive-table tbody,
+  .ledger-responsive-table tr,
+  .ledger-responsive-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .ledger-responsive-table tr {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--ledger-row-rule);
+  }
+
+  .ledger-responsive-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0;
+    border-bottom: none;
+    text-align: right;
+    white-space: normal;
+  }
+
+  .ledger-responsive-table td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ledger-muted);
+    text-align: left;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
 }

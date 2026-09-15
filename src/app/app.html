@@ -235,7 +235,7 @@
         </div>
 
         <section class="ledger-table-container">
-          <table class="ledger-table">
+          <table class="ledger-table ledger-responsive-table">
             <thead>
               <tr>
                 <th>Transaction</th>
@@ -255,23 +255,23 @@
               }
               @for (tx of allSelectedTransactions(); track tx.id) {
                 <tr [style.background]="editingExpenseId() === tx.id ? 'var(--ledger-accent-tint)' : null">
-                  <td style="font-weight:500;">
+                  <td style="font-weight:500;" data-label="Transaction">
                     {{ tx.description }}
                     @if (isFailedTransaction(tx)) {
                       <span style="display:inline-block; margin-left:6px; padding:2px 6px; font-size:10px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-weight:700;">FLAGGED</span>
                     }
                   </td>
-                  <td style="color:var(--ledger-muted);">
+                  <td style="color:var(--ledger-muted);" data-label="Category">
                     <span style="display:inline-flex; align-items:center; gap:8px;">
                       <i style="width:8px; height:8px; display:inline-block;" [style.background]="getCategoryColor(tx.category)"></i>
                       {{ tx.category }} @if (tx.subcategory) { · {{ tx.subcategory }} }
                     </span>
                   </td>
-                  <td style="color:var(--ledger-muted); font-variant-numeric:tabular-nums;">{{ tx.date | date:'MMM d, y' }}</td>
-                  <td class="text-right" style="font-variant-numeric:tabular-nums; font-weight:600;">
+                  <td style="color:var(--ledger-muted); font-variant-numeric:tabular-nums;" data-label="Date">{{ tx.date | date:'MMM d, y' }}</td>
+                  <td class="text-right" style="font-variant-numeric:tabular-nums; font-weight:600;" data-label="Amount">
                     -{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
                   </td>
-                  <td class="text-right">
+                  <td class="text-right" data-label="Actions">
                     <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="startEditingExpense(tx)">Edit</button>
                     <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--ledger-red);" (click)="deleteTransaction(tx.id)">Delete</button>
                   </td>
