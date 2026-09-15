@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import * as XLSX from 'xlsx';
 import { environment } from '../environments/environment';
 
 type TransactionType = 'Income' | 'Expense';
@@ -2164,32 +2163,111 @@ export class App {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      const workbook = XLSX.read(reader.result, { type: 'array' });
-      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[workbook.SheetNames[0]]);
-      const imported: Transaction[] = rows.map((row, index) => ({
-        id: Date.now() + index,
-        date: String(row['Date'] ?? new Date().toISOString().slice(0, 10)),
-        description: String(row['Description'] ?? 'Imported transaction'),
-        category: String(row['Category'] ?? 'Other'),
-        type: 'Expense' as TransactionType,
-        subcategory: String(row['Subcategory'] ?? ''),
-        amount: Number(row['Amount'] ?? 0),
-        savings: false,
-      })).filter((item) => item.amount > 0);
-      this.transactions.set([...imported, ...this.transactions()]);
-      this.persist();
-      this.syncToApi();
+      try {
+        const text = String(reader.result || '').trim();
+        if (!text) return;
+        let imported: Transaction[] = [];
+        if (text.startsWith('[') && text.endsWith(']')) {
+          const parsed = JSON.parse(text);
+          if (Array.isArray(parsed)) {
+            imported = parsed.map((item, index) => ({
+              id: Number(item.id) || (Date.now() + index),
+              date: String(item.date || new Date().toISOString().slice(0, 10)),
+              description: String(item.description || 'Imported transaction'),
+              category: String(item.category || 'Other'),
+              subcategory: String(item.subcategory || ''),
+              type: (item.type === 'Income' ? 'Income' : 'Expense') as TransactionType,
+              amount: Math.abs(Number(item.amount) || 0),
+              savings: Boolean(item.savings),
+            })).filter((item) => item.amount > 0);
+          }
+        } else {
+          const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+          if (lines.length > 1) {
+            const headerLine = lines[0].toLowerCase();
+            const delimiter = headerLine.includes('\t') ? '\t' : (headerLine.includes(';') ? ';' : ',');
+            const headers = lines[0].split(delimiter).map((h) => h.replace(/^["']|["']$/g, '').trim().toLowerCase());
+
+            const dateIdx = headers.findIndex((h) => h.includes('date'));
+            const descIdx = headers.findIndex((h) => h.includes('desc') || h.includes('title') || h.includes('note') || h.includes('name'));
+            const catIdx = headers.findIndex((h) => h.includes('cat') && !h.includes('sub'));
+            const subIdx = headers.findIndex((h) => h.includes('sub'));
+            const typeIdx = headers.findIndex((h) => h.includes('type'));
+            const amtIdx = headers.findIndex((h) => h.includes('amount') || h.includes('spent') || h.includes('cost') || h.includes('price') || h.includes('val'));
+
+            imported = lines.slice(1).map((line, index) => {
+              const cols: string[] = [];
+              let insideQuotes = false;
+              let current = '';
+              for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"' || char === "'") {
+                  insideQuotes = !insideQuotes;
+                } else if (char === delimiter && !insideQuotes) {
+                  cols.push(current.trim().replace(/^["']|["']$/g, ''));
+                  current = '';
+                } else {
+                  current += char;
+                }
+              }
+              cols.push(current.trim().replace(/^["']|["']$/g, ''));
+
+              const date = dateIdx >= 0 && cols[dateIdx] ? cols[dateIdx] : new Date().toISOString().slice(0, 10);
+              const description = descIdx >= 0 && cols[descIdx] ? cols[descIdx] : 'Imported transaction';
+              const category = catIdx >= 0 && cols[catIdx] ? cols[catIdx] : 'Other';
+              const subcategory = subIdx >= 0 && cols[subIdx] ? cols[subIdx] : '';
+              const rawType = typeIdx >= 0 && cols[typeIdx] ? cols[typeIdx].toLowerCase() : 'expense';
+              const type: TransactionType = rawType.includes('inc') ? 'Income' : 'Expense';
+              const rawAmount = amtIdx >= 0 && cols[amtIdx] ? cols[amtIdx].replace(/[^0-9.-]+/g, '') : '0';
+              const amount = Math.abs(Number(rawAmount) || 0);
+
+              return {
+                id: Date.now() + index,
+                date,
+                description,
+                category,
+                subcategory,
+                type,
+                amount,
+                savings: false,
+              };
+            }).filter((item) => item.amount > 0);
+          }
+        }
+
+        if (imported.length > 0) {
+          this.transactions.set([...imported, ...this.transactions()]);
+          this.persist();
+          this.syncToApi();
+        }
+      } catch (err) {
+        console.error('Failed to import transactions:', err);
+      }
       input.value = '';
     };
-    reader.readAsArrayBuffer(file);
+    reader.readAsText(file, 'utf-8');
   }
 
   protected exportWorkbook(): void {
-    const rows = this.transactions().map(({ id, ...item }) => ({ Date: item.date, Description: item.description, Category: item.category, Subcategory: item.subcategory, Type: item.type, Amount: item.amount }));
-    const sheet = XLSX.utils.json_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, sheet, 'Transactions');
-    XLSX.writeFile(workbook, 'ledger-transactions.xlsx');
+    const headers = ['Date', 'Description', 'Category', 'Subcategory', 'Type', 'Amount'];
+    const rows = this.transactions().map((item) => [
+      item.date || '',
+      `"${String(item.description || '').replace(/"/g, '""')}"`,
+      `"${String(item.category || '').replace(/"/g, '""')}"`,
+      `"${String(item.subcategory || '').replace(/"/g, '""')}"`,
+      item.type || 'Expense',
+      Number(item.amount) || 0,
+    ]);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'ledger-transactions.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   protected categoryTotal(category: string): number {

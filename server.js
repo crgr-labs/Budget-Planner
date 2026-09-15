@@ -2,11 +2,10 @@ const { createServer } = require('node:http');
 const { existsSync, mkdirSync } = require('node:fs');
 const { readFile, writeFile } = require('node:fs/promises');
 const path = require('node:path');
-const XLSX = require('xlsx');
 
 const port = 3000;
 const MAX_BODY_BYTES = 10 * 1024 * 1024; // 10MB
-const workbookPath = path.join(__dirname, 'data', 'transactions.xlsx');
+const dataFilePath = path.join(__dirname, 'data', 'transactions.json');
 
 function send(response, status, body) {
   response.writeHead(status, {
@@ -19,20 +18,22 @@ function send(response, status, body) {
 }
 
 async function readTransactions() {
-  if (!existsSync(workbookPath)) {
+  if (!existsSync(dataFilePath)) {
     await writeTransactions([]);
     return [];
   }
-  const workbook = XLSX.read(await readFile(workbookPath), { type: 'buffer' });
-  return XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+  const content = await readFile(dataFilePath, 'utf-8');
+  try {
+    const parsed = JSON.parse(content);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
 async function writeTransactions(transactions) {
-  mkdirSync(path.dirname(workbookPath), { recursive: true });
-  const sheet = XLSX.utils.json_to_sheet(transactions);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, sheet, 'Transactions');
-  await writeFile(workbookPath, XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }));
+  mkdirSync(path.dirname(dataFilePath), { recursive: true });
+  await writeFile(dataFilePath, JSON.stringify(transactions, null, 2), 'utf-8');
 }
 
 const server = createServer(async (request, response) => {
