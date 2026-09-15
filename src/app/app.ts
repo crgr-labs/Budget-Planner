@@ -186,14 +186,17 @@ export class App {
   }
 
   protected get apiUrl(): string {
+    if (this.googleSheetsUrl) {
+      return this.googleSheetsUrl;
+    }
     if (['localhost', '127.0.0.1'].includes(window.location.hostname)) {
       return 'http://localhost:3000/api/transactions';
     }
-    return this.googleSheetsUrl;
+    return '';
   }
 
   protected get isHosted(): boolean {
-    return this.apiUrl === this.googleSheetsUrl;
+    return Boolean(this.googleSheetsUrl && this.apiUrl === this.googleSheetsUrl);
   }
   protected readonly activeSection = signal('Overview');
   protected readonly darkMode = signal(false);
@@ -2292,7 +2295,20 @@ export class App {
     } catch {}
   }
   private loadFromApi(): void {
-    if (!this.apiUrl) return;
+    if (!this.apiUrl) {
+      try {
+        const saved = localStorage.getItem('ledger-transactions');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length) {
+            this.transactions.set(parsed);
+          }
+        }
+      } catch {}
+      this.syncSelectedMonthToAvailableData(this.transactions());
+      this.cloudDataReady.set(true);
+      return;
+    }
     const requestUrl = this.isHosted ? `${this.apiUrl}&cacheBust=${Date.now()}` : this.apiUrl;
     void fetch(requestUrl, { cache: 'no-store' }).then((response) => response.ok ? response.json() : Promise.reject()).then((data: Transaction[] | CloudData) => {
       const cloudData = Array.isArray(data) ? { transactions: data } : data;
