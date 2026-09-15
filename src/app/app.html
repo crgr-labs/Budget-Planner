@@ -866,7 +866,7 @@
             <p class="ledger-page-subtitle">{{ monthLabel() }} · Philippine Peso (PHP)</p>
           </div>
           <div class="ledger-page-actions">
-            <button type="button" class="ledger-btn ledger-btn-ghost" (click)="exportWorkbook()">Export .xlsx</button>
+            <button type="button" class="ledger-btn ledger-btn-ghost" (click)="exportWorkbook()">Export .csv</button>
           </div>
         </div>
 
@@ -1068,8 +1068,8 @@
       <div>
         <div class="ledger-page-header">
           <div>
-            <h1>Excel data</h1>
-            <p class="ledger-page-subtitle">Import a workbook or export your ledger transactions</p>
+            <h1>Data & Backup</h1>
+            <p class="ledger-page-subtitle">Import CSV/JSON data or export your ledger transactions</p>
           </div>
         </div>
 
@@ -1079,14 +1079,14 @@
             <span class="ledger-step-badge">1</span>
             <div>
               <div class="ledger-step-title">Choose file</div>
-              <div class="ledger-step-sub">.xlsx, .xls or .csv</div>
+              <div class="ledger-step-sub">.csv or .json</div>
             </div>
           </div>
           <div class="ledger-step-item">
             <span class="ledger-step-badge">2</span>
             <div>
-              <div class="ledger-step-title">Check the preview</div>
-              <div class="ledger-step-sub">Mapped columns and skipped rows</div>
+              <div class="ledger-step-title">Automatic mapping</div>
+              <div class="ledger-step-sub">Date, category, and amounts</div>
             </div>
           </div>
           <div class="ledger-step-item">
@@ -1102,15 +1102,15 @@
           <!-- Left: Import Action -->
           <section class="ledger-panel">
             <div class="ledger-panel-header">
-              <h2>Import workbook</h2>
+              <h2>Import data</h2>
               <label class="ledger-btn ledger-btn-primary" style="cursor:pointer;">
                 Choose file
-                <input type="file" accept=".xlsx,.xls,.csv" (change)="importWorkbook($event)" style="display:none;" />
+                <input type="file" accept=".csv,.json,.xlsx,.xls" (change)="importWorkbook($event)" style="display:none;" />
               </label>
             </div>
             <div class="ledger-panel-body">
               <p style="font-size:13px; color:var(--ledger-muted); margin:0 0 14px;">
-                Upload your transactions from Excel or Google Sheets. The ledger reads Date, Description, Category, Subcategory, and Amount columns.
+                Upload your transactions from CSV or JSON (compatible with Excel & Google Sheets exports). Reads Date, Description, Category, Subcategory, and Amount columns.
               </p>
               <div style="font-size:12px; color:var(--ledger-muted);">
                 Rows are added to your active ledger while keeping existing transactions safe.
@@ -1126,9 +1126,9 @@
               </div>
               <div class="ledger-panel-body">
                 <p style="font-size:13px; color:var(--ledger-muted); margin:0 0 14px;">
-                  Writes <b>ledger-transactions.xlsx</b> with complete transaction details.
+                  Writes <b>ledger-transactions.csv</b> (opens natively in Microsoft Excel, Google Sheets, Apple Numbers, and LibreOffice).
                 </p>
-                <button type="button" class="ledger-btn ledger-btn-primary" (click)="exportWorkbook()">Export .xlsx</button>
+                <button type="button" class="ledger-btn ledger-btn-primary" (click)="exportWorkbook()">Export .csv</button>
               </div>
             </section>
 
