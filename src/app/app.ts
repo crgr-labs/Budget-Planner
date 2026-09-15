@@ -417,10 +417,13 @@ export class App {
   protected readonly addBillFormOpen = signal(false);
   protected readonly editingBillId = signal<number | null>(null);
   protected readonly editingBill = signal<ExpectedBill | null>(null);
+  protected readonly expandedBillId = signal<number | null>(null);
   protected readonly activeExpectedBills = computed(() => this.expectedBills().filter((bill) => bill.active));
   protected readonly billTracking = computed(() => this.activeExpectedBills().map((bill) => {
+    const cat = (bill.category || '').trim().toLowerCase();
+    const sub = (bill.subcategory || '').trim().toLowerCase();
     const spent = this.selectedTransactions()
-      .filter((item) => item.type === 'Expense' && item.category === bill.category && item.subcategory === bill.subcategory)
+      .filter((item) => (!item.type || item.type === 'Expense') && !item.savings && (item.category || '').trim().toLowerCase() === cat && (item.subcategory || '').trim().toLowerCase() === sub)
       .reduce((sum, item) => sum + item.amount, 0);
     return { ...bill, spent, remaining: bill.amount - spent, overspent: spent > bill.amount };
   }));
@@ -1629,6 +1632,37 @@ export class App {
   protected updateBillCategory(category: string): void {
     this.newBillCategory.set(category);
     this.newBillSubcategory.set(this.subcategoriesFor(category)[0] || '');
+  }
+
+  protected toggleBillExpanded(billId: number): void {
+    this.expandedBillId.update((current) => (current === billId ? null : billId));
+  }
+
+  protected getTransactionsForBill(bill: ExpectedBill): Transaction[] {
+    const cat = (bill.category || '').trim().toLowerCase();
+    const sub = (bill.subcategory || '').trim().toLowerCase();
+    return this.selectedTransactions().filter((item) => {
+      if (item.savings) return false;
+      if (item.type && item.type !== 'Expense') return false;
+      const txCat = (item.category || '').trim().toLowerCase();
+      const txSub = (item.subcategory || '').trim().toLowerCase();
+      return txCat === cat && txSub === sub;
+    });
+  }
+
+  protected openAddTransactionForBill(bill: ExpectedBill): void {
+    const billCat = bill.category || this.categories[0] || 'Expected Bills';
+    const billSub = bill.subcategory || '';
+    this.newTransaction.set({
+      ...this.emptyTransaction(),
+      type: 'Expense',
+      savings: false,
+      fundType: undefined,
+      category: billCat,
+      subcategory: billSub,
+      description: bill.name || '',
+    });
+    this.addTransactionModalOpen.set(true);
   }
 
   private ensureExpectedBillsCategory(): void {

@@ -355,9 +355,12 @@
                 </div>
               </div>
             } @else {
-              <div class="fiori-bill-row">
+              <div class="fiori-bill-row clickable" [class.expanded]="expandedBillId() === bill.id" (click)="toggleBillExpanded(bill.id)" role="button" tabindex="0" (keydown.enter)="toggleBillExpanded(bill.id)" [attr.aria-expanded]="expandedBillId() === bill.id" title="Click to view transactions">
                 <div>
-                  <div class="fiori-bill-title">{{ bill.name }}</div>
+                  <div class="fiori-bill-title" style="display:flex; align-items:center; gap:6px;">
+                    <span>{{ bill.name }}</span>
+                    <span class="fiori-bill-chevron" [style.transform]="expandedBillId() === bill.id ? 'rotate(180deg)' : 'rotate(0deg)'" style="font-size:9px; color:var(--fiori-muted); transition:transform 0.2s ease; display:inline-block;">▼</span>
+                  </div>
                   <div class="fiori-bill-path">{{ bill.category }} → {{ bill.subcategory }}</div>
                 </div>
                 <div class="fiori-bill-spent" [class.overspent]="bill.overspent">
@@ -375,10 +378,81 @@
                   </div>
                 </div>
                 <div class="fiori-bill-actions" style="display:flex; justify-content:flex-end; gap:6px;">
-                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="startEditingBill(bill)" title="Edit bill">Edit</button>
-                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--fiori-red);" (click)="removeExpectedBill(bill.id)" title="Delete bill">Delete</button>
+                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="$event.stopPropagation(); startEditingBill(bill)" title="Edit bill">Edit</button>
+                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--fiori-red);" (click)="$event.stopPropagation(); removeExpectedBill(bill.id)" title="Delete bill">Delete</button>
                 </div>
               </div>
+
+              @if (expandedBillId() === bill.id) {
+                <div class="fiori-bill-tx-drawer">
+                  <div class="fiori-bill-tx-header">
+                    <div style="display:flex; align-items:baseline; gap:8px;">
+                      <span style="font-size:13px; font-weight:700; color:var(--fiori-ink);">{{ bill.name }} transactions</span>
+                      <span style="font-size:11px; color:var(--fiori-muted);">({{ getTransactionsForBill(bill).length }} transaction{{ getTransactionsForBill(bill).length === 1 ? '' : 's' }} · {{ monthLabel() }})</span>
+                    </div>
+                    <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 10px; font-size:11px;" (click)="$event.stopPropagation(); openAddTransactionForBill(bill)">
+                      ＋ Add transaction
+                    </button>
+                  </div>
+
+                  @if (getTransactionsForBill(bill).length === 0) {
+                    <div class="fiori-bill-tx-empty">
+                      <p style="font-size:12px; color:var(--fiori-muted); margin:0 0 10px;">
+                        No transactions recorded for <strong>{{ bill.name }}</strong> ({{ bill.category }} → {{ bill.subcategory }}) in {{ monthLabel() }}.
+                      </p>
+                      <button type="button" class="fiori-btn fiori-btn-primary" style="height:28px; padding:0 12px; font-size:11px;" (click)="$event.stopPropagation(); openAddTransactionForBill(bill)">
+                        ＋ Record expense for {{ bill.name }}
+                      </button>
+                    </div>
+                  } @else {
+                    <div style="overflow-x:auto;">
+                      <table class="fiori-table fiori-bill-tx-table" style="margin:0; font-size:12px;">
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th class="text-right">Amount</th>
+                            <th class="text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (tx of getTransactionsForBill(bill); track tx.id) {
+                            <tr>
+                              <td style="font-size:12px; color:var(--fiori-muted); font-variant-numeric:tabular-nums; white-space:nowrap;">{{ tx.date | date:'MMM d, y' }}</td>
+                              <td style="font-size:12px; font-weight:500; color:var(--fiori-ink);">
+                                {{ tx.description }}
+                                @if (isFailedTransaction(tx)) {
+                                  <span style="display:inline-block; margin-left:6px; padding:2px 5px; font-size:9px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-weight:700;">FLAGGED</span>
+                                }
+                              </td>
+                              <td class="text-right" style="font-size:12px; font-variant-numeric:tabular-nums; font-weight:600; color:var(--fiori-red); white-space:nowrap;">
+                                -{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
+                              </td>
+                              <td class="text-right" style="white-space:nowrap;">
+                                <button type="button" class="fiori-btn fiori-btn-ghost" style="height:24px; padding:0 7px; font-size:11px; margin-right:4px;" (click)="$event.stopPropagation(); startEditingExpense(tx)">Edit</button>
+                                <button type="button" class="fiori-btn fiori-btn-ghost" style="height:24px; padding:0 7px; font-size:11px; color:var(--fiori-red);" (click)="$event.stopPropagation(); deleteTransaction(tx.id)">Delete</button>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                        <tfoot>
+                          <tr style="background:var(--fiori-surface); border-top:1px solid var(--fiori-border);">
+                            <td colspan="2" style="font-size:11px; font-weight:600; color:var(--fiori-muted); padding:8px 16px;">
+                              Total spent for {{ bill.name }}
+                            </td>
+                            <td class="text-right" style="font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--fiori-red); padding:8px 16px;">
+                              -{{ bill.spent | currency:'PHP':'symbol':'1.2-2' }}
+                            </td>
+                            <td class="text-right" style="font-size:11px; color:var(--fiori-muted); padding:8px 16px;">
+                              {{ bill.remaining >= 0 ? (bill.remaining | currency:'PHP':'symbol':'1.0-0') + ' remaining' : (Math.abs(bill.remaining) | currency:'PHP':'symbol':'1.0-0') + ' overspent' }}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  }
+                </div>
+              }
             }
           }
         </section>
