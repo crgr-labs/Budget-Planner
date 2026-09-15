@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
+import { environment } from '../environments/environment';
 
 type TransactionType = 'Income' | 'Expense';
 
@@ -168,11 +169,32 @@ export class App {
   ]);
   private readonly builtInSavingsCategories = new Set(['Emergency Fund', 'General Savings', 'Investment Fund', 'Travel Fund', 'Other']);
   private draggedTile: HTMLElement | null = null;
-  private readonly googleSheetsUrl = 'https://script.google.com/macros/s/REDACTED-DEPLOYMENT-ID/exec?token=REDACTED-ROTATED-TOKEN';
-  private readonly apiUrl = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-    ? 'http://localhost:3000/api/transactions'
-    : this.googleSheetsUrl;
-  private readonly isHosted = this.apiUrl === this.googleSheetsUrl;
+  private getStoredCloudSyncUrl(): string {
+    try {
+      const stored = localStorage.getItem('ledger-cloud-sync-url');
+      if (stored && stored.trim()) return stored.trim();
+    } catch {}
+    return environment.googleSheetsUrl || '';
+  }
+
+  protected readonly cloudSyncUrl = signal<string>(this.getStoredCloudSyncUrl());
+  protected readonly cloudSyncUrlInput = signal<string>(this.getStoredCloudSyncUrl());
+  protected readonly cloudSyncStatusMessage = signal<string>('');
+
+  protected get googleSheetsUrl(): string {
+    return this.cloudSyncUrl();
+  }
+
+  protected get apiUrl(): string {
+    if (['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+      return 'http://localhost:3000/api/transactions';
+    }
+    return this.googleSheetsUrl;
+  }
+
+  protected get isHosted(): boolean {
+    return this.apiUrl === this.googleSheetsUrl;
+  }
   protected readonly activeSection = signal('Overview');
   protected readonly darkMode = signal(false);
   protected readonly themeLabel = computed(() => this.darkMode() ? 'Light mode' : 'Dark mode');
@@ -2195,6 +2217,54 @@ export class App {
     } else {
       this.syncToApi();
     }
+  }
+
+  protected saveCloudSyncUrl(): void {
+    const url = this.cloudSyncUrlInput().trim();
+    this.cloudSyncUrl.set(url);
+    try {
+      if (url) {
+        localStorage.setItem('ledger-cloud-sync-url', url);
+      } else {
+        localStorage.removeItem('ledger-cloud-sync-url');
+      }
+    } catch {}
+    this.cloudSyncStatusMessage.set('Cloud sync URL saved successfully.');
+    this.cloudDataReady.set(false);
+    this.loadFromApi();
+  }
+
+  protected resetCloudSyncUrl(): void {
+    const defaultUrl = environment.googleSheetsUrl || '';
+    this.cloudSyncUrlInput.set(defaultUrl);
+    this.cloudSyncUrl.set(defaultUrl);
+    try {
+      localStorage.removeItem('ledger-cloud-sync-url');
+    } catch {}
+    this.cloudSyncStatusMessage.set('Reset to default build configuration.');
+    this.cloudDataReady.set(false);
+    this.loadFromApi();
+  }
+
+  protected testCloudSyncConnection(): void {
+    const url = this.cloudSyncUrlInput().trim() || this.apiUrl;
+    if (!url) {
+      this.cloudSyncStatusMessage.set('Please enter a Google Sheets Webhook URL.');
+      return;
+    }
+    this.cloudSyncStatusMessage.set('Testing connection...');
+    const requestUrl = ['localhost', '127.0.0.1'].includes(window.location.hostname) ? url : `${url}&cacheBust=${Date.now()}`;
+    fetch(requestUrl, { cache: 'no-store' })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(() => {
+        this.cloudSyncStatusMessage.set('✓ Connection verified! Google Sheets database connected.');
+      })
+      .catch((err) => {
+        this.cloudSyncStatusMessage.set(`Connection failed: ${err.message || 'Check URL and token.'}`);
+      });
   }
 
   private persist(): void {

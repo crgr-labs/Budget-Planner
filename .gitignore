@@ -11,6 +11,17 @@
 npm-debug.log
 yarn-error.log
 
+# Environment & Secrets
+.env
+.env.*
+src/environments/environment.development.ts
+
+# Local Data & Excel Workbooks
+data/*.xlsx
+*.xlsx
+*.xls
+*.csv
+
 # IDEs and editors
 .idea/
 .project
