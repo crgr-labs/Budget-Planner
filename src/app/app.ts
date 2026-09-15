@@ -937,7 +937,7 @@ export class App {
 
   protected subcategoryColor(index: number): string {
     const palette = [
-      '#0070f2', // Fiori Blue
+      '#0070f2', // Brand Blue
       '#107e3e', // Green
       '#e9730c', // Orange
       '#7c3aed', // Purple
