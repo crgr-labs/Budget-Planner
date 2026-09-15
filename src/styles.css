@@ -4,65 +4,65 @@
 
 :root,
 [data-theme="light"] {
-  --fiori-canvas: #eceef1;
-  --fiori-bg: #f4f5f7;
-  --fiori-surface: #ffffff;
-  --fiori-chip: #f4f5f7;
-  --fiori-border: #d7dbe0;
-  --fiori-row-rule: #edf0f2;
-  --fiori-rule: #16191d;
-  --fiori-track: #e2e5e9;
-  --fiori-input-border: #d7dbe0;
-  --fiori-ink: #16191d;
-  --fiori-muted: #6b7280;
-  --fiori-accent: #0070f2;
-  --fiori-accent-ink: #0057be;
-  --fiori-accent-tint: #eef5fc;
-  --fiori-accent-border: #cfe2f8;
-  --fiori-green: #107e3e;
-  --fiori-red: #c5221f;
-  --fiori-orange: #e9730c;
-  --fiori-zebra: #fafbfc;
-  --fiori-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --fiori-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --fiori-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --fiori-radius-xs: 4px;
-  --fiori-radius-sm: 6px;
-  --fiori-radius-md: 8px;
-  --fiori-radius-lg: 12px;
-  --fiori-radius-xl: 16px;
-  --fiori-radius-full: 9999px;
+  --ledger-canvas: #eceef1;
+  --ledger-bg: #f4f5f7;
+  --ledger-surface: #ffffff;
+  --ledger-chip: #f4f5f7;
+  --ledger-border: #d7dbe0;
+  --ledger-row-rule: #edf0f2;
+  --ledger-rule: #16191d;
+  --ledger-track: #e2e5e9;
+  --ledger-input-border: #d7dbe0;
+  --ledger-ink: #16191d;
+  --ledger-muted: #6b7280;
+  --ledger-accent: #0070f2;
+  --ledger-accent-ink: #0057be;
+  --ledger-accent-tint: #eef5fc;
+  --ledger-accent-border: #cfe2f8;
+  --ledger-green: #107e3e;
+  --ledger-red: #c5221f;
+  --ledger-orange: #e9730c;
+  --ledger-zebra: #fafbfc;
+  --ledger-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --ledger-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --ledger-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --ledger-radius-xs: 4px;
+  --ledger-radius-sm: 6px;
+  --ledger-radius-md: 8px;
+  --ledger-radius-lg: 12px;
+  --ledger-radius-xl: 16px;
+  --ledger-radius-full: 9999px;
 }
 
 [data-theme="dark"] {
-  --fiori-canvas: #0f1216;
-  --fiori-bg: #14171b;
-  --fiori-surface: #1c2026;
-  --fiori-chip: #23282f;
-  --fiori-border: #2a2f36;
-  --fiori-row-rule: #23282f;
-  --fiori-rule: #6b7683;
-  --fiori-track: #2a2f36;
-  --fiori-input-border: #333a42;
-  --fiori-ink: #e6e9ed;
-  --fiori-muted: #9aa4b0;
-  --fiori-accent: #4c9aff;
-  --fiori-accent-ink: #8cbcff;
-  --fiori-accent-tint: #1b2c42;
-  --fiori-accent-border: #2d4a6e;
-  --fiori-green: #4ade80;
-  --fiori-red: #ff6b6b;
-  --fiori-orange: #fb923c;
-  --fiori-zebra: #1f242a;
-  --fiori-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --fiori-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --fiori-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.7);
-  --fiori-radius-xs: 4px;
-  --fiori-radius-sm: 6px;
-  --fiori-radius-md: 8px;
-  --fiori-radius-lg: 12px;
-  --fiori-radius-xl: 16px;
-  --fiori-radius-full: 9999px;
+  --ledger-canvas: #0f1216;
+  --ledger-bg: #14171b;
+  --ledger-surface: #1c2026;
+  --ledger-chip: #23282f;
+  --ledger-border: #2a2f36;
+  --ledger-row-rule: #23282f;
+  --ledger-rule: #6b7683;
+  --ledger-track: #2a2f36;
+  --ledger-input-border: #333a42;
+  --ledger-ink: #e6e9ed;
+  --ledger-muted: #9aa4b0;
+  --ledger-accent: #4c9aff;
+  --ledger-accent-ink: #8cbcff;
+  --ledger-accent-tint: #1b2c42;
+  --ledger-accent-border: #2d4a6e;
+  --ledger-green: #4ade80;
+  --ledger-red: #ff6b6b;
+  --ledger-orange: #fb923c;
+  --ledger-zebra: #1f242a;
+  --ledger-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --ledger-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --ledger-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.7);
+  --ledger-radius-xs: 4px;
+  --ledger-radius-sm: 6px;
+  --ledger-radius-md: 8px;
+  --ledger-radius-lg: 12px;
+  --ledger-radius-xl: 16px;
+  --ledger-radius-full: 9999px;
 }
 
 * {
@@ -76,8 +76,8 @@ html, body {
   width: 100%;
   overflow-x: clip;
   font-family: '72', '72full', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background: var(--fiori-bg);
-  color: var(--fiori-ink);
+  background: var(--ledger-bg);
+  color: var(--ledger-ink);
   -webkit-text-size-adjust: 100%;
 }
 

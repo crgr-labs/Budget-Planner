@@ -1,9 +1,9 @@
-<div class="fiori-app-root" [attr.data-theme]="darkMode() ? 'dark' : 'light'">
+<div class="ledger-app-root" [attr.data-theme]="darkMode() ? 'dark' : 'light'">
   <!-- Top Shell Bar (Desktop & Tablet) -->
-  <header class="fiori-shell-bar">
-    <div class="fiori-shell-left">
-      <div class="fiori-brand" (click)="selectSection('Overview')" role="button" tabindex="0" aria-label="Go to Overview">
-        <span class="fiori-brand-mark">
+  <header class="ledger-shell-bar">
+    <div class="ledger-shell-left">
+      <div class="ledger-brand" (click)="selectSection('Overview')" role="button" tabindex="0" aria-label="Go to Overview">
+        <span class="ledger-brand-mark">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
             <path d="M8 7h8"/>
@@ -11,48 +11,48 @@
             <path d="M8 15h5"/>
           </svg>
         </span>
-        <span class="fiori-brand-title">Ledger</span>
+        <span class="ledger-brand-title">Ledger</span>
       </div>
-      <nav class="fiori-shell-nav" aria-label="Main Navigation">
-        <a class="fiori-nav-item" [class.active]="activeSection() === 'Overview'" (click)="selectSection('Overview')">Overview</a>
-        <a class="fiori-nav-item" [class.active]="activeSection() === 'Spending' || activeSection() === 'Transactions'" (click)="selectSection('Spending')">Spending</a>
-        <a class="fiori-nav-item" [class.active]="activeSection() === 'Bills'" (click)="selectSection('Bills')">Bills</a>
-        <a class="fiori-nav-item" [class.active]="activeSection() === 'Savings'" (click)="selectSection('Savings')">Savings</a>
-        <a class="fiori-nav-item" [class.active]="activeSection() === 'Plan'" (click)="selectSection('Plan')">Plan</a>
-        <a class="fiori-nav-item" [class.active]="activeSection() === 'Reports'" (click)="selectSection('Reports')">Reports</a>
-        <a class="fiori-nav-item" [class.active]="activeSection() === 'Categories'" (click)="selectSection('Categories')">Categories</a>
-        <a class="fiori-nav-item" [class.active]="activeSection() === 'Data'" (click)="selectSection('Data')">Data</a>
+      <nav class="ledger-shell-nav" aria-label="Main Navigation">
+        <a class="ledger-nav-item" [class.active]="activeSection() === 'Overview'" (click)="selectSection('Overview')">Overview</a>
+        <a class="ledger-nav-item" [class.active]="activeSection() === 'Spending' || activeSection() === 'Transactions'" (click)="selectSection('Spending')">Spending</a>
+        <a class="ledger-nav-item" [class.active]="activeSection() === 'Bills'" (click)="selectSection('Bills')">Bills</a>
+        <a class="ledger-nav-item" [class.active]="activeSection() === 'Savings'" (click)="selectSection('Savings')">Savings</a>
+        <a class="ledger-nav-item" [class.active]="activeSection() === 'Plan'" (click)="selectSection('Plan')">Plan</a>
+        <a class="ledger-nav-item" [class.active]="activeSection() === 'Reports'" (click)="selectSection('Reports')">Reports</a>
+        <a class="ledger-nav-item" [class.active]="activeSection() === 'Categories'" (click)="selectSection('Categories')">Categories</a>
+        <a class="ledger-nav-item" [class.active]="activeSection() === 'Data'" (click)="selectSection('Data')">Data</a>
       </nav>
     </div>
 
-    <div class="fiori-shell-right">
-      <select class="fiori-select fiori-month-select" [ngModel]="selectedMonth()" (ngModelChange)="selectMonth($event)" aria-label="Select month">
+    <div class="ledger-shell-right">
+      <select class="ledger-select ledger-month-select" [ngModel]="selectedMonth()" (ngModelChange)="selectMonth($event)" aria-label="Select month">
         @for (month of monthOptions(); track month) {
           <option [value]="month">{{ formatMonth(month) }}</option>
         }
       </select>
-      <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddTransactionModal()">Add transaction</button>
-      <span class="fiori-avatar-badge" title="Eric Smith (Personal account)">ES</span>
-      <button type="button" class="fiori-btn fiori-btn-ghost" (click)="toggleTheme()" title="Switch appearance">
+      <button type="button" class="ledger-btn ledger-btn-primary" (click)="openAddTransactionModal()">Add transaction</button>
+      <span class="ledger-avatar-badge" title="Eric Smith (Personal account)">ES</span>
+      <button type="button" class="ledger-btn ledger-btn-ghost" (click)="toggleTheme()" title="Switch appearance">
         {{ themeLabel() }}
       </button>
     </div>
   </header>
 
   <!-- Mobile Top Header (<= 768px) -->
-  <header class="fiori-mobile-header">
-    <div class="fiori-brand" (click)="selectSection('Overview')" role="button" tabindex="0">
-      <span class="fiori-brand-mark">
+  <header class="ledger-mobile-header">
+    <div class="ledger-brand" (click)="selectSection('Overview')" role="button" tabindex="0">
+      <span class="ledger-brand-mark">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
           <path d="M8 7h8"/>
           <path d="M8 11h8"/>
         </svg>
       </span>
-      <span class="fiori-brand-title">Ledger</span>
+      <span class="ledger-brand-title">Ledger</span>
     </div>
-    <div class="fiori-mobile-header-right">
-      <select class="fiori-select fiori-mobile-month-select" [ngModel]="selectedMonth()" (ngModelChange)="selectMonth($event)" aria-label="Select month">
+    <div class="ledger-mobile-header-right">
+      <select class="ledger-select ledger-mobile-month-select" [ngModel]="selectedMonth()" (ngModelChange)="selectMonth($event)" aria-label="Select month">
         @for (month of monthOptions(); track month) {
           <option [value]="month">{{ formatMonth(month) }}</option>
         }
@@ -61,23 +61,23 @@
   </header>
 
   <!-- Main Content Container -->
-  <main class="fiori-main-content">
+  <main class="ledger-main-content">
 
     <!-- Cloud Sync Status Notification -->
     @if (cloudDataError() || syncError()) {
-      <div class="fiori-alert-strip" style="background:#fef2f2; border-color:#fecaca; color:#b91c1c;" role="alert">
-        <div class="fiori-alert-icon">⚠</div>
-        <div class="fiori-alert-body">
-          <div class="fiori-alert-title">Sync Notice</div>
+      <div class="ledger-alert-strip" style="background:#fef2f2; border-color:#fecaca; color:#b91c1c;" role="alert">
+        <div class="ledger-alert-icon">⚠</div>
+        <div class="ledger-alert-body">
+          <div class="ledger-alert-title">Sync Notice</div>
           <p>{{ syncError() ? 'Could not save changes to cloud storage.' : 'Cloud data could not be loaded.' }}</p>
-          <button type="button" class="fiori-btn fiori-btn-ghost" style="margin-top:6px;" (click)="retryCloudData()">Retry sync</button>
+          <button type="button" class="ledger-btn ledger-btn-ghost" style="margin-top:6px;" (click)="retryCloudData()">Retry sync</button>
         </div>
       </div>
     } @else if (syncPending()) {
-      <div class="fiori-alert-strip" style="background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8;">
-        <div class="fiori-alert-icon">⏳</div>
-        <div class="fiori-alert-body">
-          <div class="fiori-alert-title">Saving changes to cloud...</div>
+      <div class="ledger-alert-strip" style="background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8;">
+        <div class="ledger-alert-icon">⏳</div>
+        <div class="ledger-alert-body">
+          <div class="ledger-alert-title">Saving changes to cloud...</div>
         </div>
       </div>
     }
@@ -85,24 +85,24 @@
     <!-- SECTION: OVERVIEW -->
     @if (activeSection() === 'Overview') {
       <div>
-        <div class="fiori-page-header">
+        <div class="ledger-page-header">
           <div>
             <h1>Overview</h1>
-            <p class="fiori-page-subtitle">{{ monthLabel() }} · {{ allSelectedTransactions().length }} transactions</p>
+            <p class="ledger-page-subtitle">{{ monthLabel() }} · {{ allSelectedTransactions().length }} transactions</p>
           </div>
-          <span class="fiori-page-status">Saved automatically</span>
+          <span class="ledger-page-status">Saved automatically</span>
         </div>
 
         <!-- Flagged / Failed Transaction Alert Strip -->
         @if (failedTransactions().length > 0) {
-          <div class="fiori-alert-strip" role="alert">
-            <div class="fiori-alert-icon">⚠</div>
-            <div class="fiori-alert-body">
-              <div class="fiori-alert-title">Flagged / Failed Transaction Alert</div>
+          <div class="ledger-alert-strip" role="alert">
+            <div class="ledger-alert-icon">⚠</div>
+            <div class="ledger-alert-body">
+              <div class="ledger-alert-title">Flagged / Failed Transaction Alert</div>
               <p>{{ failedTransactions().length }} transaction{{ failedTransactions().length > 1 ? 's' : '' }} in {{ monthLabel() }} flagged for review (excluded from totals):</p>
-              <div class="fiori-alert-chips">
+              <div class="ledger-alert-chips">
                 @for (tx of failedTransactions(); track tx.id) {
-                  <span class="fiori-alert-chip">
+                  <span class="ledger-alert-chip">
                     <strong>{{ tx.description }}</strong>: -{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
                     <small>({{ tx.date | date:'MMM d' }} · {{ tx.category }})</small>
                   </span>
@@ -113,76 +113,76 @@
         }
 
         <!-- 4 Connected KPI Cards -->
-        <div class="fiori-kpi-grid">
-          <div class="fiori-kpi-card clickable" (click)="selectSection('Spending')">
-            <span class="fiori-kpi-label">Monthly spend</span>
-            <strong class="fiori-kpi-value">{{ cloudDataReady() ? (totalSpent() | currency:'PHP':'symbol':'1.2-2') : 'Loading...' }}</strong>
-            <span class="fiori-kpi-sub">Total expenses for {{ monthLabel() }}</span>
-            <div class="fiori-kpi-footer">
+        <div class="ledger-kpi-grid">
+          <div class="ledger-kpi-card clickable" (click)="selectSection('Spending')">
+            <span class="ledger-kpi-label">Monthly spend</span>
+            <strong class="ledger-kpi-value">{{ cloudDataReady() ? (totalSpent() | currency:'PHP':'symbol':'1.2-2') : 'Loading...' }}</strong>
+            <span class="ledger-kpi-sub">Total expenses for {{ monthLabel() }}</span>
+            <div class="ledger-kpi-footer">
               <svg viewBox="0 0 120 28" preserveAspectRatio="none" style="width:100%; height:28px; display:block;">
                 <polyline points="0,18 24,14 48,22 72,10 96,16 120,8" fill="none" stroke="#0070f2" stroke-width="1.5"/>
               </svg>
             </div>
           </div>
 
-          <div class="fiori-kpi-card">
-            <span class="fiori-kpi-label">Top category</span>
-            <strong class="fiori-kpi-value">{{ budgetCategories()[0]?.total ? (budgetCategories()[0].total | currency:'PHP':'symbol':'1.2-2') : '₱0.00' }}</strong>
-            <span class="fiori-kpi-sub">{{ budgetCategories()[0]?.category || 'No expenses yet' }} · {{ monthLabel() }}</span>
-            <div class="fiori-kpi-footer">
+          <div class="ledger-kpi-card">
+            <span class="ledger-kpi-label">Top category</span>
+            <strong class="ledger-kpi-value">{{ budgetCategories()[0]?.total ? (budgetCategories()[0].total | currency:'PHP':'symbol':'1.2-2') : '₱0.00' }}</strong>
+            <span class="ledger-kpi-sub">{{ budgetCategories()[0]?.category || 'No expenses yet' }} · {{ monthLabel() }}</span>
+            <div class="ledger-kpi-footer">
               <svg viewBox="0 0 120 28" preserveAspectRatio="none" style="width:100%; height:28px; display:block;">
                 <polyline points="0,18 24,16 48,17 72,15 96,16 120,14" fill="none" stroke="#4a6fa5" stroke-width="1.5"/>
               </svg>
             </div>
           </div>
 
-          <div class="fiori-kpi-card clickable" (click)="selectSection('Bills')">
-            <span class="fiori-kpi-label">Expected bills</span>
-            <strong class="fiori-kpi-value">{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }} <span style="font-size:16px; font-weight:500; color:var(--fiori-muted);">/ {{ billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }}</span></strong>
-            <span class="fiori-kpi-sub">{{ activeExpectedBills().length }} sub-categories planned</span>
-            <div class="fiori-kpi-footer">
-              <div style="height:4px; background:var(--fiori-track); overflow:hidden;">
-                <div [style.width.%]="billsExpectedTotal() > 0 ? (billsSpentTotal() / billsExpectedTotal()) * 100 : 0" style="height:100%; background:var(--fiori-accent);"></div>
+          <div class="ledger-kpi-card clickable" (click)="selectSection('Bills')">
+            <span class="ledger-kpi-label">Expected bills</span>
+            <strong class="ledger-kpi-value">{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }} <span style="font-size:16px; font-weight:500; color:var(--ledger-muted);">/ {{ billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }}</span></strong>
+            <span class="ledger-kpi-sub">{{ activeExpectedBills().length }} sub-categories planned</span>
+            <div class="ledger-kpi-footer">
+              <div style="height:4px; background:var(--ledger-track); overflow:hidden;">
+                <div [style.width.%]="billsExpectedTotal() > 0 ? (billsSpentTotal() / billsExpectedTotal()) * 100 : 0" style="height:100%; background:var(--ledger-accent);"></div>
               </div>
             </div>
           </div>
 
-          <div class="fiori-kpi-card clickable" (click)="selectSection('Savings')">
-            <span class="fiori-kpi-label">Savings balance</span>
-            <strong class="fiori-kpi-value green">{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
-            <span class="fiori-kpi-sub">{{ savingsGoalProgress() | number:'1.0-0' }}% of {{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }} goal</span>
-            <div class="fiori-kpi-footer">
-              <div style="height:4px; background:var(--fiori-track); overflow:hidden;">
-                <div [style.width.%]="savingsGoalProgress()" style="height:100%; background:var(--fiori-green);"></div>
+          <div class="ledger-kpi-card clickable" (click)="selectSection('Savings')">
+            <span class="ledger-kpi-label">Savings balance</span>
+            <strong class="ledger-kpi-value green">{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+            <span class="ledger-kpi-sub">{{ savingsGoalProgress() | number:'1.0-0' }}% of {{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }} goal</span>
+            <div class="ledger-kpi-footer">
+              <div style="height:4px; background:var(--ledger-track); overflow:hidden;">
+                <div [style.width.%]="savingsGoalProgress()" style="height:100%; background:var(--ledger-green);"></div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Two Column Overview Grid -->
-        <div class="fiori-grid-2col">
+        <div class="ledger-grid-2col">
           <!-- Left: Spending by Category -->
-          <section class="fiori-panel">
-            <div class="fiori-panel-header">
+          <section class="ledger-panel">
+            <div class="ledger-panel-header">
               <h2>Spending by category</h2>
-              <span class="fiori-panel-meta">{{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }} total</span>
+              <span class="ledger-panel-meta">{{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }} total</span>
             </div>
             <div>
               @if (budgetCategories().length === 0) {
-                <div style="padding:32px 20px; text-align:center; color:var(--fiori-muted); font-size:13px;">
+                <div style="padding:32px 20px; text-align:center; color:var(--ledger-muted); font-size:13px;">
                   No spending recorded for {{ monthLabel() }}.
                 </div>
               }
               @for (cat of budgetCategories(); track cat.category) {
-                <div class="fiori-cat-row">
-                  <span class="fiori-cat-dot" [style.background]="getCategoryColor(cat.category)"></span>
-                  <span class="fiori-cat-name">{{ cat.category }}</span>
-                  <span class="fiori-cat-amount">{{ cat.total | currency:'PHP':'symbol':'1.2-2' }}</span>
-                  <span class="fiori-cat-bar-wrap">
-                    <i class="fiori-cat-track">
-                      <i class="fiori-cat-fill" [style.background]="getCategoryColor(cat.category)" [style.width.%]="cat.percentOfSpend"></i>
+                <div class="ledger-cat-row">
+                  <span class="ledger-cat-dot" [style.background]="getCategoryColor(cat.category)"></span>
+                  <span class="ledger-cat-name">{{ cat.category }}</span>
+                  <span class="ledger-cat-amount">{{ cat.total | currency:'PHP':'symbol':'1.2-2' }}</span>
+                  <span class="ledger-cat-bar-wrap">
+                    <i class="ledger-cat-track">
+                      <i class="ledger-cat-fill" [style.background]="getCategoryColor(cat.category)" [style.width.%]="cat.percentOfSpend"></i>
                     </i>
-                    <small class="fiori-cat-share">{{ cat.percentOfSpend | number:'1.0-0' }}%</small>
+                    <small class="ledger-cat-share">{{ cat.percentOfSpend | number:'1.0-0' }}%</small>
                   </span>
                 </div>
               }
@@ -190,29 +190,29 @@
           </section>
 
           <!-- Right: Recent Transactions -->
-          <section class="fiori-panel">
-            <div class="fiori-panel-header">
+          <section class="ledger-panel">
+            <div class="ledger-panel-header">
               <h2>Recent transactions</h2>
-              <a class="fiori-link" (click)="selectSection('Spending')">View all</a>
+              <a class="ledger-link" (click)="selectSection('Spending')">View all</a>
             </div>
             <div>
               @if (allSelectedTransactions().length === 0) {
-                <div style="padding:32px 20px; text-align:center; color:var(--fiori-muted); font-size:13px;">
+                <div style="padding:32px 20px; text-align:center; color:var(--ledger-muted); font-size:13px;">
                   No transactions recorded for this month.
                 </div>
               }
               @for (tx of allSelectedTransactions().slice(0, 7); track tx.id) {
-                <div class="fiori-tx-row">
-                  <div class="fiori-tx-info">
-                    <div class="fiori-tx-desc">
+                <div class="ledger-tx-row">
+                  <div class="ledger-tx-info">
+                    <div class="ledger-tx-desc">
                       {{ tx.description }}
                       @if (isFailedTransaction(tx)) {
                         <span style="display:inline-block; margin-left:6px; padding:2px 6px; font-size:10px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-weight:700;">FLAGGED</span>
                       }
                     </div>
-                    <div class="fiori-tx-meta">{{ tx.category }} @if (tx.subcategory) { · {{ tx.subcategory }} } · {{ tx.date | date:'MMM d' }}</div>
+                    <div class="ledger-tx-meta">{{ tx.category }} @if (tx.subcategory) { · {{ tx.subcategory }} } · {{ tx.date | date:'MMM d' }}</div>
                   </div>
-                  <span class="fiori-tx-amount">-{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}</span>
+                  <span class="ledger-tx-amount">-{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}</span>
                 </div>
               }
             </div>
@@ -224,18 +224,18 @@
     <!-- SECTION: SPENDING (REGULAR SPENDING) -->
     @if (activeSection() === 'Spending' || activeSection() === 'Transactions') {
       <div>
-        <div class="fiori-page-header">
+        <div class="ledger-page-header">
           <div>
             <h1>Regular spending</h1>
-            <p class="fiori-page-subtitle">{{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }} across {{ allSelectedTransactions().length }} transactions · {{ monthLabel() }}</p>
+            <p class="ledger-page-subtitle">{{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }} across {{ allSelectedTransactions().length }} transactions · {{ monthLabel() }}</p>
           </div>
-          <div class="fiori-page-actions">
-            <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddTransactionModal()">Add transaction</button>
+          <div class="ledger-page-actions">
+            <button type="button" class="ledger-btn ledger-btn-primary" (click)="openAddTransactionModal()">Add transaction</button>
           </div>
         </div>
 
-        <section class="fiori-table-container">
-          <table class="fiori-table">
+        <section class="ledger-table-container">
+          <table class="ledger-table">
             <thead>
               <tr>
                 <th>Transaction</th>
@@ -248,32 +248,32 @@
             <tbody>
               @if (allSelectedTransactions().length === 0) {
                 <tr>
-                  <td colspan="5" style="padding:40px 20px; text-align:center; color:var(--fiori-muted);">
+                  <td colspan="5" style="padding:40px 20px; text-align:center; color:var(--ledger-muted);">
                     No transactions recorded for {{ monthLabel() }}.
                   </td>
                 </tr>
               }
               @for (tx of allSelectedTransactions(); track tx.id) {
-                <tr [style.background]="editingExpenseId() === tx.id ? 'var(--fiori-accent-tint)' : null">
+                <tr [style.background]="editingExpenseId() === tx.id ? 'var(--ledger-accent-tint)' : null">
                   <td style="font-weight:500;">
                     {{ tx.description }}
                     @if (isFailedTransaction(tx)) {
                       <span style="display:inline-block; margin-left:6px; padding:2px 6px; font-size:10px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-weight:700;">FLAGGED</span>
                     }
                   </td>
-                  <td style="color:var(--fiori-muted);">
+                  <td style="color:var(--ledger-muted);">
                     <span style="display:inline-flex; align-items:center; gap:8px;">
                       <i style="width:8px; height:8px; display:inline-block;" [style.background]="getCategoryColor(tx.category)"></i>
                       {{ tx.category }} @if (tx.subcategory) { · {{ tx.subcategory }} }
                     </span>
                   </td>
-                  <td style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;">{{ tx.date | date:'MMM d, y' }}</td>
+                  <td style="color:var(--ledger-muted); font-variant-numeric:tabular-nums;">{{ tx.date | date:'MMM d, y' }}</td>
                   <td class="text-right" style="font-variant-numeric:tabular-nums; font-weight:600;">
                     -{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
                   </td>
                   <td class="text-right">
-                    <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="startEditingExpense(tx)">Edit</button>
-                    <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--fiori-red);" (click)="deleteTransaction(tx.id)">Delete</button>
+                    <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="startEditingExpense(tx)">Edit</button>
+                    <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--ledger-red);" (click)="deleteTransaction(tx.id)">Delete</button>
                   </td>
                 </tr>
               }
@@ -286,127 +286,127 @@
     <!-- SECTION: EXPECTED BILLS -->
     @if (activeSection() === 'Bills') {
       <div>
-        <div class="fiori-page-header">
+        <div class="ledger-page-header">
           <div>
             <h1>Expected bills</h1>
-            <p class="fiori-page-subtitle">{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }} spent of {{ billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }} planned · {{ activeExpectedBills().length }} active bills</p>
+            <p class="ledger-page-subtitle">{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }} spent of {{ billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }} planned · {{ activeExpectedBills().length }} active bills</p>
           </div>
-          <div class="fiori-page-actions">
-            <button type="button" class="fiori-btn fiori-btn-primary" (click)="toggleAddBillForm()">Add expected bill</button>
+          <div class="ledger-page-actions">
+            <button type="button" class="ledger-btn ledger-btn-primary" (click)="toggleAddBillForm()">Add expected bill</button>
           </div>
         </div>
 
         @if (addBillFormOpen()) {
-          <div class="fiori-panel" style="margin-bottom:16px; padding:16px;">
+          <div class="ledger-panel" style="margin-bottom:16px; padding:16px;">
             <div style="font-size:14px; font-weight:700; margin-bottom:14px;">Add New Expected Bill</div>
             <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
-              <input class="fiori-input" style="flex:1; min-width:160px;" placeholder="Bill name (e.g. Electric Bill)" [ngModel]="newBillName()" (ngModelChange)="newBillName.set($event)">
-              <select class="fiori-select" [ngModel]="newBillCategory()" (ngModelChange)="updateBillCategory($event)">
+              <input class="ledger-input" style="flex:1; min-width:160px;" placeholder="Bill name (e.g. Electric Bill)" [ngModel]="newBillName()" (ngModelChange)="newBillName.set($event)">
+              <select class="ledger-select" [ngModel]="newBillCategory()" (ngModelChange)="updateBillCategory($event)">
                 @for (cat of categories; track cat) {
                   <option [value]="cat">{{ cat }}</option>
                 }
               </select>
-              <select class="fiori-select" [ngModel]="newBillSubcategory()" (ngModelChange)="newBillSubcategory.set($event)">
+              <select class="ledger-select" [ngModel]="newBillSubcategory()" (ngModelChange)="newBillSubcategory.set($event)">
                 <option value="">Choose a sub-category</option>
                 @for (sub of subcategoriesFor(newBillCategory()); track sub) {
                   <option [value]="sub">{{ sub }}</option>
                 }
               </select>
-              <input class="fiori-input" type="number" style="width:140px;" placeholder="Monthly amount" [ngModel]="newBillAmount()" (ngModelChange)="newBillAmount.set($event)">
-              <button type="button" class="fiori-btn fiori-btn-primary" (click)="saveNewBill()">Save bill</button>
-              <button type="button" class="fiori-btn fiori-btn-ghost" (click)="toggleAddBillForm()">Cancel</button>
+              <input class="ledger-input" type="number" style="width:140px;" placeholder="Monthly amount" [ngModel]="newBillAmount()" (ngModelChange)="newBillAmount.set($event)">
+              <button type="button" class="ledger-btn ledger-btn-primary" (click)="saveNewBill()">Save bill</button>
+              <button type="button" class="ledger-btn ledger-btn-ghost" (click)="toggleAddBillForm()">Cancel</button>
             </div>
           </div>
         }
 
-        <section class="fiori-panel">
+        <section class="ledger-panel">
           @if (billTracking().length === 0) {
-            <div style="padding:40px 20px; text-align:center; color:var(--fiori-muted);">
+            <div style="padding:40px 20px; text-align:center; color:var(--ledger-muted);">
               No expected bills planned. Click "Add expected bill" to configure your fixed recurring expenses.
             </div>
           }
           @for (bill of billTracking(); track bill.id) {
             @if (editingBillId() === bill.id && editingBill(); as editBill) {
-              <div class="fiori-bill-edit-row" style="background:var(--fiori-sidebar-bg); border-bottom:1px solid var(--fiori-row-rule); box-shadow:inset 3px 0 0 var(--fiori-accent); padding:16px 20px;">
+              <div class="ledger-bill-edit-row" style="background:var(--ledger-sidebar-bg); border-bottom:1px solid var(--ledger-row-rule); box-shadow:inset 3px 0 0 var(--ledger-accent); padding:16px 20px;">
                 <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
-                  <div style="font-size:12px; font-weight:700; color:var(--fiori-ink);">Edit expected bill</div>
+                  <div style="font-size:12px; font-weight:700; color:var(--ledger-ink);">Edit expected bill</div>
                   <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
-                    <input class="fiori-input" style="flex:1; min-width:160px;" placeholder="Bill name" aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateBillEdit('name', $event)">
-                    <select class="fiori-select" aria-label="Edit bill category" [ngModel]="editBill.category" (ngModelChange)="updateEditingBillCategory($event)">
+                    <input class="ledger-input" style="flex:1; min-width:160px;" placeholder="Bill name" aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateBillEdit('name', $event)">
+                    <select class="ledger-select" aria-label="Edit bill category" [ngModel]="editBill.category" (ngModelChange)="updateEditingBillCategory($event)">
                       @for (cat of categories; track cat) {
                         <option [value]="cat">{{ cat }}</option>
                       }
                     </select>
-                    <select class="fiori-select" aria-label="Edit bill sub-category" [ngModel]="editBill.subcategory" (ngModelChange)="updateBillEdit('subcategory', $event)">
+                    <select class="ledger-select" aria-label="Edit bill sub-category" [ngModel]="editBill.subcategory" (ngModelChange)="updateBillEdit('subcategory', $event)">
                       <option value="">Choose a sub-category</option>
                       @for (sub of subcategoriesFor(editBill.category); track sub) {
                         <option [value]="sub">{{ sub }}</option>
                       }
                     </select>
-                    <div class="fiori-input-prefix-wrap" style="width:140px;">
-                      <span class="fiori-input-prefix">₱</span>
-                      <input class="fiori-input" type="number" min="0" placeholder="Monthly amount" aria-label="Edit monthly amount" [ngModel]="editBill.amount" (ngModelChange)="updateBillEdit('amount', $event)">
+                    <div class="ledger-input-prefix-wrap" style="width:140px;">
+                      <span class="ledger-input-prefix">₱</span>
+                      <input class="ledger-input" type="number" min="0" placeholder="Monthly amount" aria-label="Edit monthly amount" [ngModel]="editBill.amount" (ngModelChange)="updateBillEdit('amount', $event)">
                     </div>
                     <div style="display:flex; gap:8px;">
-                      <button type="button" class="fiori-btn fiori-btn-primary" (click)="saveEditingBill()">Save</button>
-                      <button type="button" class="fiori-btn fiori-btn-ghost" (click)="cancelEditingBill()">Cancel</button>
+                      <button type="button" class="ledger-btn ledger-btn-primary" (click)="saveEditingBill()">Save</button>
+                      <button type="button" class="ledger-btn ledger-btn-ghost" (click)="cancelEditingBill()">Cancel</button>
                     </div>
                   </div>
                 </div>
               </div>
             } @else {
-              <div class="fiori-bill-row clickable" [class.expanded]="expandedBillId() === bill.id" (click)="toggleBillExpanded(bill.id)" role="button" tabindex="0" (keydown.enter)="toggleBillExpanded(bill.id)" [attr.aria-expanded]="expandedBillId() === bill.id" title="Click to view transactions">
+              <div class="ledger-bill-row clickable" [class.expanded]="expandedBillId() === bill.id" (click)="toggleBillExpanded(bill.id)" role="button" tabindex="0" (keydown.enter)="toggleBillExpanded(bill.id)" [attr.aria-expanded]="expandedBillId() === bill.id" title="Click to view transactions">
                 <div>
-                  <div class="fiori-bill-title" style="display:flex; align-items:center; gap:6px;">
+                  <div class="ledger-bill-title" style="display:flex; align-items:center; gap:6px;">
                     <span>{{ bill.name }}</span>
-                    <span class="fiori-bill-chevron" [style.transform]="expandedBillId() === bill.id ? 'rotate(180deg)' : 'rotate(0deg)'" style="font-size:9px; color:var(--fiori-muted); transition:transform 0.2s ease; display:inline-block;">▼</span>
+                    <span class="ledger-bill-chevron" [style.transform]="expandedBillId() === bill.id ? 'rotate(180deg)' : 'rotate(0deg)'" style="font-size:9px; color:var(--ledger-muted); transition:transform 0.2s ease; display:inline-block;">▼</span>
                   </div>
-                  <div class="fiori-bill-path">{{ bill.category }} → {{ bill.subcategory }}</div>
+                  <div class="ledger-bill-path">{{ bill.category }} → {{ bill.subcategory }}</div>
                 </div>
-                <div class="fiori-bill-spent" [class.overspent]="bill.overspent">
+                <div class="ledger-bill-spent" [class.overspent]="bill.overspent">
                   {{ bill.spent | currency:'PHP':'symbol':'1.0-0' }}
                 </div>
-                <div class="fiori-bill-plan">
+                <div class="ledger-bill-plan">
                   {{ bill.amount | currency:'PHP':'symbol':'1.0-0' }}
                 </div>
                 <div>
-                  <div class="fiori-bill-bar">
-                    <i class="fiori-bill-bar-fill" [class.overspent]="bill.overspent" [style.width.%]="billProgress(bill.spent, bill.amount)"></i>
+                  <div class="ledger-bill-bar">
+                    <i class="ledger-bill-bar-fill" [class.overspent]="bill.overspent" [style.width.%]="billProgress(bill.spent, bill.amount)"></i>
                   </div>
-                  <div class="fiori-bill-status-text">
+                  <div class="ledger-bill-status-text">
                     {{ billStatus(bill.spent, bill.amount, bill.overspent) }}
                   </div>
                 </div>
-                <div class="fiori-bill-actions" style="display:flex; justify-content:flex-end; gap:6px;">
-                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="$event.stopPropagation(); startEditingBill(bill)" title="Edit bill">Edit</button>
-                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--fiori-red);" (click)="$event.stopPropagation(); removeExpectedBill(bill.id)" title="Delete bill">Delete</button>
+                <div class="ledger-bill-actions" style="display:flex; justify-content:flex-end; gap:6px;">
+                  <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="$event.stopPropagation(); startEditingBill(bill)" title="Edit bill">Edit</button>
+                  <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--ledger-red);" (click)="$event.stopPropagation(); removeExpectedBill(bill.id)" title="Delete bill">Delete</button>
                 </div>
               </div>
 
               @if (expandedBillId() === bill.id) {
-                <div class="fiori-bill-tx-drawer">
-                  <div class="fiori-bill-tx-header">
+                <div class="ledger-bill-tx-drawer">
+                  <div class="ledger-bill-tx-header">
                     <div style="display:flex; align-items:baseline; gap:8px;">
-                      <span style="font-size:13px; font-weight:700; color:var(--fiori-ink);">{{ bill.name }} transactions</span>
-                      <span style="font-size:11px; color:var(--fiori-muted);">({{ getTransactionsForBill(bill).length }} transaction{{ getTransactionsForBill(bill).length === 1 ? '' : 's' }} · {{ monthLabel() }})</span>
+                      <span style="font-size:13px; font-weight:700; color:var(--ledger-ink);">{{ bill.name }} transactions</span>
+                      <span style="font-size:11px; color:var(--ledger-muted);">({{ getTransactionsForBill(bill).length }} transaction{{ getTransactionsForBill(bill).length === 1 ? '' : 's' }} · {{ monthLabel() }})</span>
                     </div>
-                    <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 10px; font-size:11px;" (click)="$event.stopPropagation(); openAddTransactionForBill(bill)">
+                    <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 10px; font-size:11px;" (click)="$event.stopPropagation(); openAddTransactionForBill(bill)">
                       ＋ Add transaction
                     </button>
                   </div>
 
                   @if (getTransactionsForBill(bill).length === 0) {
-                    <div class="fiori-bill-tx-empty">
-                      <p style="font-size:12px; color:var(--fiori-muted); margin:0 0 10px;">
+                    <div class="ledger-bill-tx-empty">
+                      <p style="font-size:12px; color:var(--ledger-muted); margin:0 0 10px;">
                         No transactions recorded for <strong>{{ bill.name }}</strong> ({{ bill.category }} → {{ bill.subcategory }}) in {{ monthLabel() }}.
                       </p>
-                      <button type="button" class="fiori-btn fiori-btn-primary" style="height:28px; padding:0 12px; font-size:11px;" (click)="$event.stopPropagation(); openAddTransactionForBill(bill)">
+                      <button type="button" class="ledger-btn ledger-btn-primary" style="height:28px; padding:0 12px; font-size:11px;" (click)="$event.stopPropagation(); openAddTransactionForBill(bill)">
                         ＋ Record expense for {{ bill.name }}
                       </button>
                     </div>
                   } @else {
                     <div style="overflow-x:auto;">
-                      <table class="fiori-table fiori-bill-tx-table" style="margin:0; font-size:12px;">
+                      <table class="ledger-table ledger-bill-tx-table" style="margin:0; font-size:12px;">
                         <thead>
                           <tr>
                             <th>Date</th>
@@ -418,32 +418,32 @@
                         <tbody>
                           @for (tx of getTransactionsForBill(bill); track tx.id) {
                             <tr>
-                              <td style="font-size:12px; color:var(--fiori-muted); font-variant-numeric:tabular-nums; white-space:nowrap;">{{ tx.date | date:'MMM d, y' }}</td>
-                              <td style="font-size:12px; font-weight:500; color:var(--fiori-ink);">
+                              <td style="font-size:12px; color:var(--ledger-muted); font-variant-numeric:tabular-nums; white-space:nowrap;">{{ tx.date | date:'MMM d, y' }}</td>
+                              <td style="font-size:12px; font-weight:500; color:var(--ledger-ink);">
                                 {{ tx.description }}
                                 @if (isFailedTransaction(tx)) {
                                   <span style="display:inline-block; margin-left:6px; padding:2px 5px; font-size:9px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-weight:700;">FLAGGED</span>
                                 }
                               </td>
-                              <td class="text-right" style="font-size:12px; font-variant-numeric:tabular-nums; font-weight:600; color:var(--fiori-red); white-space:nowrap;">
+                              <td class="text-right" style="font-size:12px; font-variant-numeric:tabular-nums; font-weight:600; color:var(--ledger-red); white-space:nowrap;">
                                 -{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
                               </td>
                               <td class="text-right" style="white-space:nowrap;">
-                                <button type="button" class="fiori-btn fiori-btn-ghost" style="height:24px; padding:0 7px; font-size:11px; margin-right:4px;" (click)="$event.stopPropagation(); startEditingExpense(tx)">Edit</button>
-                                <button type="button" class="fiori-btn fiori-btn-ghost" style="height:24px; padding:0 7px; font-size:11px; color:var(--fiori-red);" (click)="$event.stopPropagation(); deleteTransaction(tx.id)">Delete</button>
+                                <button type="button" class="ledger-btn ledger-btn-ghost" style="height:24px; padding:0 7px; font-size:11px; margin-right:4px;" (click)="$event.stopPropagation(); startEditingExpense(tx)">Edit</button>
+                                <button type="button" class="ledger-btn ledger-btn-ghost" style="height:24px; padding:0 7px; font-size:11px; color:var(--ledger-red);" (click)="$event.stopPropagation(); deleteTransaction(tx.id)">Delete</button>
                               </td>
                             </tr>
                           }
                         </tbody>
                         <tfoot>
-                          <tr style="background:var(--fiori-surface); border-top:1px solid var(--fiori-border);">
-                            <td colspan="2" style="font-size:11px; font-weight:600; color:var(--fiori-muted); padding:8px 16px;">
+                          <tr style="background:var(--ledger-surface); border-top:1px solid var(--ledger-border);">
+                            <td colspan="2" style="font-size:11px; font-weight:600; color:var(--ledger-muted); padding:8px 16px;">
                               Total spent for {{ bill.name }}
                             </td>
-                            <td class="text-right" style="font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--fiori-red); padding:8px 16px;">
+                            <td class="text-right" style="font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; color:var(--ledger-red); padding:8px 16px;">
                               -{{ bill.spent | currency:'PHP':'symbol':'1.2-2' }}
                             </td>
-                            <td class="text-right" style="font-size:11px; color:var(--fiori-muted); padding:8px 16px;">
+                            <td class="text-right" style="font-size:11px; color:var(--ledger-muted); padding:8px 16px;">
                               {{ bill.remaining >= 0 ? (bill.remaining | currency:'PHP':'symbol':'1.0-0') + ' remaining' : (Math.abs(bill.remaining) | currency:'PHP':'symbol':'1.0-0') + ' overspent' }}
                             </td>
                           </tr>
@@ -462,50 +462,50 @@
     <!-- SECTION: SAVINGS -->
     @if (activeSection() === 'Savings') {
       <div>
-        <div class="fiori-page-header">
+        <div class="ledger-page-header">
           <div>
             <h1>Savings</h1>
-            <p class="fiori-page-subtitle">{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }} of {{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }} target goal</p>
+            <p class="ledger-page-subtitle">{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }} of {{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }} target goal</p>
           </div>
-          <div class="fiori-page-actions">
-            <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddTransactionModal('Savings')">Add contribution</button>
+          <div class="ledger-page-actions">
+            <button type="button" class="ledger-btn ledger-btn-primary" (click)="openAddTransactionModal('Savings')">Add contribution</button>
           </div>
         </div>
 
         <!-- 3-Column Savings Summary Banner -->
-        <section class="fiori-savings-banner">
-          <div class="fiori-savings-cols">
+        <section class="ledger-savings-banner">
+          <div class="ledger-savings-cols">
             <div>
-              <span class="fiori-savings-stat-label">Total savings</span>
-              <strong class="fiori-savings-stat-val green">{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
-              <span class="fiori-savings-stat-sub">{{ monthlySavingsSubtext() }}</span>
+              <span class="ledger-savings-stat-label">Total savings</span>
+              <strong class="ledger-savings-stat-val green">{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
+              <span class="ledger-savings-stat-sub">{{ monthlySavingsSubtext() }}</span>
             </div>
             <div>
-              <span class="fiori-savings-stat-label">Target goal</span>
-              <strong class="fiori-savings-stat-val">{{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }}</strong>
-              <span class="fiori-savings-stat-sub">{{ savingsGoalProgress() | number:'1.0-0' }}% complete</span>
+              <span class="ledger-savings-stat-label">Target goal</span>
+              <strong class="ledger-savings-stat-val">{{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+              <span class="ledger-savings-stat-sub">{{ savingsGoalProgress() | number:'1.0-0' }}% complete</span>
             </div>
             <div>
-              <span class="fiori-savings-stat-label">Remaining</span>
-              <strong class="fiori-savings-stat-val">{{ (targetSavingsGoal() - savingsBalance()) > 0 ? ((targetSavingsGoal() - savingsBalance()) | currency:'PHP':'symbol':'1.0-0') : '₱0' }}</strong>
-              <span class="fiori-savings-stat-sub">Building financial freedom</span>
+              <span class="ledger-savings-stat-label">Remaining</span>
+              <strong class="ledger-savings-stat-val">{{ (targetSavingsGoal() - savingsBalance()) > 0 ? ((targetSavingsGoal() - savingsBalance()) | currency:'PHP':'symbol':'1.0-0') : '₱0' }}</strong>
+              <span class="ledger-savings-stat-sub">Building financial freedom</span>
             </div>
           </div>
-          <div class="fiori-savings-progress-track">
-            <i class="fiori-savings-progress-fill" [style.width.%]="savingsGoalProgress()"></i>
+          <div class="ledger-savings-progress-track">
+            <i class="ledger-savings-progress-fill" [style.width.%]="savingsGoalProgress()"></i>
           </div>
         </section>
 
         <!-- Two Column Savings Grid -->
-        <div class="fiori-grid-even-2col" style="margin-bottom:16px;">
+        <div class="ledger-grid-even-2col" style="margin-bottom:16px;">
           <!-- Monthly Net Savings Breakdown -->
-          <section class="fiori-panel">
-            <div class="fiori-panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <section class="ledger-panel">
+            <div class="ledger-panel-header" style="display:flex; justify-content:space-between; align-items:center;">
               <h2>Monthly Net Savings</h2>
-              <span style="font-size:12px; color:var(--fiori-muted);">{{ monthLabel() }}</span>
+              <span style="font-size:12px; color:var(--ledger-muted);">{{ monthLabel() }}</span>
             </div>
             <div style="padding:0; overflow-x:auto;">
-              <table class="fiori-table" style="font-size:12px; margin:0;">
+              <table class="ledger-table" style="font-size:12px; margin:0;">
                 <thead>
                   <tr>
                     <th>Month</th>
@@ -518,7 +518,7 @@
                 <tbody>
                   @if (savingsSummary().length === 0) {
                     <tr>
-                      <td colspan="5" style="padding:24px 16px; text-align:center; color:var(--fiori-muted);">
+                      <td colspan="5" style="padding:24px 16px; text-align:center; color:var(--ledger-muted);">
                         No savings history yet.
                       </td>
                     </tr>
@@ -526,9 +526,9 @@
                   @for (row of savingsSummary().slice(0, 5); track row.month) {
                     <tr>
                       <td style="font-weight:500;">{{ formatMonth(row.month) }}</td>
-                      <td class="text-right" style="color:var(--fiori-green); font-variant-numeric:tabular-nums;">+{{ row.contributions | currency:'PHP':'symbol':'1.0-0' }}</td>
-                      <td class="text-right" style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;">{{ row.withdrawals > 0 ? ('-' + (row.withdrawals | currency:'PHP':'symbol':'1.0-0')) : '₱0' }}</td>
-                      <td class="text-right" style="font-weight:600; font-variant-numeric:tabular-nums;" [style.color]="row.netSavings >= 0 ? 'var(--fiori-green)' : 'var(--fiori-red)'">
+                      <td class="text-right" style="color:var(--ledger-green); font-variant-numeric:tabular-nums;">+{{ row.contributions | currency:'PHP':'symbol':'1.0-0' }}</td>
+                      <td class="text-right" style="color:var(--ledger-muted); font-variant-numeric:tabular-nums;">{{ row.withdrawals > 0 ? ('-' + (row.withdrawals | currency:'PHP':'symbol':'1.0-0')) : '₱0' }}</td>
+                      <td class="text-right" style="font-weight:600; font-variant-numeric:tabular-nums;" [style.color]="row.netSavings >= 0 ? 'var(--ledger-green)' : 'var(--ledger-red)'">
                         {{ row.netSavings >= 0 ? '+' : '' }}{{ row.netSavings | currency:'PHP':'symbol':'1.0-0' }}
                       </td>
                       <td class="text-right" style="font-weight:600; font-variant-numeric:tabular-nums;">{{ row.runningBalance | currency:'PHP':'symbol':'1.0-0' }}</td>
@@ -540,16 +540,16 @@
           </section>
 
           <!-- Funds & Reserves -->
-          <section class="fiori-panel">
-            <div class="fiori-panel-header">
+          <section class="ledger-panel">
+            <div class="ledger-panel-header">
               <h2>Funds &amp; Reserves</h2>
             </div>
             <div>
               @for (fund of savingsCategoryGroups(); track fund.name) {
-                <div style="display:flex; align-items:center; gap:14px; padding:13px 20px; border-bottom:1px solid var(--fiori-row-rule);">
+                <div style="display:flex; align-items:center; gap:14px; padding:13px 20px; border-bottom:1px solid var(--ledger-row-rule);">
                   <span style="width:10px; height:10px;" [style.background]="getCategoryColor(fund.name)"></span>
                   <span style="flex:1; font-size:13px; font-weight:500;">{{ fund.name }}</span>
-                  <span style="font-size:12px; color:var(--fiori-muted);">{{ fund.subcategories.length }} sub-categories</span>
+                  <span style="font-size:12px; color:var(--ledger-muted);">{{ fund.subcategories.length }} sub-categories</span>
                 </div>
               }
             </div>
@@ -557,15 +557,15 @@
         </div>
 
         <!-- Savings Activity & Contributions Table -->
-        <section class="fiori-table-container" style="margin-bottom:16px;">
-          <div class="fiori-panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--fiori-border);">
+        <section class="ledger-table-container" style="margin-bottom:16px;">
+          <div class="ledger-panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--ledger-border);">
             <div>
               <h2 style="font-size:14px; font-weight:700; margin:0;">Savings activity &amp; contributions</h2>
-              <p style="font-size:12px; color:var(--fiori-muted); margin:4px 0 0;">All recorded deposits, transfers, and withdrawals across your savings funds.</p>
+              <p style="font-size:12px; color:var(--ledger-muted); margin:4px 0 0;">All recorded deposits, transfers, and withdrawals across your savings funds.</p>
             </div>
-            <button type="button" class="fiori-btn fiori-btn-ghost" style="font-size:12px; height:28px; padding:0 10px;" (click)="openAddTransactionModal('Savings')">＋ Add entry</button>
+            <button type="button" class="ledger-btn ledger-btn-ghost" style="font-size:12px; height:28px; padding:0 10px;" (click)="openAddTransactionModal('Savings')">＋ Add entry</button>
           </div>
-          <table class="fiori-table fiori-responsive-table">
+          <table class="ledger-table ledger-responsive-table">
             <thead>
               <tr>
                 <th>Date</th>
@@ -581,35 +581,35 @@
             <tbody>
               @if (sortedSavingsTransactions().length === 0) {
                 <tr>
-                  <td colspan="8" style="padding:48px 20px; text-align:center; color:var(--fiori-muted);">
-                    <div style="font-size:14px; font-weight:600; margin-bottom:6px; color:var(--fiori-ink);">No savings activity recorded yet</div>
+                  <td colspan="8" style="padding:48px 20px; text-align:center; color:var(--ledger-muted);">
+                    <div style="font-size:14px; font-weight:600; margin-bottom:6px; color:var(--ledger-ink);">No savings activity recorded yet</div>
                     <div style="font-size:12px; margin-bottom:14px;">Record contributions or withdrawals to start tracking your savings progress.</div>
-                    <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddTransactionModal('Savings')">Add contribution</button>
+                    <button type="button" class="ledger-btn ledger-btn-primary" (click)="openAddTransactionModal('Savings')">Add contribution</button>
                   </td>
                 </tr>
               }
               @for (tx of sortedSavingsTransactions(); track tx.id) {
                 <tr>
-                  <td style="color:var(--fiori-muted); font-variant-numeric:tabular-nums; white-space:nowrap;" data-label="Date">{{ tx.date | date:'MMM d, y' }}</td>
+                  <td style="color:var(--ledger-muted); font-variant-numeric:tabular-nums; white-space:nowrap;" data-label="Date">{{ tx.date | date:'MMM d, y' }}</td>
                   <td data-label="Category">
                     <span style="display:inline-flex; align-items:center; gap:8px;">
                       <i style="width:8px; height:8px; display:inline-block;" [style.background]="getCategoryColor(tx.category)"></i>
                       <strong style="font-weight:600;">{{ tx.category }}</strong>
                     </span>
                   </td>
-                  <td style="color:var(--fiori-muted);" data-label="Sub-category">{{ tx.subcategory || '—' }}</td>
+                  <td style="color:var(--ledger-muted);" data-label="Sub-category">{{ tx.subcategory || '—' }}</td>
                   <td data-label="Action">
-                    <span [class]="isSavingsContribution(tx) ? 'fiori-badge fiori-badge-success' : 'fiori-badge fiori-badge-warning'">
+                    <span [class]="isSavingsContribution(tx) ? 'ledger-badge ledger-badge-success' : 'ledger-badge ledger-badge-warning'">
                       {{ isSavingsContribution(tx) ? 'Contribution' : 'Withdrawal' }}
                     </span>
                   </td>
-                  <td style="color:var(--fiori-muted);" data-label="Account">{{ tx.account || '—' }}</td>
+                  <td style="color:var(--ledger-muted);" data-label="Account">{{ tx.account || '—' }}</td>
                   <td style="font-weight:500;" data-label="Description">{{ tx.description || '—' }}</td>
-                  <td class="text-right" style="font-variant-numeric:tabular-nums; font-weight:700; white-space:nowrap;" [style.color]="isSavingsContribution(tx) ? 'var(--fiori-green)' : 'var(--fiori-red)'" data-label="Amount">
+                  <td class="text-right" style="font-variant-numeric:tabular-nums; font-weight:700; white-space:nowrap;" [style.color]="isSavingsContribution(tx) ? 'var(--ledger-green)' : 'var(--ledger-red)'" data-label="Amount">
                     {{ isSavingsContribution(tx) ? '+' : '-' }}{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
                   </td>
                   <td class="text-right" data-label="Actions">
-                    <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--fiori-red);" (click)="deleteTransaction(tx.id)" title="Delete transaction">Delete</button>
+                    <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--ledger-red);" (click)="deleteTransaction(tx.id)" title="Delete transaction">Delete</button>
                   </td>
                 </tr>
               }
@@ -618,14 +618,14 @@
         </section>
 
         <!-- Fixed Needs and Bills Section (Synced with Expected Bills) -->
-        <section class="fiori-table-container" style="margin-bottom:16px;">
-          <div class="fiori-panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--fiori-border);">
+        <section class="ledger-table-container" style="margin-bottom:16px;">
+          <div class="ledger-panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--ledger-border);">
             <div>
               <h2 style="font-size:15px; font-weight:700; margin:0;">Fixed needs and bills</h2>
-              <p style="font-size:12px; color:var(--fiori-muted); margin:4px 0 0;">Monthly reserve split evenly across both paychecks · Total: <strong>{{ savingsPlanFixedNeeds() | currency:'PHP':'symbol':'1.0-0' }}</strong></p>
+              <p style="font-size:12px; color:var(--ledger-muted); margin:4px 0 0;">Monthly reserve split evenly across both paychecks · Total: <strong>{{ savingsPlanFixedNeeds() | currency:'PHP':'symbol':'1.0-0' }}</strong></p>
             </div>
           </div>
-          <table class="fiori-table fiori-responsive-table">
+          <table class="ledger-table ledger-responsive-table">
             <thead>
               <tr>
                 <th>Fixed need / bill</th>
@@ -638,24 +638,24 @@
             <tbody>
               @if (savingsPlanBillsView().length === 0) {
                 <tr>
-                  <td colspan="5" style="padding:32px 20px; text-align:center; color:var(--fiori-muted);">
+                  <td colspan="5" style="padding:32px 20px; text-align:center; color:var(--ledger-muted);">
                     No active fixed needs or bills found.
                   </td>
                 </tr>
               }
               @for (bill of savingsPlanBillsView(); track bill.id) {
                 @if (editingBillId() === bill.id && editingSavingsBillView(); as editBill) {
-                  <tr style="background:var(--fiori-sidebar-bg); box-shadow:inset 3px 0 0 var(--fiori-accent);">
+                  <tr style="background:var(--ledger-sidebar-bg); box-shadow:inset 3px 0 0 var(--ledger-accent);">
                     <td data-label="Fixed need / bill">
                       <div style="display:flex; flex-direction:column; gap:6px;">
-                        <input class="fiori-input" style="width:100%; max-width:280px;" aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateEditingSavingsBill('name', $event)" placeholder="Bill name" />
+                        <input class="ledger-input" style="width:100%; max-width:280px;" aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateEditingSavingsBill('name', $event)" placeholder="Bill name" />
                         <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                          <select class="fiori-select" style="min-width:130px; font-size:11px; height:28px;" aria-label="Category" [ngModel]="editBill.category" (ngModelChange)="updateEditingSavingsBill('category', $event)">
+                          <select class="ledger-select" style="min-width:130px; font-size:11px; height:28px;" aria-label="Category" [ngModel]="editBill.category" (ngModelChange)="updateEditingSavingsBill('category', $event)">
                             @for (cat of categories; track cat) {
                               <option [value]="cat">{{ cat }}</option>
                             }
                           </select>
-                          <select class="fiori-select" style="min-width:130px; font-size:11px; height:28px;" aria-label="Sub-category" [ngModel]="editBill.subcategory" (ngModelChange)="updateEditingSavingsBill('subcategory', $event)">
+                          <select class="ledger-select" style="min-width:130px; font-size:11px; height:28px;" aria-label="Sub-category" [ngModel]="editBill.subcategory" (ngModelChange)="updateEditingSavingsBill('subcategory', $event)">
                             <option value="">Choose a sub-category</option>
                             @for (sub of subcategoriesFor(editBill.category); track sub) {
                               <option [value]="sub">{{ sub }}</option>
@@ -665,56 +665,56 @@
                       </div>
                     </td>
                     <td class="text-right" data-label="Monthly">
-                      <div class="fiori-input-prefix-wrap" style="display:inline-flex; max-width:140px;">
-                        <span class="fiori-input-prefix">₱</span>
-                        <input class="fiori-input" style="width:100%;" aria-label="Edit monthly amount" type="number" min="0" [ngModel]="editBill.monthly" (ngModelChange)="updateEditingSavingsBill('monthly', $event)" />
+                      <div class="ledger-input-prefix-wrap" style="display:inline-flex; max-width:140px;">
+                        <span class="ledger-input-prefix">₱</span>
+                        <input class="ledger-input" style="width:100%;" aria-label="Edit monthly amount" type="number" min="0" [ngModel]="editBill.monthly" (ngModelChange)="updateEditingSavingsBill('monthly', $event)" />
                       </div>
                     </td>
-                    <td class="text-right" style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 1">{{ (editBill.monthly / 2) | currency:'PHP':'symbol':'1.0-0' }}</td>
-                    <td class="text-right" style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 2">{{ (editBill.monthly / 2) | currency:'PHP':'symbol':'1.0-0' }}</td>
+                    <td class="text-right" style="color:var(--ledger-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 1">{{ (editBill.monthly / 2) | currency:'PHP':'symbol':'1.0-0' }}</td>
+                    <td class="text-right" style="color:var(--ledger-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 2">{{ (editBill.monthly / 2) | currency:'PHP':'symbol':'1.0-0' }}</td>
                     <td class="text-right" data-label="Actions">
-                      <button type="button" class="fiori-btn fiori-btn-primary" style="height:26px; padding:0 8px; font-size:11px; margin-right:6px;" (click)="saveEditingSavingsBill()">Save</button>
-                      <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="cancelEditingSavingsBill()">Cancel</button>
+                      <button type="button" class="ledger-btn ledger-btn-primary" style="height:26px; padding:0 8px; font-size:11px; margin-right:6px;" (click)="saveEditingSavingsBill()">Save</button>
+                      <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="cancelEditingSavingsBill()">Cancel</button>
                     </td>
                   </tr>
                 } @else {
                   <tr>
                     <td style="font-weight:500;" data-label="Fixed need / bill">
                       <div>{{ bill.name }}</div>
-                      <div style="font-size:11px; color:var(--fiori-muted); margin-top:2px;">{{ bill.category }} → {{ bill.subcategory }}</div>
+                      <div style="font-size:11px; color:var(--ledger-muted); margin-top:2px;">{{ bill.category }} → {{ bill.subcategory }}</div>
                     </td>
                     <td class="text-right" style="font-weight:600; font-variant-numeric:tabular-nums;" data-label="Monthly">{{ bill.monthly | currency:'PHP':'symbol':'1.0-0' }}</td>
-                    <td class="text-right" style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 1">{{ bill.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
-                    <td class="text-right" style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 2">{{ bill.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
+                    <td class="text-right" style="color:var(--ledger-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 1">{{ bill.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
+                    <td class="text-right" style="color:var(--ledger-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 2">{{ bill.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
                     <td class="text-right" data-label="Actions">
-                      <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; margin-right:4px;" (click)="startEditingSavingsBill(bill)">Edit</button>
-                      <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--fiori-red);" (click)="removeSavingsPlanBill(bill.id)">Delete</button>
+                      <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; margin-right:4px;" (click)="startEditingSavingsBill(bill)">Edit</button>
+                      <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--ledger-red);" (click)="removeSavingsPlanBill(bill.id)">Delete</button>
                     </td>
                   </tr>
                 }
               }
               <!-- Inline Add Fixed Need Form -->
-              <tr style="background:var(--fiori-bg);">
+              <tr style="background:var(--ledger-bg);">
                 <td colspan="5" style="padding:12px 20px;">
                   <form (submit)="addSavingsPlanBill(); $event.preventDefault()" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:0;">
-                    <span style="font-size:12px; font-weight:600; color:var(--fiori-ink); white-space:nowrap;">+ Add fixed need:</span>
-                    <input class="fiori-input" style="flex:1; min-width:160px; max-width:220px;" placeholder="e.g. WiFi, Car loan, Tuition" [ngModel]="newSavingsBillName()" (ngModelChange)="newSavingsBillName.set($event)" name="newSavBillName" required />
-                    <select class="fiori-select" style="min-width:130px; font-size:12px; height:32px;" [ngModel]="newSavingsBillCategory()" (ngModelChange)="updateSavingsBillCategory($event)" name="newSavBillCat">
+                    <span style="font-size:12px; font-weight:600; color:var(--ledger-ink); white-space:nowrap;">+ Add fixed need:</span>
+                    <input class="ledger-input" style="flex:1; min-width:160px; max-width:220px;" placeholder="e.g. WiFi, Car loan, Tuition" [ngModel]="newSavingsBillName()" (ngModelChange)="newSavingsBillName.set($event)" name="newSavBillName" required />
+                    <select class="ledger-select" style="min-width:130px; font-size:12px; height:32px;" [ngModel]="newSavingsBillCategory()" (ngModelChange)="updateSavingsBillCategory($event)" name="newSavBillCat">
                       @for (cat of categories; track cat) {
                         <option [value]="cat">{{ cat }}</option>
                       }
                     </select>
-                    <select class="fiori-select" style="min-width:130px; font-size:12px; height:32px;" [ngModel]="newSavingsBillSubcategory()" (ngModelChange)="newSavingsBillSubcategory.set($event)" name="newSavBillSub">
+                    <select class="ledger-select" style="min-width:130px; font-size:12px; height:32px;" [ngModel]="newSavingsBillSubcategory()" (ngModelChange)="newSavingsBillSubcategory.set($event)" name="newSavBillSub">
                       <option value="">Choose a sub-category</option>
                       @for (sub of subcategoriesFor(newSavingsBillCategory()); track sub) {
                         <option [value]="sub">{{ sub }}</option>
                       }
                     </select>
-                    <div class="fiori-input-prefix-wrap" style="width:130px;">
-                      <span class="fiori-input-prefix">₱</span>
-                      <input class="fiori-input" style="width:100%;" type="number" min="0" placeholder="0" [ngModel]="newSavingsBillAmount()" (ngModelChange)="newSavingsBillAmount.set($event ? +$event : null)" name="newSavBillAmt" required />
+                    <div class="ledger-input-prefix-wrap" style="width:130px;">
+                      <span class="ledger-input-prefix">₱</span>
+                      <input class="ledger-input" style="width:100%;" type="number" min="0" placeholder="0" [ngModel]="newSavingsBillAmount()" (ngModelChange)="newSavingsBillAmount.set($event ? +$event : null)" name="newSavBillAmt" required />
                     </div>
-                    <button type="submit" class="fiori-btn fiori-btn-primary" style="height:32px; padding:0 12px; font-size:12px;">Add fixed need</button>
+                    <button type="submit" class="ledger-btn ledger-btn-primary" style="height:32px; padding:0 12px; font-size:12px;">Add fixed need</button>
                   </form>
                 </td>
               </tr>
@@ -727,70 +727,70 @@
     <!-- SECTION: SAVINGS PLAN -->
     @if (activeSection() === 'Plan') {
       <div>
-        <div class="fiori-page-header">
+        <div class="ledger-page-header">
           <div>
             <h1>Savings plan</h1>
-            <p class="fiori-page-subtitle">{{ savingsPlanSalary() | currency:'PHP':'symbol':'1.0-0' }} monthly salary · {{ savingsPlanSavingsRate() }}% savings target · split across two paychecks</p>
+            <p class="ledger-page-subtitle">{{ savingsPlanSalary() | currency:'PHP':'symbol':'1.0-0' }} monthly salary · {{ savingsPlanSavingsRate() }}% savings target · split across two paychecks</p>
           </div>
-          <div class="fiori-page-actions">
-            <button type="button" class="fiori-btn fiori-btn-ghost" (click)="toggleEditingPlanParameters()">
+          <div class="ledger-page-actions">
+            <button type="button" class="ledger-btn ledger-btn-ghost" (click)="toggleEditingPlanParameters()">
               {{ editingPlanParameters() ? 'Close edit' : 'Edit parameters' }}
             </button>
           </div>
         </div>
 
         <!-- Plan Parameters -->
-        <div class="fiori-grid-3col" style="margin-bottom:16px;">
-          <div class="fiori-field">
+        <div class="ledger-grid-3col" style="margin-bottom:16px;">
+          <div class="ledger-field">
             <label>Monthly salary</label>
-            <div class="fiori-input-prefix-wrap">
-              <span class="fiori-input-prefix">₱</span>
-              <input class="fiori-input" style="width:100%;" type="number" [ngModel]="savingsPlanSalary()" (ngModelChange)="updateSavingsPlanSalary($event)" [disabled]="!editingPlanParameters()">
+            <div class="ledger-input-prefix-wrap">
+              <span class="ledger-input-prefix">₱</span>
+              <input class="ledger-input" style="width:100%;" type="number" [ngModel]="savingsPlanSalary()" (ngModelChange)="updateSavingsPlanSalary($event)" [disabled]="!editingPlanParameters()">
             </div>
           </div>
-          <div class="fiori-field">
+          <div class="ledger-field">
             <label>Savings target</label>
-            <div class="fiori-input-prefix-wrap">
-              <span class="fiori-input-prefix">%</span>
-              <input class="fiori-input" style="width:100%;" type="number" [ngModel]="savingsPlanSavingsRate()" (ngModelChange)="updateSavingsPlanRate($event)" [disabled]="!editingPlanParameters()">
+            <div class="ledger-input-prefix-wrap">
+              <span class="ledger-input-prefix">%</span>
+              <input class="ledger-input" style="width:100%;" type="number" [ngModel]="savingsPlanSavingsRate()" (ngModelChange)="updateSavingsPlanRate($event)" [disabled]="!editingPlanParameters()">
             </div>
           </div>
-          <div class="fiori-field">
+          <div class="ledger-field">
             <label>Minimum investment</label>
-            <div class="fiori-input-prefix-wrap">
-              <span class="fiori-input-prefix">₱</span>
-              <input class="fiori-input" style="width:100%;" type="number" [ngModel]="savingsPlanInvestment()" (ngModelChange)="updateSavingsPlanInvestment($event)" [disabled]="!editingPlanParameters()">
+            <div class="ledger-input-prefix-wrap">
+              <span class="ledger-input-prefix">₱</span>
+              <input class="ledger-input" style="width:100%;" type="number" [ngModel]="savingsPlanInvestment()" (ngModelChange)="updateSavingsPlanInvestment($event)" [disabled]="!editingPlanParameters()">
             </div>
           </div>
         </div>
 
         <!-- 4 Connected Plan Metrics -->
-        <div class="fiori-kpi-grid" style="margin-bottom:16px;">
-          <div class="fiori-kpi-card">
-            <span class="fiori-kpi-label">Combined monthly salary</span>
-            <strong class="fiori-kpi-value">{{ savingsPlanSalary() | currency:'PHP':'symbol':'1.0-0' }}</strong>
-            <span class="fiori-kpi-sub">Two paychecks of {{ (savingsPlanSalary() / 2) | currency:'PHP':'symbol':'1.0-0' }}</span>
+        <div class="ledger-kpi-grid" style="margin-bottom:16px;">
+          <div class="ledger-kpi-card">
+            <span class="ledger-kpi-label">Combined monthly salary</span>
+            <strong class="ledger-kpi-value">{{ savingsPlanSalary() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+            <span class="ledger-kpi-sub">Two paychecks of {{ (savingsPlanSalary() / 2) | currency:'PHP':'symbol':'1.0-0' }}</span>
           </div>
-          <div class="fiori-kpi-card">
-            <span class="fiori-kpi-label">Fixed needs</span>
-            <strong class="fiori-kpi-value">{{ savingsPlanFixedNeeds() | currency:'PHP':'symbol':'1.0-0' }}</strong>
-            <span class="fiori-kpi-sub">{{ savingsPlanSalary() > 0 ? ((savingsPlanFixedNeeds() / savingsPlanSalary()) * 100 | number:'1.0-0') : 0 }}% of salary</span>
+          <div class="ledger-kpi-card">
+            <span class="ledger-kpi-label">Fixed needs</span>
+            <strong class="ledger-kpi-value">{{ savingsPlanFixedNeeds() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+            <span class="ledger-kpi-sub">{{ savingsPlanSalary() > 0 ? ((savingsPlanFixedNeeds() / savingsPlanSalary()) * 100 | number:'1.0-0') : 0 }}% of salary</span>
           </div>
-          <div class="fiori-kpi-card">
-            <span class="fiori-kpi-label">Monthly savings target</span>
-            <strong class="fiori-kpi-value green">{{ savingsPlanGoal() | currency:'PHP':'symbol':'1.0-0' }}</strong>
-            <span class="fiori-kpi-sub">{{ savingsPlanSavingsRate() }}% of salary</span>
+          <div class="ledger-kpi-card">
+            <span class="ledger-kpi-label">Monthly savings target</span>
+            <strong class="ledger-kpi-value green">{{ savingsPlanGoal() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+            <span class="ledger-kpi-sub">{{ savingsPlanSavingsRate() }}% of salary</span>
           </div>
-          <div class="fiori-kpi-card">
-            <span class="fiori-kpi-label">Variable allowance</span>
-            <strong class="fiori-kpi-value">{{ savingsPlanVariableAllowance() | currency:'PHP':'symbol':'1.0-0' }}</strong>
-            <span class="fiori-kpi-sub">After savings and fixed needs</span>
+          <div class="ledger-kpi-card">
+            <span class="ledger-kpi-label">Variable allowance</span>
+            <strong class="ledger-kpi-value">{{ savingsPlanVariableAllowance() | currency:'PHP':'symbol':'1.0-0' }}</strong>
+            <span class="ledger-kpi-sub">After savings and fixed needs</span>
           </div>
         </div>
 
         <!-- Paycheck Allocation Table -->
-        <section class="fiori-table-container" style="margin-bottom:16px;">
-          <table class="fiori-table">
+        <section class="ledger-table-container" style="margin-bottom:16px;">
+          <table class="ledger-table">
             <thead>
               <tr>
                 <th>Allocation</th>
@@ -803,8 +803,8 @@
               @for (row of savingsPlanAllocations(); track row.name) {
                 <tr>
                   <td style="font-weight:500;">{{ row.name }}</td>
-                  <td class="text-right" style="font-variant-numeric:tabular-nums; color:var(--fiori-muted);">{{ row.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
-                  <td class="text-right" style="font-variant-numeric:tabular-nums; color:var(--fiori-muted);">{{ row.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
+                  <td class="text-right" style="font-variant-numeric:tabular-nums; color:var(--ledger-muted);">{{ row.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
+                  <td class="text-right" style="font-variant-numeric:tabular-nums; color:var(--ledger-muted);">{{ row.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
                   <td class="text-right" style="font-variant-numeric:tabular-nums; font-weight:600;">{{ row.monthly | currency:'PHP':'symbol':'1.0-0' }}</td>
                 </tr>
               }
@@ -813,42 +813,42 @@
         </section>
 
         <!-- Roadmap & Buckets -->
-        <div class="fiori-grid-even-2col" style="margin-bottom:16px; min-width:0;">
-          <section class="fiori-panel" style="min-width:0; overflow:hidden; box-sizing:border-box;">
-            <div class="fiori-panel-header" style="min-width:0; box-sizing:border-box;">
+        <div class="ledger-grid-even-2col" style="margin-bottom:16px; min-width:0;">
+          <section class="ledger-panel" style="min-width:0; overflow:hidden; box-sizing:border-box;">
+            <div class="ledger-panel-header" style="min-width:0; box-sizing:border-box;">
               <h2>Allocation detail</h2>
             </div>
             <div style="min-width:0; overflow:hidden; box-sizing:border-box;">
               @for (b of savingsPlanBuckets(); track b.name) {
-                <div style="padding:14px 20px; border-bottom:1px solid var(--fiori-row-rule); box-sizing:border-box; width:100%; max-width:100%; min-width:0; overflow:hidden;">
+                <div style="padding:14px 20px; border-bottom:1px solid var(--ledger-row-rule); box-sizing:border-box; width:100%; max-width:100%; min-width:0; overflow:hidden;">
                   <div style="display:flex; justify-content:space-between; font-size:13px; min-width:0;">
                     <span style="font-weight:500;">{{ b.name }}</span>
                     <b style="font-variant-numeric:tabular-nums;">{{ b.monthly | currency:'PHP':'symbol':'1.0-0' }}</b>
                   </div>
-                  <div style="height:6px; background:var(--fiori-track); margin:10px 0 8px; border-radius:999px; overflow:hidden; width:100%; max-width:100%; box-sizing:border-box; min-width:0;">
-                    <i style="display:block; height:100%; background:var(--fiori-accent); border-radius:inherit; max-width:100%; transition:width 0.3s ease;" [style.width.%]="Math.min(100, Math.max(0, savingsPlanGoal() > 0 ? (b.monthly / savingsPlanGoal()) * 100 : 0))"></i>
+                  <div style="height:6px; background:var(--ledger-track); margin:10px 0 8px; border-radius:999px; overflow:hidden; width:100%; max-width:100%; box-sizing:border-box; min-width:0;">
+                    <i style="display:block; height:100%; background:var(--ledger-accent); border-radius:inherit; max-width:100%; transition:width 0.3s ease;" [style.width.%]="Math.min(100, Math.max(0, savingsPlanGoal() > 0 ? (b.monthly / savingsPlanGoal()) * 100 : 0))"></i>
                   </div>
-                  <div style="font-size:11px; color:var(--fiori-muted);">{{ b.perPayday | currency:'PHP':'symbol':'1.0-0' }} per cut off · {{ b.purpose }}</div>
+                  <div style="font-size:11px; color:var(--ledger-muted);">{{ b.perPayday | currency:'PHP':'symbol':'1.0-0' }} per cut off · {{ b.purpose }}</div>
                 </div>
               }
             </div>
           </section>
 
-          <section class="fiori-panel" style="min-width:0; overflow:hidden; box-sizing:border-box;">
-            <div class="fiori-panel-header" style="min-width:0; box-sizing:border-box;">
+          <section class="ledger-panel" style="min-width:0; overflow:hidden; box-sizing:border-box;">
+            <div class="ledger-panel-header" style="min-width:0; box-sizing:border-box;">
               <h2>Emergency fund roadmap</h2>
             </div>
             <div style="min-width:0; overflow:hidden; box-sizing:border-box;">
               @for (r of savingsPlanRoadmap(); track r.milestone) {
-                <div style="padding:16px 20px; border-bottom:1px solid var(--fiori-row-rule); box-sizing:border-box; width:100%; max-width:100%; min-width:0; overflow:hidden;">
+                <div style="padding:16px 20px; border-bottom:1px solid var(--ledger-row-rule); box-sizing:border-box; width:100%; max-width:100%; min-width:0; overflow:hidden;">
                   <div style="display:flex; justify-content:space-between; font-size:13px; min-width:0;">
                     <span style="font-weight:500;">{{ r.milestone }}</span>
                     <b style="font-variant-numeric:tabular-nums;">{{ r.target | currency:'PHP':'symbol':'1.0-0' }}</b>
                   </div>
-                  <div style="height:6px; background:var(--fiori-track); margin:10px 0 8px; border-radius:999px; overflow:hidden; width:100%; max-width:100%; box-sizing:border-box; min-width:0;">
-                    <i style="display:block; height:100%; background:var(--fiori-green); border-radius:inherit; max-width:100%; transition:width 0.3s ease;" [style.width.%]="Math.min(100, Math.max(0, r.target > 0 ? (savingsBalance() / r.target) * 100 : 0))"></i>
+                  <div style="height:6px; background:var(--ledger-track); margin:10px 0 8px; border-radius:999px; overflow:hidden; width:100%; max-width:100%; box-sizing:border-box; min-width:0;">
+                    <i style="display:block; height:100%; background:var(--ledger-green); border-radius:inherit; max-width:100%; transition:width 0.3s ease;" [style.width.%]="Math.min(100, Math.max(0, r.target > 0 ? (savingsBalance() / r.target) * 100 : 0))"></i>
                   </div>
-                  <div style="font-size:11px; color:var(--fiori-muted);">{{ savingsPlanEmergencyReserve() | currency:'PHP':'symbol':'1.0-0' }} monthly reserve · {{ r.estimatedMonths }} months to reach</div>
+                  <div style="font-size:11px; color:var(--ledger-muted);">{{ savingsPlanEmergencyReserve() | currency:'PHP':'symbol':'1.0-0' }} monthly reserve · {{ r.estimatedMonths }} months to reach</div>
                 </div>
               }
             </div>
@@ -860,38 +860,38 @@
     <!-- SECTION: REPORTS -->
     @if (activeSection() === 'Reports') {
       <div>
-        <div class="fiori-page-header">
+        <div class="ledger-page-header">
           <div>
             <h1>Reports</h1>
-            <p class="fiori-page-subtitle">{{ monthLabel() }} · Philippine Peso (PHP)</p>
+            <p class="ledger-page-subtitle">{{ monthLabel() }} · Philippine Peso (PHP)</p>
           </div>
-          <div class="fiori-page-actions">
-            <button type="button" class="fiori-btn fiori-btn-ghost" (click)="exportWorkbook()">Export .xlsx</button>
+          <div class="ledger-page-actions">
+            <button type="button" class="ledger-btn ledger-btn-ghost" (click)="exportWorkbook()">Export .xlsx</button>
           </div>
         </div>
 
-        <div class="fiori-grid-even-2col" style="margin-bottom:16px;">
-          <section class="fiori-panel fiori-panel-body">
+        <div class="ledger-grid-even-2col" style="margin-bottom:16px;">
+          <section class="ledger-panel ledger-panel-body">
             <h2 style="font-size:14px; font-weight:700; margin:0 0 4px;">Monthly spend</h2>
-            <p style="font-size:12px; color:var(--fiori-muted); margin:0 0 18px;">Six-month trend · {{ totalSpent() | currency:'PHP':'symbol':'1.0-0' }} in {{ monthLabel() }}</p>
+            <p style="font-size:12px; color:var(--ledger-muted); margin:0 0 18px;">Six-month trend · {{ totalSpent() | currency:'PHP':'symbol':'1.0-0' }} in {{ monthLabel() }}</p>
             <svg viewBox="0 0 320 90" style="width:100%; height:90px; display:block;" preserveAspectRatio="none">
               <polyline [attr.points]="reportMonthlySpendTrend().points" fill="none" stroke="#0070f2" stroke-width="2"/>
               <circle [attr.cx]="reportMonthlySpendTrend().lastPoint.x" [attr.cy]="reportMonthlySpendTrend().lastPoint.y" r="3" fill="#0070f2"/>
             </svg>
-            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--fiori-muted); margin-top:10px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--ledger-muted); margin-top:10px;">
               @for (m of reportMonthlySpendTrend().monthly; track m.monthKey) {
                 <span>{{ m.shortMonth }}</span>
               }
             </div>
           </section>
 
-          <section class="fiori-panel fiori-panel-body">
+          <section class="ledger-panel ledger-panel-body">
             <h2 style="font-size:14px; font-weight:700; margin:0 0 4px;">Month over month</h2>
-            <p style="font-size:12px; color:var(--fiori-muted); margin:0 0 14px;">Comparison against previous month</p>
+            <p style="font-size:12px; color:var(--ledger-muted); margin:0 0 14px;">Comparison against previous month</p>
             @for (item of monthOverMonthComparison(); track item.category) {
-              <div style="display:flex; align-items:baseline; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--fiori-row-rule);">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--ledger-row-rule);">
                 <span style="font-size:13px; font-weight:500;">{{ item.category }}</span>
-                <span style="font-size:13px; font-variant-numeric:tabular-nums;" [style.color]="item.diff > 0 ? 'var(--fiori-red)' : 'var(--fiori-green)'">
+                <span style="font-size:13px; font-variant-numeric:tabular-nums;" [style.color]="item.diff > 0 ? 'var(--ledger-red)' : 'var(--ledger-green)'">
                   {{ item.diff > 0 ? '+' : '' }}{{ item.diff | currency:'PHP':'symbol':'1.0-0' }}
                 </span>
               </div>
@@ -899,81 +899,81 @@
           </section>
         </div>
 
-        <section class="fiori-panel" style="margin-bottom:16px;">
-          <div class="fiori-panel-header">
+        <section class="ledger-panel" style="margin-bottom:16px;">
+          <div class="ledger-panel-header">
             <h2>Category breakdown</h2>
           </div>
           <div>
             @for (cat of budgetCategories(); track cat.category) {
-              <div style="display:grid; grid-template-columns:14px minmax(0,1fr) 110px 200px 60px; align-items:center; gap:14px; padding:13px 20px; border-bottom:1px solid var(--fiori-row-rule);">
+              <div style="display:grid; grid-template-columns:14px minmax(0,1fr) 110px 200px 60px; align-items:center; gap:14px; padding:13px 20px; border-bottom:1px solid var(--ledger-row-rule);">
                 <span style="width:10px; height:10px;" [style.background]="getCategoryColor(cat.category)"></span>
                 <span style="font-size:13px; font-weight:500;">{{ cat.category }}</span>
                 <span style="font-size:13px; text-align:right; font-variant-numeric:tabular-nums;">{{ cat.total | currency:'PHP':'symbol':'1.2-2' }}</span>
-                <span style="height:6px; background:var(--fiori-track); display:block; border-radius:999px; overflow:hidden; width:100%; max-width:100%; box-sizing:border-box; min-width:0;">
+                <span style="height:6px; background:var(--ledger-track); display:block; border-radius:999px; overflow:hidden; width:100%; max-width:100%; box-sizing:border-box; min-width:0;">
                   <i style="display:block; height:100%; border-radius:inherit; max-width:100%;" [style.background]="getCategoryColor(cat.category)" [style.width.%]="Math.min(100, Math.max(0, cat.percentOfSpend))"></i>
                 </span>
-                <span style="font-size:12px; color:var(--fiori-muted); text-align:right; font-variant-numeric:tabular-nums;">{{ cat.percentOfSpend | number:'1.0-0' }}%</span>
+                <span style="font-size:12px; color:var(--ledger-muted); text-align:right; font-variant-numeric:tabular-nums;">{{ cat.percentOfSpend | number:'1.0-0' }}%</span>
               </div>
             }
           </div>
         </section>
 
         <!-- SUB-CATEGORIES SECTION -->
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:18px 0 10px; border-bottom:2px solid var(--fiori-rule); margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:18px 0 10px; border-bottom:2px solid var(--ledger-rule); margin-bottom:16px;">
           <div>
             <h2 style="font-size:20px; font-weight:700; margin:0; letter-spacing:-0.02em;">Sub-categories</h2>
-            <p class="fiori-page-subtitle">Grouped by parent category · {{ monthLabel() }}</p>
+            <p class="ledger-page-subtitle">Grouped by parent category · {{ monthLabel() }}</p>
           </div>
         </div>
 
-        <div class="fiori-grid-2col" style="margin-bottom:16px;">
+        <div class="ledger-grid-2col" style="margin-bottom:16px;">
           <!-- Left: Breakdown -->
-          <section class="fiori-panel" style="margin-bottom:0;">
-            <div class="fiori-panel-header">
+          <section class="ledger-panel" style="margin-bottom:0;">
+            <div class="ledger-panel-header">
               <h2>Breakdown</h2>
             </div>
             @if (reportSubcategoriesByCategory().length === 0) {
-              <div style="padding:40px 20px; text-align:center; color:var(--fiori-muted); font-size:13px;">
+              <div style="padding:40px 20px; text-align:center; color:var(--ledger-muted); font-size:13px;">
                 No sub-category spending recorded for {{ monthLabel() }}.
               </div>
             }
             @for (group of reportSubcategoriesByCategory(); track group.category) {
-              <div style="border-bottom:1px solid var(--fiori-row-rule);">
-                <div style="display:flex; align-items:center; gap:12px; padding:12px 20px; background:var(--fiori-chip);">
+              <div style="border-bottom:1px solid var(--ledger-row-rule);">
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 20px; background:var(--ledger-chip);">
                   <span style="width:10px; height:10px; border-radius:2px; flex-shrink:0;" [style.background]="getCategoryColor(group.category)"></span>
-                  <strong style="flex:1; font-size:13px; color:var(--fiori-ink);">{{ group.category }}</strong>
-                  <span style="font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--fiori-ink);">{{ group.categoryTotal | currency:'PHP':'symbol':'1.2-2' }}</span>
+                  <strong style="flex:1; font-size:13px; color:var(--ledger-ink);">{{ group.category }}</strong>
+                  <span style="font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--ledger-ink);">{{ group.categoryTotal | currency:'PHP':'symbol':'1.2-2' }}</span>
                 </div>
                 @for (sub of group.subcategories; track sub.name) {
                   <div style="display:grid; grid-template-columns:minmax(0,1fr) 110px 180px 56px; align-items:center; gap:14px; padding:11px 20px 11px 42px;">
-                    <span style="font-size:13px; color:var(--fiori-ink);">{{ sub.name }}</span>
-                    <span style="font-size:13px; text-align:right; font-variant-numeric:tabular-nums; color:var(--fiori-ink);">{{ sub.amount | currency:'PHP':'symbol':'1.2-2' }}</span>
-                    <span style="height:4px; background:var(--fiori-track); display:block; border-radius:999px; overflow:hidden; width:100%; max-width:100%; box-sizing:border-box; min-width:0;">
+                    <span style="font-size:13px; color:var(--ledger-ink);">{{ sub.name }}</span>
+                    <span style="font-size:13px; text-align:right; font-variant-numeric:tabular-nums; color:var(--ledger-ink);">{{ sub.amount | currency:'PHP':'symbol':'1.2-2' }}</span>
+                    <span style="height:4px; background:var(--ledger-track); display:block; border-radius:999px; overflow:hidden; width:100%; max-width:100%; box-sizing:border-box; min-width:0;">
                       <i style="display:block; height:100%; border-radius:inherit; max-width:100%;" [style.background]="getCategoryColor(group.category)" [style.width.%]="Math.min(100, Math.max(0, sub.percentOfParent))"></i>
                     </span>
-                    <span style="font-size:11px; color:var(--fiori-muted); text-align:right; font-variant-numeric:tabular-nums;">{{ sub.percentOfParent | number:'1.0-0' }}%</span>
+                    <span style="font-size:11px; color:var(--ledger-muted); text-align:right; font-variant-numeric:tabular-nums;">{{ sub.percentOfParent | number:'1.0-0' }}%</span>
                   </div>
                 }
               </div>
             }
-            <div style="padding:14px 20px; font-size:11px; color:var(--fiori-muted);">
+            <div style="padding:14px 20px; font-size:11px; color:var(--ledger-muted);">
               Share is measured against the parent category, not total spend.
             </div>
           </section>
 
           <!-- Right: Six-month trend -->
-          <section class="fiori-panel" style="margin-bottom:0;">
-            <div class="fiori-panel-header" style="flex-direction:column; align-items:flex-start; gap:4px;">
+          <section class="ledger-panel" style="margin-bottom:0;">
+            <div class="ledger-panel-header" style="flex-direction:column; align-items:flex-start; gap:4px;">
               <h2>Six-month trend</h2>
-              <p style="font-size:12px; color:var(--fiori-muted); margin:0;">Top three sub-categories</p>
+              <p style="font-size:12px; color:var(--ledger-muted); margin:0;">Top three sub-categories</p>
             </div>
             @if (reportTopSubcategoryTrends().length === 0) {
-              <div style="padding:40px 20px; text-align:center; color:var(--fiori-muted); font-size:13px;">
+              <div style="padding:40px 20px; text-align:center; color:var(--ledger-muted); font-size:13px;">
                 No historical sub-category trend data available.
               </div>
             }
             @for (tr of reportTopSubcategoryTrends(); track tr.name) {
-              <div style="padding:16px 20px; border-bottom:1px solid var(--fiori-row-rule);">
+              <div style="padding:16px 20px; border-bottom:1px solid var(--ledger-row-rule);">
                 <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
                   <span style="display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:500;">
                     <i style="width:8px; height:8px; border-radius:2px; display:inline-block;" [style.background]="tr.color"></i>
@@ -986,7 +986,7 @@
                 <svg viewBox="0 0 300 40" style="width:100%; height:40px; display:block;" preserveAspectRatio="none">
                   <polyline [attr.points]="tr.points" fill="none" [attr.stroke]="tr.color" stroke-width="2"/>
                 </svg>
-                <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--fiori-muted); margin-top:6px;">
+                <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--ledger-muted); margin-top:6px;">
                   <span>{{ tr.startMonth }}</span>
                   <span>{{ tr.endMonth }}</span>
                 </div>
@@ -1000,59 +1000,59 @@
     <!-- SECTION: CATEGORIES -->
     @if (activeSection() === 'Categories') {
       <div>
-        <div class="fiori-page-header">
+        <div class="ledger-page-header">
           <div>
             <h1>Categories</h1>
-            <p class="fiori-page-subtitle">{{ filteredCategoryGroups().length }} categories directory</p>
+            <p class="ledger-page-subtitle">{{ filteredCategoryGroups().length }} categories directory</p>
           </div>
-          <div class="fiori-page-actions" style="display:flex; gap:10px; align-items:center;">
-            <input class="fiori-input" style="width:200px;" placeholder="Search categories" [ngModel]="categorySearch()" (ngModelChange)="categorySearch.set($event)">
-            <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddCategoryModal()">＋ Add category</button>
+          <div class="ledger-page-actions" style="display:flex; gap:10px; align-items:center;">
+            <input class="ledger-input" style="width:200px;" placeholder="Search categories" [ngModel]="categorySearch()" (ngModelChange)="categorySearch.set($event)">
+            <button type="button" class="ledger-btn ledger-btn-primary" (click)="openAddCategoryModal()">＋ Add category</button>
           </div>
         </div>
 
-        <section class="fiori-panel" style="min-width:0; overflow:hidden; box-sizing:border-box;">
+        <section class="ledger-panel" style="min-width:0; overflow:hidden; box-sizing:border-box;">
           @if (filteredCategoryGroups().length === 0) {
-            <div style="padding:48px 20px; text-align:center; color:var(--fiori-muted);">
-              <div style="font-size:14px; font-weight:600; margin-bottom:6px; color:var(--fiori-ink);">No categories found</div>
+            <div style="padding:48px 20px; text-align:center; color:var(--ledger-muted);">
+              <div style="font-size:14px; font-weight:600; margin-bottom:6px; color:var(--ledger-ink);">No categories found</div>
               <p style="font-size:12px; margin:0 0 16px;">{{ categorySearch() ? 'No categories match your search query.' : 'Get started by creating your first spending category.' }}</p>
-              <button type="button" class="fiori-btn fiori-btn-primary" (click)="openAddCategoryModal()">＋ Add category</button>
+              <button type="button" class="ledger-btn ledger-btn-primary" (click)="openAddCategoryModal()">＋ Add category</button>
             </div>
           }
           @for (group of filteredCategoryGroups(); track group.name) {
-            <div class="fiori-cat-card">
-              <div class="fiori-cat-card-header">
+            <div class="ledger-cat-card">
+              <div class="ledger-cat-card-header">
                 <span style="width:12px; height:12px; border-radius:2px; flex-shrink:0;" [style.background]="getCategoryColor(group.name)"></span>
-                <strong style="font-size:13px; color:var(--fiori-ink);">{{ group.name }}</strong>
-                <span style="font-size:11px; color:var(--fiori-muted);">{{ group.subcategories.length }} sub-categories</span>
+                <strong style="font-size:13px; color:var(--ledger-ink);">{{ group.name }}</strong>
+                <span style="font-size:11px; color:var(--ledger-muted);">{{ group.subcategories.length }} sub-categories</span>
                 <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
-                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="editCategory(group.name, false)" title="Rename {{ group.name }}">
+                  <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="editCategory(group.name, false)" title="Rename {{ group.name }}">
                     Edit
                   </button>
-                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="openAddSubcategoryModal(group.name)">
+                  <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="openAddSubcategoryModal(group.name)">
                     ＋ Add sub-category
                   </button>
-                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 6px; font-size:11px; color:var(--fiori-red);" (click)="deleteCategory(group.name, false)" title="Delete category">
+                  <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 6px; font-size:11px; color:var(--ledger-red);" (click)="deleteCategory(group.name, false)" title="Delete category">
                     Delete
                   </button>
                 </div>
               </div>
-              <div class="fiori-chip-list">
+              <div class="ledger-chip-list">
                 @for (sub of group.subcategories; track sub) {
-                  <span class="fiori-chip" style="display:inline-flex; align-items:center; gap:6px;">
+                  <span class="ledger-chip" style="display:inline-flex; align-items:center; gap:6px;">
                     <span (click)="editSubcategory(group.name, sub, false)" title="Click to rename {{ sub }}" style="cursor:pointer;">{{ sub }}</span>
-                    <button type="button" (click)="editSubcategory(group.name, sub, false)" title="Rename {{ sub }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:11px; color:var(--fiori-muted); line-height:1;">✎</button>
-                    <button type="button" (click)="deleteSubcategory(group.name, sub, false)" title="Remove {{ sub }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:13px; color:var(--fiori-muted); line-height:1;">×</button>
+                    <button type="button" (click)="editSubcategory(group.name, sub, false)" title="Rename {{ sub }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:11px; color:var(--ledger-muted); line-height:1;">✎</button>
+                    <button type="button" (click)="deleteSubcategory(group.name, sub, false)" title="Remove {{ sub }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:13px; color:var(--ledger-muted); line-height:1;">×</button>
                   </span>
                 }
                 @if (addingSubcategoryFor() === group.name) {
                   <form (submit)="submitInlineSubcategory(group.name); $event.preventDefault()" style="display:inline-flex; align-items:center; gap:6px; margin:0;">
-                    <input class="fiori-input" style="height:26px; padding:0 8px; font-size:12px; width:150px;" placeholder="Sub-category name" [ngModel]="inlineSubcategoryName()" (ngModelChange)="inlineSubcategoryName.set($event)" name="inlineSub" required autofocus />
-                    <button type="submit" class="fiori-btn fiori-btn-primary" style="height:26px; padding:0 8px; font-size:11px;">Add</button>
-                    <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="closeInlineSubcategory()">Cancel</button>
+                    <input class="ledger-input" style="height:26px; padding:0 8px; font-size:12px; width:150px;" placeholder="Sub-category name" [ngModel]="inlineSubcategoryName()" (ngModelChange)="inlineSubcategoryName.set($event)" name="inlineSub" required autofocus />
+                    <button type="submit" class="ledger-btn ledger-btn-primary" style="height:26px; padding:0 8px; font-size:11px;">Add</button>
+                    <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="closeInlineSubcategory()">Cancel</button>
                   </form>
                 } @else {
-                  <button type="button" class="fiori-chip-add" (click)="openInlineSubcategory(group.name)" title="Add sub-category to {{ group.name }}">
+                  <button type="button" class="ledger-chip-add" (click)="openInlineSubcategory(group.name)" title="Add sub-category to {{ group.name }}">
                     ＋ Add sub-category
                   </button>
                 }
@@ -1066,53 +1066,53 @@
     <!-- SECTION: DATA (EXCEL IMPORT / EXPORT) -->
     @if (activeSection() === 'Data') {
       <div>
-        <div class="fiori-page-header">
+        <div class="ledger-page-header">
           <div>
             <h1>Excel data</h1>
-            <p class="fiori-page-subtitle">Import a workbook or export your ledger transactions</p>
+            <p class="ledger-page-subtitle">Import a workbook or export your ledger transactions</p>
           </div>
         </div>
 
         <!-- 3 Steps Strip -->
-        <div class="fiori-steps-strip">
-          <div class="fiori-step-item">
-            <span class="fiori-step-badge">1</span>
+        <div class="ledger-steps-strip">
+          <div class="ledger-step-item">
+            <span class="ledger-step-badge">1</span>
             <div>
-              <div class="fiori-step-title">Choose file</div>
-              <div class="fiori-step-sub">.xlsx, .xls or .csv</div>
+              <div class="ledger-step-title">Choose file</div>
+              <div class="ledger-step-sub">.xlsx, .xls or .csv</div>
             </div>
           </div>
-          <div class="fiori-step-item">
-            <span class="fiori-step-badge">2</span>
+          <div class="ledger-step-item">
+            <span class="ledger-step-badge">2</span>
             <div>
-              <div class="fiori-step-title">Check the preview</div>
-              <div class="fiori-step-sub">Mapped columns and skipped rows</div>
+              <div class="ledger-step-title">Check the preview</div>
+              <div class="ledger-step-sub">Mapped columns and skipped rows</div>
             </div>
           </div>
-          <div class="fiori-step-item">
-            <span class="fiori-step-badge pending">3</span>
+          <div class="ledger-step-item">
+            <span class="ledger-step-badge pending">3</span>
             <div>
-              <div class="fiori-step-title">Import</div>
-              <div class="fiori-step-sub">Added to your ledger</div>
+              <div class="ledger-step-title">Import</div>
+              <div class="ledger-step-sub">Added to your ledger</div>
             </div>
           </div>
         </div>
 
-        <div class="fiori-grid-2col">
+        <div class="ledger-grid-2col">
           <!-- Left: Import Action -->
-          <section class="fiori-panel">
-            <div class="fiori-panel-header">
+          <section class="ledger-panel">
+            <div class="ledger-panel-header">
               <h2>Import workbook</h2>
-              <label class="fiori-btn fiori-btn-primary" style="cursor:pointer;">
+              <label class="ledger-btn ledger-btn-primary" style="cursor:pointer;">
                 Choose file
                 <input type="file" accept=".xlsx,.xls,.csv" (change)="importWorkbook($event)" style="display:none;" />
               </label>
             </div>
-            <div class="fiori-panel-body">
-              <p style="font-size:13px; color:var(--fiori-muted); margin:0 0 14px;">
+            <div class="ledger-panel-body">
+              <p style="font-size:13px; color:var(--ledger-muted); margin:0 0 14px;">
                 Upload your transactions from Excel or Google Sheets. The ledger reads Date, Description, Category, Subcategory, and Amount columns.
               </p>
-              <div style="font-size:12px; color:var(--fiori-muted);">
+              <div style="font-size:12px; color:var(--ledger-muted);">
                 Rows are added to your active ledger while keeping existing transactions safe.
               </div>
             </div>
@@ -1120,33 +1120,33 @@
 
           <!-- Right: Export & Sync -->
           <div style="display:flex; flex-direction:column; gap:16px;">
-            <section class="fiori-panel">
-              <div class="fiori-panel-header">
+            <section class="ledger-panel">
+              <div class="ledger-panel-header">
                 <h2>Export</h2>
               </div>
-              <div class="fiori-panel-body">
-                <p style="font-size:13px; color:var(--fiori-muted); margin:0 0 14px;">
+              <div class="ledger-panel-body">
+                <p style="font-size:13px; color:var(--ledger-muted); margin:0 0 14px;">
                   Writes <b>ledger-transactions.xlsx</b> with complete transaction details.
                 </p>
-                <button type="button" class="fiori-btn fiori-btn-primary" (click)="exportWorkbook()">Export .xlsx</button>
+                <button type="button" class="ledger-btn ledger-btn-primary" (click)="exportWorkbook()">Export .xlsx</button>
               </div>
             </section>
 
-            <section class="fiori-panel">
-              <div class="fiori-panel-header">
+            <section class="ledger-panel">
+              <div class="ledger-panel-header">
                 <h2>Sync status</h2>
               </div>
-              <div class="fiori-panel-body" style="display:flex; flex-direction:column; gap:10px; font-size:13px;">
+              <div class="ledger-panel-body" style="display:flex; flex-direction:column; gap:10px; font-size:13px;">
                 <div style="display:flex; justify-content:space-between;">
-                  <span style="color:var(--fiori-muted);">This browser</span>
+                  <span style="color:var(--ledger-muted);">This browser</span>
                   <b>Saved locally</b>
                 </div>
                 <div style="display:flex; justify-content:space-between;">
-                  <span style="color:var(--fiori-muted);">Cloud workbook</span>
-                  <b style="color:var(--fiori-green);">Up to date</b>
+                  <span style="color:var(--ledger-muted);">Cloud workbook</span>
+                  <b style="color:var(--ledger-green);">Up to date</b>
                 </div>
                 <div style="display:flex; justify-content:space-between;">
-                  <span style="color:var(--fiori-muted);">Current month</span>
+                  <span style="color:var(--ledger-muted);">Current month</span>
                   <b>{{ monthLabel() }}</b>
                 </div>
               </div>
@@ -1159,77 +1159,77 @@
   </main>
 
   <!-- Mobile Bottom Tab Bar (Fixed at bottom on <= 768px) -->
-  <nav class="fiori-mobile-bottom-nav" aria-label="Mobile Navigation">
-    <button type="button" class="fiori-bottom-tab" [class.active]="activeSection() === 'Overview'" (click)="selectSection('Overview')">
-      <span class="fiori-bottom-tab-icon">◈</span>
-      <span class="fiori-bottom-tab-label">Overview</span>
+  <nav class="ledger-mobile-bottom-nav" aria-label="Mobile Navigation">
+    <button type="button" class="ledger-bottom-tab" [class.active]="activeSection() === 'Overview'" (click)="selectSection('Overview')">
+      <span class="ledger-bottom-tab-icon">◈</span>
+      <span class="ledger-bottom-tab-label">Overview</span>
     </button>
-    <button type="button" class="fiori-bottom-tab" [class.active]="activeSection() === 'Spending' || activeSection() === 'Transactions'" (click)="selectSection('Spending')">
-      <span class="fiori-bottom-tab-icon">↔</span>
-      <span class="fiori-bottom-tab-label">Spending</span>
+    <button type="button" class="ledger-bottom-tab" [class.active]="activeSection() === 'Spending' || activeSection() === 'Transactions'" (click)="selectSection('Spending')">
+      <span class="ledger-bottom-tab-icon">↔</span>
+      <span class="ledger-bottom-tab-label">Spending</span>
     </button>
-    <div class="fiori-bottom-add-wrap">
-      <button type="button" class="fiori-bottom-add-btn" (click)="openAddTransactionModal()" aria-label="Add transaction">
+    <div class="ledger-bottom-add-wrap">
+      <button type="button" class="ledger-bottom-add-btn" (click)="openAddTransactionModal()" aria-label="Add transaction">
         ＋
       </button>
     </div>
-    <button type="button" class="fiori-bottom-tab" [class.active]="activeSection() === 'Savings'" (click)="selectSection('Savings')">
-      <span class="fiori-bottom-tab-icon">◎</span>
-      <span class="fiori-bottom-tab-label">Savings</span>
+    <button type="button" class="ledger-bottom-tab" [class.active]="activeSection() === 'Savings'" (click)="selectSection('Savings')">
+      <span class="ledger-bottom-tab-icon">◎</span>
+      <span class="ledger-bottom-tab-label">Savings</span>
     </button>
-    <button type="button" class="fiori-bottom-tab" [class.active]="activeSection() === 'Reports'" (click)="selectSection('Reports')">
-      <span class="fiori-bottom-tab-icon">⌁</span>
-      <span class="fiori-bottom-tab-label">Reports</span>
+    <button type="button" class="ledger-bottom-tab" [class.active]="activeSection() === 'Reports'" (click)="selectSection('Reports')">
+      <span class="ledger-bottom-tab-icon">⌁</span>
+      <span class="ledger-bottom-tab-label">Reports</span>
     </button>
   </nav>
 
   <!-- Add Transaction Modal Dialog -->
   @if (addTransactionModalOpen()) {
-    <div class="fiori-dialog-backdrop" (click)="closeAddTransactionModal()">
-      <div class="fiori-dialog" (click)="$event.stopPropagation()">
-        <div class="fiori-dialog-header">
+    <div class="ledger-dialog-backdrop" (click)="closeAddTransactionModal()">
+      <div class="ledger-dialog" (click)="$event.stopPropagation()">
+        <div class="ledger-dialog-header">
           <h2>{{ newTransaction().savings ? 'Add savings entry' : 'Add transaction' }}</h2>
-          <button type="button" class="fiori-dialog-close" (click)="closeAddTransactionModal()">×</button>
+          <button type="button" class="ledger-dialog-close" (click)="closeAddTransactionModal()">×</button>
         </div>
         <form (ngSubmit)="submitNewTransactionModal()" style="margin:0;">
-          <div class="fiori-dialog-body">
-            <div class="fiori-segmented-toggle">
+          <div class="ledger-dialog-body">
+            <div class="ledger-segmented-toggle">
               <button type="button" [class.active]="!newTransaction().savings" (click)="selectTransactionMode('Expense')">Expense</button>
               <button type="button" [class.active]="newTransaction().savings" (click)="selectTransactionMode('Savings')">Savings</button>
             </div>
 
-            <div class="fiori-field">
+            <div class="ledger-field">
               <label>{{ newTransaction().savings ? 'Description / Notes' : 'Description' }}</label>
-              <input class="fiori-input" [placeholder]="newTransaction().savings ? 'e.g. Monthly emergency fund deposit' : 'e.g. Coffee with friends'" [ngModel]="newTransaction().description" name="desc" (ngModelChange)="updateField('description', $event)">
+              <input class="ledger-input" [placeholder]="newTransaction().savings ? 'e.g. Monthly emergency fund deposit' : 'e.g. Coffee with friends'" [ngModel]="newTransaction().description" name="desc" (ngModelChange)="updateField('description', $event)">
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-              <div class="fiori-field">
+              <div class="ledger-field">
                 <label>Amount</label>
-                <div class="fiori-input-prefix-wrap">
-                  <span class="fiori-input-prefix">₱</span>
-                  <input class="fiori-input" style="width:100%;" type="number" min="0" step="0.01" placeholder="0.00" [ngModel]="newTransaction().amount" name="amount" (ngModelChange)="updateField('amount', $event)" required>
+                <div class="ledger-input-prefix-wrap">
+                  <span class="ledger-input-prefix">₱</span>
+                  <input class="ledger-input" style="width:100%;" type="number" min="0" step="0.01" placeholder="0.00" [ngModel]="newTransaction().amount" name="amount" (ngModelChange)="updateField('amount', $event)" required>
                 </div>
               </div>
 
-              <div class="fiori-field">
+              <div class="ledger-field">
                 <label>Date</label>
-                <input class="fiori-input" type="date" [ngModel]="newTransaction().date" name="date" (ngModelChange)="updateField('date', $event)" required>
+                <input class="ledger-input" type="date" [ngModel]="newTransaction().date" name="date" (ngModelChange)="updateField('date', $event)" required>
               </div>
 
               @if (newTransaction().savings) {
-                <div class="fiori-field">
+                <div class="ledger-field">
                   <label>Fund Category</label>
-                  <select class="fiori-select" [ngModel]="newTransaction().category" name="cat" (ngModelChange)="updateField('category', $event)" required>
+                  <select class="ledger-select" [ngModel]="newTransaction().category" name="cat" (ngModelChange)="updateField('category', $event)" required>
                     @for (category of savingsCategories; track category) {
                       <option [value]="category">{{ category }}</option>
                     }
                   </select>
                 </div>
 
-                <div class="fiori-field">
+                <div class="ledger-field">
                   <label>Sub-category</label>
-                  <select class="fiori-select" [ngModel]="newTransaction().subcategory" name="subcat" (ngModelChange)="updateField('subcategory', $event)">
+                  <select class="ledger-select" [ngModel]="newTransaction().subcategory" name="subcat" (ngModelChange)="updateField('subcategory', $event)">
                     <option value="">Choose a sub-category</option>
                     @for (subcategory of savingsSubcategoriesFor(newTransaction().category); track subcategory) {
                       <option [value]="subcategory">{{ subcategory }}</option>
@@ -1237,31 +1237,31 @@
                   </select>
                 </div>
 
-                <div class="fiori-field">
+                <div class="ledger-field">
                   <label>Action / Type</label>
-                  <select class="fiori-select" [ngModel]="newTransaction().fundType || 'Contribution'" name="fundType" (ngModelChange)="updateSavingsFundType($event)">
+                  <select class="ledger-select" [ngModel]="newTransaction().fundType || 'Contribution'" name="fundType" (ngModelChange)="updateSavingsFundType($event)">
                     <option value="Contribution">Contribution (Deposit)</option>
                     <option value="Withdrawal">Withdrawal</option>
                   </select>
                 </div>
 
-                <div class="fiori-field">
+                <div class="ledger-field">
                   <label>Account / Bank</label>
-                  <input class="fiori-input" placeholder="e.g. Maya, Seabank, BDO" [ngModel]="newTransaction().account" name="account" (ngModelChange)="updateField('account', $event)">
+                  <input class="ledger-input" placeholder="e.g. Maya, Seabank, BDO" [ngModel]="newTransaction().account" name="account" (ngModelChange)="updateField('account', $event)">
                 </div>
               } @else {
-                <div class="fiori-field">
+                <div class="ledger-field">
                   <label>Category</label>
-                  <select class="fiori-select" [ngModel]="newTransaction().category" name="cat" (ngModelChange)="updateField('category', $event)" required>
+                  <select class="ledger-select" [ngModel]="newTransaction().category" name="cat" (ngModelChange)="updateField('category', $event)" required>
                     @for (category of categories; track category) {
                       <option [value]="category">{{ category }}</option>
                     }
                   </select>
                 </div>
 
-                <div class="fiori-field">
+                <div class="ledger-field">
                   <label>Sub-category</label>
-                  <select class="fiori-select" [ngModel]="newTransaction().subcategory" name="subcat" (ngModelChange)="updateField('subcategory', $event)">
+                  <select class="ledger-select" [ngModel]="newTransaction().subcategory" name="subcat" (ngModelChange)="updateField('subcategory', $event)">
                     <option value="">Choose a sub-category</option>
                     @for (subcategory of subcategoriesFor(newTransaction().category); track subcategory) {
                       <option [value]="subcategory">{{ subcategory }}</option>
@@ -1272,9 +1272,9 @@
             </div>
           </div>
 
-          <div class="fiori-dialog-footer">
-            <button type="button" class="fiori-btn fiori-btn-ghost" (click)="closeAddTransactionModal()">Cancel</button>
-            <button type="submit" class="fiori-btn fiori-btn-primary">{{ newTransaction().savings ? 'Save contribution' : 'Add transaction' }}</button>
+          <div class="ledger-dialog-footer">
+            <button type="button" class="ledger-btn ledger-btn-ghost" (click)="closeAddTransactionModal()">Cancel</button>
+            <button type="submit" class="ledger-btn ledger-btn-primary">{{ newTransaction().savings ? 'Save contribution' : 'Add transaction' }}</button>
           </div>
         </form>
       </div>
@@ -1283,52 +1283,52 @@
 
   <!-- Add Category Modal Dialog -->
   @if (addCategoryModalOpen()) {
-    <div class="fiori-dialog-backdrop" (click)="closeAddCategoryModal()">
-      <div class="fiori-dialog" (click)="$event.stopPropagation()" style="max-width:440px;">
-        <div class="fiori-dialog-header">
+    <div class="ledger-dialog-backdrop" (click)="closeAddCategoryModal()">
+      <div class="ledger-dialog" (click)="$event.stopPropagation()" style="max-width:440px;">
+        <div class="ledger-dialog-header">
           <h2>Add category</h2>
-          <button type="button" class="fiori-dialog-close" (click)="closeAddCategoryModal()">×</button>
+          <button type="button" class="ledger-dialog-close" (click)="closeAddCategoryModal()">×</button>
         </div>
         <form (ngSubmit)="submitAddCategoryModal()" style="margin:0;">
-          <div class="fiori-dialog-body">
-            <div class="fiori-field">
+          <div class="ledger-dialog-body">
+            <div class="ledger-field">
               <label>Category name</label>
-              <input class="fiori-input" placeholder="e.g. Education, Fitness, Pet Care" [ngModel]="newCategoryModalName()" name="catName" (ngModelChange)="newCategoryModalName.set($event)" required autofocus>
+              <input class="ledger-input" placeholder="e.g. Education, Fitness, Pet Care" [ngModel]="newCategoryModalName()" name="catName" (ngModelChange)="newCategoryModalName.set($event)" required autofocus>
             </div>
 
-            <div class="fiori-field">
-              <label>Initial sub-category <span style="font-size:11px; color:var(--fiori-muted); font-weight:normal;">(optional)</span></label>
-              <input class="fiori-input" placeholder="e.g. Courses, Gym membership" [ngModel]="newCategoryModalSubcategory()" name="catSub" (ngModelChange)="newCategoryModalSubcategory.set($event)">
+            <div class="ledger-field">
+              <label>Initial sub-category <span style="font-size:11px; color:var(--ledger-muted); font-weight:normal;">(optional)</span></label>
+              <input class="ledger-input" placeholder="e.g. Courses, Gym membership" [ngModel]="newCategoryModalSubcategory()" name="catSub" (ngModelChange)="newCategoryModalSubcategory.set($event)">
             </div>
 
-            <div class="fiori-field">
+            <div class="ledger-field">
               <label>Color</label>
               <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
                 @for (color of categoryColorPresets; track color) {
-                  <button type="button" (click)="newCategoryModalColor.set(color)" [style.background]="color" style="width:24px; height:24px; border:2px solid; border-radius:3px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0;" [style.border-color]="newCategoryModalColor() === color ? 'var(--fiori-ink)' : 'transparent'" [title]="color">
+                  <button type="button" (click)="newCategoryModalColor.set(color)" [style.background]="color" style="width:24px; height:24px; border:2px solid; border-radius:3px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0;" [style.border-color]="newCategoryModalColor() === color ? 'var(--ledger-ink)' : 'transparent'" [title]="color">
                     @if (newCategoryModalColor() === color) {
                       <span style="color:#ffffff; font-size:12px; font-weight:700; text-shadow:0 0 2px rgba(0,0,0,0.8);">✓</span>
                     }
                   </button>
                 }
                 <div style="display:inline-flex; align-items:center; gap:6px; margin-left:4px;">
-                  <input type="color" [ngModel]="newCategoryModalColor()" name="catColor" (ngModelChange)="newCategoryModalColor.set($event)" style="width:28px; height:26px; padding:0; border:1px solid var(--fiori-border); cursor:pointer; background:none; border-radius:3px;">
-                  <span style="font-size:11px; color:var(--fiori-muted); font-variant-numeric:tabular-nums;">{{ newCategoryModalColor() }}</span>
+                  <input type="color" [ngModel]="newCategoryModalColor()" name="catColor" (ngModelChange)="newCategoryModalColor.set($event)" style="width:28px; height:26px; padding:0; border:1px solid var(--ledger-border); cursor:pointer; background:none; border-radius:3px;">
+                  <span style="font-size:11px; color:var(--ledger-muted); font-variant-numeric:tabular-nums;">{{ newCategoryModalColor() }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Preview Swatch -->
-            <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--fiori-chip); border:1px solid var(--fiori-border);">
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--ledger-chip); border:1px solid var(--ledger-border);">
               <span style="width:12px; height:12px; border-radius:2px;" [style.background]="newCategoryModalColor()"></span>
-              <span style="font-size:13px; font-weight:600; color:var(--fiori-ink);">{{ newCategoryModalName() || 'Preview category' }}</span>
-              <span style="font-size:11px; color:var(--fiori-muted); margin-left:auto;">{{ newCategoryModalSubcategory() ? ('1 sub-category: ' + newCategoryModalSubcategory()) : 'No sub-categories yet' }}</span>
+              <span style="font-size:13px; font-weight:600; color:var(--ledger-ink);">{{ newCategoryModalName() || 'Preview category' }}</span>
+              <span style="font-size:11px; color:var(--ledger-muted); margin-left:auto;">{{ newCategoryModalSubcategory() ? ('1 sub-category: ' + newCategoryModalSubcategory()) : 'No sub-categories yet' }}</span>
             </div>
           </div>
 
-          <div class="fiori-dialog-footer">
-            <button type="button" class="fiori-btn fiori-btn-ghost" (click)="closeAddCategoryModal()">Cancel</button>
-            <button type="submit" class="fiori-btn fiori-btn-primary">Add category</button>
+          <div class="ledger-dialog-footer">
+            <button type="button" class="ledger-btn ledger-btn-ghost" (click)="closeAddCategoryModal()">Cancel</button>
+            <button type="submit" class="ledger-btn ledger-btn-primary">Add category</button>
           </div>
         </form>
       </div>
@@ -1337,32 +1337,32 @@
 
   <!-- Add Sub-category Modal Dialog -->
   @if (addSubcategoryModalOpen()) {
-    <div class="fiori-dialog-backdrop" (click)="closeAddSubcategoryModal()">
-      <div class="fiori-dialog" (click)="$event.stopPropagation()" style="max-width:400px;">
-        <div class="fiori-dialog-header">
+    <div class="ledger-dialog-backdrop" (click)="closeAddSubcategoryModal()">
+      <div class="ledger-dialog" (click)="$event.stopPropagation()" style="max-width:400px;">
+        <div class="ledger-dialog-header">
           <h2>Add sub-category</h2>
-          <button type="button" class="fiori-dialog-close" (click)="closeAddSubcategoryModal()">×</button>
+          <button type="button" class="ledger-dialog-close" (click)="closeAddSubcategoryModal()">×</button>
         </div>
         <form (ngSubmit)="submitAddSubcategoryModal()" style="margin:0;">
-          <div class="fiori-dialog-body">
-            <div class="fiori-field">
+          <div class="ledger-dialog-body">
+            <div class="ledger-field">
               <label>Parent category</label>
-              <select class="fiori-select" [ngModel]="subcategoryModalCategory()" name="parentCat" (ngModelChange)="subcategoryModalCategory.set($event)" required>
+              <select class="ledger-select" [ngModel]="subcategoryModalCategory()" name="parentCat" (ngModelChange)="subcategoryModalCategory.set($event)" required>
                 @for (category of categories; track category) {
                   <option [value]="category">{{ category }}</option>
                 }
               </select>
             </div>
 
-            <div class="fiori-field">
+            <div class="ledger-field">
               <label>Sub-category name</label>
-              <input class="fiori-input" placeholder="e.g. Equipment, Books, Snacks" [ngModel]="subcategoryModalName()" name="subName" (ngModelChange)="subcategoryModalName.set($event)" required autofocus>
+              <input class="ledger-input" placeholder="e.g. Equipment, Books, Snacks" [ngModel]="subcategoryModalName()" name="subName" (ngModelChange)="subcategoryModalName.set($event)" required autofocus>
             </div>
           </div>
 
-          <div class="fiori-dialog-footer">
-            <button type="button" class="fiori-btn fiori-btn-ghost" (click)="closeAddSubcategoryModal()">Cancel</button>
-            <button type="submit" class="fiori-btn fiori-btn-primary">Add sub-category</button>
+          <div class="ledger-dialog-footer">
+            <button type="button" class="ledger-btn ledger-btn-ghost" (click)="closeAddSubcategoryModal()">Cancel</button>
+            <button type="submit" class="ledger-btn ledger-btn-primary">Add sub-category</button>
           </div>
         </form>
       </div>
@@ -1371,45 +1371,45 @@
 
   <!-- Edit Transaction Modal Dialog -->
   @if (editingExpenseId() !== null && editingExpense(); as editTx) {
-    <div class="fiori-dialog-backdrop" (click)="cancelEditingExpense()">
-      <div class="fiori-dialog" (click)="$event.stopPropagation()">
-        <div class="fiori-dialog-header">
+    <div class="ledger-dialog-backdrop" (click)="cancelEditingExpense()">
+      <div class="ledger-dialog" (click)="$event.stopPropagation()">
+        <div class="ledger-dialog-header">
           <h2>Edit transaction</h2>
-          <button type="button" class="fiori-dialog-close" (click)="cancelEditingExpense()" aria-label="Close dialog">×</button>
+          <button type="button" class="ledger-dialog-close" (click)="cancelEditingExpense()" aria-label="Close dialog">×</button>
         </div>
         <form (ngSubmit)="saveEditingExpense()" style="margin:0;">
-          <div class="fiori-dialog-body">
-            <div class="fiori-field">
+          <div class="ledger-dialog-body">
+            <div class="ledger-field">
               <label>Description</label>
-              <input class="fiori-input" placeholder="e.g. Grocery run, Dinner" [ngModel]="editTx.description" name="editDescription" (ngModelChange)="updateExpenseEdit('description', $event)" required autofocus>
+              <input class="ledger-input" placeholder="e.g. Grocery run, Dinner" [ngModel]="editTx.description" name="editDescription" (ngModelChange)="updateExpenseEdit('description', $event)" required autofocus>
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-              <div class="fiori-field">
+              <div class="ledger-field">
                 <label>Amount</label>
-                <div class="fiori-input-prefix-wrap">
-                  <span class="fiori-input-prefix">₱</span>
-                  <input class="fiori-input" style="width:100%;" type="number" min="0" step="0.01" placeholder="0.00" [ngModel]="editTx.amount" name="editAmount" (ngModelChange)="updateExpenseEdit('amount', $event)" required>
+                <div class="ledger-input-prefix-wrap">
+                  <span class="ledger-input-prefix">₱</span>
+                  <input class="ledger-input" style="width:100%;" type="number" min="0" step="0.01" placeholder="0.00" [ngModel]="editTx.amount" name="editAmount" (ngModelChange)="updateExpenseEdit('amount', $event)" required>
                 </div>
               </div>
 
-              <div class="fiori-field">
+              <div class="ledger-field">
                 <label>Date</label>
-                <input class="fiori-input" type="date" [ngModel]="editTx.date" name="editDate" (ngModelChange)="updateExpenseEdit('date', $event)" required>
+                <input class="ledger-input" type="date" [ngModel]="editTx.date" name="editDate" (ngModelChange)="updateExpenseEdit('date', $event)" required>
               </div>
 
-              <div class="fiori-field">
+              <div class="ledger-field">
                 <label>Category</label>
-                <select class="fiori-select" [ngModel]="editTx.category" name="editCategory" (ngModelChange)="updateExpenseEdit('category', $event)" required>
+                <select class="ledger-select" [ngModel]="editTx.category" name="editCategory" (ngModelChange)="updateExpenseEdit('category', $event)" required>
                   @for (category of categories; track category) {
                     <option [value]="category">{{ category }}</option>
                   }
                 </select>
               </div>
 
-              <div class="fiori-field">
+              <div class="ledger-field">
                 <label>Sub-category</label>
-                <select class="fiori-select" [ngModel]="editTx.subcategory" name="editSubcategory" (ngModelChange)="updateExpenseEdit('subcategory', $event)">
+                <select class="ledger-select" [ngModel]="editTx.subcategory" name="editSubcategory" (ngModelChange)="updateExpenseEdit('subcategory', $event)">
                   <option value="">Choose a sub-category</option>
                   @for (subcategory of subcategoriesFor(editTx.category); track subcategory) {
                     <option [value]="subcategory">{{ subcategory }}</option>
@@ -1419,9 +1419,9 @@
             </div>
           </div>
 
-          <div class="fiori-dialog-footer">
-            <button type="button" class="fiori-btn fiori-btn-ghost" (click)="cancelEditingExpense()">Cancel</button>
-            <button type="submit" class="fiori-btn fiori-btn-primary">Save changes</button>
+          <div class="ledger-dialog-footer">
+            <button type="button" class="ledger-btn ledger-btn-ghost" (click)="cancelEditingExpense()">Cancel</button>
+            <button type="submit" class="ledger-btn ledger-btn-primary">Save changes</button>
           </div>
         </form>
       </div>
