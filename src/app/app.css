@@ -672,13 +672,19 @@
    -------------------------------------------------------------------------- */
 .fiori-bill-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 120px 120px 220px;
+  grid-template-columns: minmax(0, 1fr) 110px 110px 180px auto;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   padding: 15px 20px;
   border-bottom: 1px solid var(--fiori-row-rule);
   background: var(--fiori-surface);
   transition: background 0.1s ease;
+}
+
+.fiori-bill-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .fiori-bill-row:nth-child(even) {
@@ -1214,6 +1220,14 @@
 
   .fiori-bill-status-text {
     grid-column: 1 / -1;
+  }
+
+  .fiori-bill-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 4px;
   }
 
   .fiori-savings-cols {

@@ -326,26 +326,60 @@
             </div>
           }
           @for (bill of billTracking(); track bill.id) {
-            <div class="fiori-bill-row">
-              <div>
-                <div class="fiori-bill-title">{{ bill.name }}</div>
-                <div class="fiori-bill-path">{{ bill.category }} → {{ bill.subcategory }}</div>
-              </div>
-              <div class="fiori-bill-spent" [class.overspent]="bill.overspent">
-                {{ bill.spent | currency:'PHP':'symbol':'1.0-0' }}
-              </div>
-              <div class="fiori-bill-plan">
-                {{ bill.amount | currency:'PHP':'symbol':'1.0-0' }}
-              </div>
-              <div>
-                <div class="fiori-bill-bar">
-                  <i class="fiori-bill-bar-fill" [class.overspent]="bill.overspent" [style.width.%]="billProgress(bill.spent, bill.amount)"></i>
+            @if (editingBillId() === bill.id && editingBill(); as editBill) {
+              <div class="fiori-bill-edit-row" style="background:var(--fiori-sidebar-bg); border-bottom:1px solid var(--fiori-row-rule); box-shadow:inset 3px 0 0 var(--fiori-accent); padding:16px 20px;">
+                <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
+                  <div style="font-size:12px; font-weight:700; color:var(--fiori-ink);">Edit expected bill</div>
+                  <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+                    <input class="fiori-input" style="flex:1; min-width:160px;" placeholder="Bill name" aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateBillEdit('name', $event)">
+                    <select class="fiori-select" aria-label="Edit bill category" [ngModel]="editBill.category" (ngModelChange)="updateEditingBillCategory($event)">
+                      @for (cat of categories; track cat) {
+                        <option [value]="cat">{{ cat }}</option>
+                      }
+                    </select>
+                    <select class="fiori-select" aria-label="Edit bill sub-category" [ngModel]="editBill.subcategory" (ngModelChange)="updateBillEdit('subcategory', $event)">
+                      <option value="">Choose a sub-category</option>
+                      @for (sub of subcategoriesFor(editBill.category); track sub) {
+                        <option [value]="sub">{{ sub }}</option>
+                      }
+                    </select>
+                    <div class="fiori-input-prefix-wrap" style="width:140px;">
+                      <span class="fiori-input-prefix">₱</span>
+                      <input class="fiori-input" type="number" min="0" placeholder="Monthly amount" aria-label="Edit monthly amount" [ngModel]="editBill.amount" (ngModelChange)="updateBillEdit('amount', $event)">
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                      <button type="button" class="fiori-btn fiori-btn-primary" (click)="saveEditingBill()">Save</button>
+                      <button type="button" class="fiori-btn fiori-btn-ghost" (click)="cancelEditingBill()">Cancel</button>
+                    </div>
+                  </div>
                 </div>
-                <div class="fiori-bill-status-text">
-                  {{ billStatus(bill.spent, bill.amount, bill.overspent) }}
+              </div>
+            } @else {
+              <div class="fiori-bill-row">
+                <div>
+                  <div class="fiori-bill-title">{{ bill.name }}</div>
+                  <div class="fiori-bill-path">{{ bill.category }} → {{ bill.subcategory }}</div>
+                </div>
+                <div class="fiori-bill-spent" [class.overspent]="bill.overspent">
+                  {{ bill.spent | currency:'PHP':'symbol':'1.0-0' }}
+                </div>
+                <div class="fiori-bill-plan">
+                  {{ bill.amount | currency:'PHP':'symbol':'1.0-0' }}
+                </div>
+                <div>
+                  <div class="fiori-bill-bar">
+                    <i class="fiori-bill-bar-fill" [class.overspent]="bill.overspent" [style.width.%]="billProgress(bill.spent, bill.amount)"></i>
+                  </div>
+                  <div class="fiori-bill-status-text">
+                    {{ billStatus(bill.spent, bill.amount, bill.overspent) }}
+                  </div>
+                </div>
+                <div class="fiori-bill-actions" style="display:flex; justify-content:flex-end; gap:6px;">
+                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="startEditingBill(bill)" title="Edit bill">Edit</button>
+                  <button type="button" class="fiori-btn fiori-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--fiori-red);" (click)="removeExpectedBill(bill.id)" title="Delete bill">Delete</button>
                 </div>
               </div>
-            </div>
+            }
           }
         </section>
       </div>
@@ -537,9 +571,24 @@
               }
               @for (bill of savingsPlanBillsView(); track bill.id) {
                 @if (editingBillId() === bill.id && editingSavingsBillView(); as editBill) {
-                  <tr style="background:var(--fiori-sidebar-bg);">
+                  <tr style="background:var(--fiori-sidebar-bg); box-shadow:inset 3px 0 0 var(--fiori-accent);">
                     <td data-label="Fixed need / bill">
-                      <input class="fiori-input" style="width:100%; max-width:240px;" aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateEditingSavingsBill('name', $event)" />
+                      <div style="display:flex; flex-direction:column; gap:6px;">
+                        <input class="fiori-input" style="width:100%; max-width:280px;" aria-label="Edit bill name" [ngModel]="editBill.name" (ngModelChange)="updateEditingSavingsBill('name', $event)" placeholder="Bill name" />
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                          <select class="fiori-select" style="min-width:130px; font-size:11px; height:28px;" aria-label="Category" [ngModel]="editBill.category" (ngModelChange)="updateEditingSavingsBill('category', $event)">
+                            @for (cat of categories; track cat) {
+                              <option [value]="cat">{{ cat }}</option>
+                            }
+                          </select>
+                          <select class="fiori-select" style="min-width:130px; font-size:11px; height:28px;" aria-label="Sub-category" [ngModel]="editBill.subcategory" (ngModelChange)="updateEditingSavingsBill('subcategory', $event)">
+                            <option value="">Choose a sub-category</option>
+                            @for (sub of subcategoriesFor(editBill.category); track sub) {
+                              <option [value]="sub">{{ sub }}</option>
+                            }
+                          </select>
+                        </div>
+                      </div>
                     </td>
                     <td class="text-right" data-label="Monthly">
                       <div class="fiori-input-prefix-wrap" style="display:inline-flex; max-width:140px;">
@@ -556,7 +605,10 @@
                   </tr>
                 } @else {
                   <tr>
-                    <td style="font-weight:500;" data-label="Fixed need / bill">{{ bill.name }}</td>
+                    <td style="font-weight:500;" data-label="Fixed need / bill">
+                      <div>{{ bill.name }}</div>
+                      <div style="font-size:11px; color:var(--fiori-muted); margin-top:2px;">{{ bill.category }} → {{ bill.subcategory }}</div>
+                    </td>
                     <td class="text-right" style="font-weight:600; font-variant-numeric:tabular-nums;" data-label="Monthly">{{ bill.monthly | currency:'PHP':'symbol':'1.0-0' }}</td>
                     <td class="text-right" style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 1">{{ bill.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
                     <td class="text-right" style="color:var(--fiori-muted); font-variant-numeric:tabular-nums;" data-label="Paycheck 2">{{ bill.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
@@ -572,8 +624,19 @@
                 <td colspan="5" style="padding:12px 20px;">
                   <form (submit)="addSavingsPlanBill(); $event.preventDefault()" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:0;">
                     <span style="font-size:12px; font-weight:600; color:var(--fiori-ink); white-space:nowrap;">+ Add fixed need:</span>
-                    <input class="fiori-input" style="flex:1; min-width:180px; max-width:260px;" placeholder="e.g. WiFi, Car loan, Tuition" [ngModel]="newSavingsBillName()" (ngModelChange)="newSavingsBillName.set($event)" name="newSavBillName" required />
-                    <div class="fiori-input-prefix-wrap" style="width:140px;">
+                    <input class="fiori-input" style="flex:1; min-width:160px; max-width:220px;" placeholder="e.g. WiFi, Car loan, Tuition" [ngModel]="newSavingsBillName()" (ngModelChange)="newSavingsBillName.set($event)" name="newSavBillName" required />
+                    <select class="fiori-select" style="min-width:130px; font-size:12px; height:32px;" [ngModel]="newSavingsBillCategory()" (ngModelChange)="updateSavingsBillCategory($event)" name="newSavBillCat">
+                      @for (cat of categories; track cat) {
+                        <option [value]="cat">{{ cat }}</option>
+                      }
+                    </select>
+                    <select class="fiori-select" style="min-width:130px; font-size:12px; height:32px;" [ngModel]="newSavingsBillSubcategory()" (ngModelChange)="newSavingsBillSubcategory.set($event)" name="newSavBillSub">
+                      <option value="">Choose a sub-category</option>
+                      @for (sub of subcategoriesFor(newSavingsBillCategory()); track sub) {
+                        <option [value]="sub">{{ sub }}</option>
+                      }
+                    </select>
+                    <div class="fiori-input-prefix-wrap" style="width:130px;">
                       <span class="fiori-input-prefix">₱</span>
                       <input class="fiori-input" style="width:100%;" type="number" min="0" placeholder="0" [ngModel]="newSavingsBillAmount()" (ngModelChange)="newSavingsBillAmount.set($event ? +$event : null)" name="newSavBillAmt" required />
                     </div>
