@@ -2294,7 +2294,7 @@ export class App {
       // Note: bills are now persisted via persistExpectedBills() — no longer stored separately
     } catch {}
   }
-  private loadFromApi(): void {
+  private loadFromApi(attempt = 1): void {
     if (!this.apiUrl) {
       try {
         const saved = localStorage.getItem('ledger-transactions');
@@ -2310,9 +2310,10 @@ export class App {
       return;
     }
     const requestUrl = this.isHosted ? `${this.apiUrl}&cacheBust=${Date.now()}` : this.apiUrl;
-    void fetch(requestUrl, { cache: 'no-store' }).then((response) => response.ok ? response.json() : Promise.reject()).then((data: Transaction[] | CloudData) => {
+    void fetch(requestUrl, { cache: 'no-store' }).then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))).then((data: Transaction[] | CloudData) => {
       const cloudData = Array.isArray(data) ? { transactions: data } : data;
       this.cloudDataReady.set(true);
+      this.cloudDataError.set(false);
 
       if (Array.isArray(cloudData.transactions)) {
         this.transactions.set(cloudData.transactions);
@@ -2353,7 +2354,12 @@ export class App {
         this.persistSavingsCategories();
       }
       this.persist();
-    }).catch(() => {
+    }).catch((error) => {
+      if (attempt < 2) {
+        setTimeout(() => this.loadFromApi(attempt + 1), 1500);
+        return;
+      }
+      console.warn('Could not load cloud workbook data:', error);
       try {
         const saved = localStorage.getItem('ledger-transactions');
         if (saved) {
@@ -2385,10 +2391,10 @@ export class App {
     this.syncTimeout = setTimeout(() => {
       this.syncTimeout = null;
       this.executeSyncToApi();
-    }, 400);
+    }, 1000);
   }
 
-  private executeSyncToApi(): void {
+  private executeSyncToApi(attempt = 1, maxAttempts = 3): void {
     if (!this.apiUrl) return;
     if (!this.cloudDataReady() && !this.cloudDataError()) {
       return;
@@ -2396,13 +2402,15 @@ export class App {
     if (this.transactions().length === 0) {
       return;
     }
-    if (this.syncInProgress) {
+    if (this.syncInProgress && attempt === 1) {
       this.syncQueued = true;
       return;
     }
     this.syncInProgress = true;
     this.syncPending.set(true);
-    this.syncError.set(false);
+    if (attempt === 1) {
+      this.syncError.set(false);
+    }
     const isGoogleSheets = this.apiUrl === this.googleSheetsUrl;
     const payload = JSON.stringify(isGoogleSheets ? {
       action: 'replace',
@@ -2425,7 +2433,6 @@ export class App {
       method: isGoogleSheets ? 'POST' : 'PUT',
       headers: { 'Content-Type': isGoogleSheets ? 'text/plain;charset=utf-8' : 'application/json' },
       body: payload,
-      keepalive: true,
     })
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -2433,6 +2440,7 @@ export class App {
       })
       .then(() => {
         this.syncInProgress = false;
+        this.syncError.set(false);
         if (this.syncQueued) {
           this.syncQueued = false;
           this.executeSyncToApi();
@@ -2441,7 +2449,15 @@ export class App {
         }
       })
       .catch((error) => {
-        console.error('Failed to sync with API:', error);
+        if (attempt < maxAttempts) {
+          const backoffDelay = attempt * 1500;
+          console.warn(`Sync attempt ${attempt} failed, retrying in ${backoffDelay}ms...`, error);
+          setTimeout(() => {
+            this.executeSyncToApi(attempt + 1, maxAttempts);
+          }, backoffDelay);
+          return;
+        }
+        console.error('Failed to sync with API after retries:', error);
         this.syncInProgress = false;
         this.syncPending.set(false);
         this.syncError.set(true);
