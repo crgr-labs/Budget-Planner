@@ -258,7 +258,7 @@ export class App {
   ]);
   protected readonly filteredCategoryGroups = computed(() => {
     const q = this.categorySearch().toLowerCase().trim();
-    const groups = this.categoryGroups().filter((g) => g.name !== 'Expected Bills');
+    const groups = this.categoryGroups();
     if (!q) return groups;
     return groups.filter((g) =>
       g.name.toLowerCase().includes(q) || g.subcategories.some((s) => s.toLowerCase().includes(q))
