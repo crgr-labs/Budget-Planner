@@ -204,6 +204,10 @@ export class App {
     this.darkMode.update((d) => !d);
   }
   protected readonly categorySearch = signal('');
+  protected readonly categoryTab = signal<'Spending' | 'Savings'>('Spending');
+  protected setCategoryTab(tab: 'Spending' | 'Savings'): void {
+    this.categoryTab.set(tab);
+  }
   protected readonly transactionFormOpen = signal(false);
   protected readonly addTransactionModalOpen = signal(false);
   protected readonly savingsSubPage = signal<'Plan' | 'AddTransaction'>('Plan');
@@ -1070,7 +1074,9 @@ export class App {
   protected readonly selectedCategoryForSubcategory = signal('');
   protected readonly newSubcategoryName = signal('');
   protected readonly addCategoryModalOpen = signal(false);
+  protected readonly addCategoryModalIsSavings = signal(false);
   protected readonly addSubcategoryModalOpen = signal(false);
+  protected readonly addSubcategoryModalIsSavings = signal(false);
   protected readonly newCategoryModalName = signal('');
   protected readonly newCategoryModalSubcategory = signal('');
   protected readonly newCategoryModalColor = signal('#0070f2');
@@ -1317,6 +1323,10 @@ export class App {
       
     const allSavingsUsedInTransactions = this.transactions()
       .filter((t) => t.savings && t.subcategory)
+    const group = this.savingsCategoryGroups().find((g) => g.name === category);
+    const groupSubs = group ? group.subcategories : [];
+    const usedInTx = this.transactions()
+      .filter((t) => t.savings && t.category === category && t.subcategory)
       .map((t) => t.subcategory);
 
     const allSavingsSubcategories = new Set([
@@ -1325,6 +1335,12 @@ export class App {
     ]);
 
     return [...allSavingsSubcategories].filter(Boolean).sort();
+    const set = new Set([...groupSubs, ...usedInTx]);
+    if (set.size > 0) {
+      return [...set].filter(Boolean).sort();
+    }
+    const allSubs = this.savingsCategoryGroups().flatMap((g) => g.subcategories);
+    return [...new Set(allSubs)].filter(Boolean).sort();
   }
 
   protected addCategory(name: string, subcategory: string): void {
@@ -1410,6 +1426,8 @@ export class App {
   }
 
   protected openAddCategoryModal(): void {
+  protected openAddCategoryModal(savings: boolean = this.categoryTab() === 'Savings'): void {
+    this.addCategoryModalIsSavings.set(savings);
     this.newCategoryModalName.set('');
     this.newCategoryModalSubcategory.set('');
     this.newCategoryModalColor.set('#0070f2');
@@ -1433,15 +1451,35 @@ export class App {
     if (exists) {
       if (sub) {
         this.addExpenseSubcategory(name, sub);
+    if (this.addCategoryModalIsSavings()) {
+      const exists = this.savingsCategories.some((category) => category.toLowerCase() === name.toLowerCase());
+      if (exists) {
+        if (sub) {
+          this.addSavingsSubcategory(name, sub);
+        }
+      } else {
+        this.addSavingsCategory(name, sub);
       }
     } else {
       this.addCategory(name, sub);
+      const exists = this.categories.some((category) => category.toLowerCase() === name.toLowerCase());
+      if (exists) {
+        if (sub) {
+          this.addExpenseSubcategory(name, sub);
+        }
+      } else {
+        this.addCategory(name, sub);
+      }
     }
     this.closeAddCategoryModal();
   }
 
   protected openAddSubcategoryModal(categoryName: string = ''): void {
     this.subcategoryModalCategory.set(categoryName || (this.categories[0] || ''));
+  protected openAddSubcategoryModal(categoryName: string = '', savings: boolean = this.categoryTab() === 'Savings'): void {
+    this.addSubcategoryModalIsSavings.set(savings);
+    const defaultCat = savings ? (categoryName || this.savingsCategories[0] || '') : (categoryName || this.categories[0] || '');
+    this.subcategoryModalCategory.set(defaultCat);
     this.subcategoryModalName.set('');
     this.addSubcategoryModalOpen.set(true);
   }
@@ -1455,6 +1493,11 @@ export class App {
     const sub = this.subcategoryModalName().trim();
     if (cat && sub) {
       this.addExpenseSubcategory(cat, sub);
+      if (this.addSubcategoryModalIsSavings()) {
+        this.addSavingsSubcategory(cat, sub);
+      } else {
+        this.addExpenseSubcategory(cat, sub);
+      }
     }
     this.closeAddSubcategoryModal();
   }
@@ -1470,9 +1513,15 @@ export class App {
   }
 
   protected submitInlineSubcategory(categoryName: string): void {
+  protected submitInlineSubcategory(categoryName: string, savings: boolean = this.categoryTab() === 'Savings'): void {
     const sub = this.inlineSubcategoryName().trim();
     if (sub) {
       this.addExpenseSubcategory(categoryName, sub);
+      if (savings) {
+        this.addSavingsSubcategory(categoryName, sub);
+      } else {
+        this.addExpenseSubcategory(categoryName, sub);
+      }
     }
     this.closeInlineSubcategory();
   }
@@ -1499,16 +1548,20 @@ export class App {
 
   protected editCategory(name: string, savings: boolean): void {
     const updatedName = window.prompt('Edit category name', name)?.trim();
+    const updatedName = window.prompt(`Edit ${savings ? 'savings fund' : 'category'} name`, name)?.trim();
     if (!updatedName || updatedName === name) return;
     const groups = savings ? this.savingsCategoryGroups() : this.categoryGroups();
     if (groups.some((group) => group.name !== name && group.name.toLowerCase() === updatedName.toLowerCase())) return;
     if (savings) {
       this.savingsCategoryGroups.update((items) => items.map((group) => group.name === name ? { ...group, name: updatedName } : group));
+      this.transactions.update((items) => items.map((item) => (item.savings && item.category === name) ? { ...item, category: updatedName } : item));
       this.persistSavingsCategories();
+      this.persist();
       this.syncToApi();
     } else {
       this.categoryGroups.update((items) => items.map((group) => group.name === name ? { ...group, name: updatedName } : group));
       this.transactions.update((items) => items.map((item) => item.category === name ? { ...item, category: updatedName } : item));
+      this.transactions.update((items) => items.map((item) => (!item.savings && item.category === name) ? { ...item, category: updatedName } : item));
       this.expectedBills.update((items) => items.map((bill) => bill.category === name ? { ...bill, category: updatedName } : bill));
       this.persistCategories();
       this.persist();
@@ -1525,11 +1578,14 @@ export class App {
     if (!group || group.subcategories.some((item) => item !== subcategory && item.toLowerCase() === updatedName.toLowerCase())) return;
     if (savings) {
       this.savingsCategoryGroups.update((items) => items.map((item) => item.name === category ? { ...item, subcategories: item.subcategories.map((entry) => entry === subcategory ? updatedName : entry) } : item));
+      this.transactions.update((items) => items.map((item) => (item.savings && item.category === category && item.subcategory === subcategory) ? { ...item, subcategory: updatedName } : item));
       this.persistSavingsCategories();
+      this.persist();
       this.syncToApi();
     } else {
       this.categoryGroups.update((items) => items.map((item) => item.name === category ? { ...item, subcategories: item.subcategories.map((entry) => entry === subcategory ? updatedName : entry) } : item));
       this.transactions.update((items) => items.map((item) => item.category === category && item.subcategory === subcategory ? { ...item, subcategory: updatedName } : item));
+      this.transactions.update((items) => items.map((item) => (!item.savings && item.category === category && item.subcategory === subcategory) ? { ...item, subcategory: updatedName } : item));
       this.expectedBills.update((items) => items.map((bill) => bill.category === category && bill.subcategory === subcategory ? { ...bill, subcategory: updatedName } : bill));
       this.persistCategories();
       this.persist();
@@ -1540,6 +1596,7 @@ export class App {
 
   protected deleteCategory(name: string, savings: boolean): void {
     if (!window.confirm(`Are you sure you want to delete the category "${name}"?`)) return;
+    if (!window.confirm(`Are you sure you want to delete the ${savings ? 'savings fund' : 'category'} "${name}"?`)) return;
     if (savings) {
       this.savingsCategoryGroups.update((items) => items.filter((group) => group.name !== name));
       this.persistSavingsCategories();
@@ -1559,7 +1616,11 @@ export class App {
       this.savingsCategoryGroups.update((items) => items.map((group) => group.name === category
         ? { ...group, subcategories: group.subcategories.filter((item) => item !== subcategory) }
         : group));
+      this.transactions.update((items) => items.map((item) => (item.savings && item.category === category && item.subcategory === subcategory)
+        ? { ...item, subcategory: '' }
+        : item));
       this.persistSavingsCategories();
+      this.persist();
       this.syncToApi();
       return;
     }
@@ -1567,6 +1628,7 @@ export class App {
       ? { ...group, subcategories: group.subcategories.filter((item) => item !== subcategory) }
       : group));
     this.transactions.update((items) => items.map((item) => item.category === category && item.subcategory === subcategory
+    this.transactions.update((items) => items.map((item) => (!item.savings && item.category === category && item.subcategory === subcategory)
       ? { ...item, subcategory: '' }
       : item));
     this.expectedBills.update((items) => items.filter((bill) => !(bill.category === category && bill.subcategory === subcategory)));

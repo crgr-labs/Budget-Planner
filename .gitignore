@@ -17,6 +17,7 @@ yarn-error.log
 src/environments/environment.development.ts
 
 # Local Data & Excel Workbooks
+data/*.xlsx
 data/
 data/*
 *.xlsx
