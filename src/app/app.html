@@ -1003,15 +1003,11 @@
         <div class="ledger-page-header">
           <div>
             <h1>Categories</h1>
-            <p class="ledger-page-subtitle">{{ filteredCategoryGroups().length }} categories directory</p>
             <p class="ledger-page-subtitle">
               {{ categoryTab() === 'Spending' ? filteredCategoryGroups().length : filteredSavingsCategories().length }}
               {{ categoryTab() === 'Spending' ? 'spending categories' : 'savings categories / funds' }}
             </p>
           </div>
-          <div class="ledger-page-actions" style="display:flex; gap:10px; align-items:center;">
-            <input class="ledger-input" style="width:200px;" placeholder="Search categories" [ngModel]="categorySearch()" (ngModelChange)="categorySearch.set($event)">
-            <button type="button" class="ledger-btn ledger-btn-primary" (click)="openAddCategoryModal()">＋ Add category</button>
           <div class="ledger-page-actions" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             <div class="ledger-segmented-toggle" style="width:260px;">
               <button type="button" [class.active]="categoryTab() === 'Spending'" (click)="setCategoryTab('Spending')">Spending</button>
@@ -1024,30 +1020,6 @@
           </div>
         </div>
 
-        <section class="ledger-panel" style="min-width:0; overflow:hidden; box-sizing:border-box;">
-          @if (filteredCategoryGroups().length === 0) {
-            <div style="padding:48px 20px; text-align:center; color:var(--ledger-muted);">
-              <div style="font-size:14px; font-weight:600; margin-bottom:6px; color:var(--ledger-ink);">No categories found</div>
-              <p style="font-size:12px; margin:0 0 16px;">{{ categorySearch() ? 'No categories match your search query.' : 'Get started by creating your first spending category.' }}</p>
-              <button type="button" class="ledger-btn ledger-btn-primary" (click)="openAddCategoryModal()">＋ Add category</button>
-            </div>
-          }
-          @for (group of filteredCategoryGroups(); track group.name) {
-            <div class="ledger-cat-card">
-              <div class="ledger-cat-card-header">
-                <span style="width:12px; height:12px; border-radius:2px; flex-shrink:0;" [style.background]="getCategoryColor(group.name)"></span>
-                <strong style="font-size:13px; color:var(--ledger-ink);">{{ group.name }}</strong>
-                <span style="font-size:11px; color:var(--ledger-muted);">{{ group.subcategories.length }} sub-categories</span>
-                <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
-                  <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="editCategory(group.name, false)" title="Rename {{ group.name }}">
-                    Edit
-                  </button>
-                  <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="openAddSubcategoryModal(group.name)">
-                    ＋ Add sub-category
-                  </button>
-                  <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 6px; font-size:11px; color:var(--ledger-red);" (click)="deleteCategory(group.name, false)" title="Delete category">
-                    Delete
-                  </button>
         @if (categoryTab() === 'Spending') {
           <section class="ledger-panel" style="min-width:0; overflow:hidden; box-sizing:border-box;">
             @if (filteredCategoryGroups().length === 0) {
@@ -1096,25 +1068,6 @@
                   }
                 </div>
               </div>
-              <div class="ledger-chip-list">
-                @for (sub of group.subcategories; track sub) {
-                  <span class="ledger-chip" style="display:inline-flex; align-items:center; gap:6px;">
-                    <span (click)="editSubcategory(group.name, sub, false)" title="Click to rename {{ sub }}" style="cursor:pointer;">{{ sub }}</span>
-                    <button type="button" (click)="editSubcategory(group.name, sub, false)" title="Rename {{ sub }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:11px; color:var(--ledger-muted); line-height:1;">✎</button>
-                    <button type="button" (click)="deleteSubcategory(group.name, sub, false)" title="Remove {{ sub }}" style="background:none; border:none; padding:0; cursor:pointer; font-size:13px; color:var(--ledger-muted); line-height:1;">×</button>
-                  </span>
-                }
-                @if (addingSubcategoryFor() === group.name) {
-                  <form (submit)="submitInlineSubcategory(group.name); $event.preventDefault()" style="display:inline-flex; align-items:center; gap:6px; margin:0;">
-                    <input class="ledger-input" style="height:26px; padding:0 8px; font-size:12px; width:150px;" placeholder="Sub-category name" [ngModel]="inlineSubcategoryName()" (ngModelChange)="inlineSubcategoryName.set($event)" name="inlineSub" required autofocus />
-                    <button type="submit" class="ledger-btn ledger-btn-primary" style="height:26px; padding:0 8px; font-size:11px;">Add</button>
-                    <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="closeInlineSubcategory()">Cancel</button>
-                  </form>
-                } @else {
-                  <button type="button" class="ledger-chip-add" (click)="openInlineSubcategory(group.name)" title="Add sub-category to {{ group.name }}">
-                    ＋ Add sub-category
-                  </button>
-                }
             }
           </section>
         } @else {
@@ -1125,9 +1078,6 @@
                 <p style="font-size:12px; margin:0 0 16px;">{{ categorySearch() ? 'No savings funds match your search query.' : 'Get started by creating your first savings fund or goal.' }}</p>
                 <button type="button" class="ledger-btn ledger-btn-primary" (click)="openAddCategoryModal(true)">＋ Add savings fund</button>
               </div>
-            </div>
-          }
-        </section>
             }
             @for (group of filteredSavingsCategories(); track group.name) {
               <div class="ledger-cat-card">
@@ -1425,22 +1375,18 @@
     <div class="ledger-dialog-backdrop" (click)="closeAddCategoryModal()">
       <div class="ledger-dialog" (click)="$event.stopPropagation()" style="max-width:440px;">
         <div class="ledger-dialog-header">
-          <h2>Add category</h2>
           <h2>Add {{ addCategoryModalIsSavings() ? 'savings fund' : 'category' }}</h2>
           <button type="button" class="ledger-dialog-close" (click)="closeAddCategoryModal()">×</button>
         </div>
         <form (ngSubmit)="submitAddCategoryModal()" style="margin:0;">
           <div class="ledger-dialog-body">
             <div class="ledger-field">
-              <label>Category name</label>
-              <input class="ledger-input" placeholder="e.g. Education, Fitness, Pet Care" [ngModel]="newCategoryModalName()" name="catName" (ngModelChange)="newCategoryModalName.set($event)" required autofocus>
               <label>{{ addCategoryModalIsSavings() ? 'Fund / Savings name' : 'Category name' }}</label>
               <input class="ledger-input" [placeholder]="addCategoryModalIsSavings() ? 'e.g. Travel Fund, Wedding, House Downpayment' : 'e.g. Education, Fitness, Pet Care'" [ngModel]="newCategoryModalName()" name="catName" (ngModelChange)="newCategoryModalName.set($event)" required autofocus>
             </div>
 
             <div class="ledger-field">
               <label>Initial sub-category <span style="font-size:11px; color:var(--ledger-muted); font-weight:normal;">(optional)</span></label>
-              <input class="ledger-input" placeholder="e.g. Courses, Gym membership" [ngModel]="newCategoryModalSubcategory()" name="catSub" (ngModelChange)="newCategoryModalSubcategory.set($event)">
               <input class="ledger-input" [placeholder]="addCategoryModalIsSavings() ? 'e.g. Flights, Accommodation, Deposits' : 'e.g. Courses, Gym membership'" [ngModel]="newCategoryModalSubcategory()" name="catSub" (ngModelChange)="newCategoryModalSubcategory.set($event)">
             </div>
 
@@ -1464,7 +1410,6 @@
             <!-- Preview Swatch -->
             <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--ledger-chip); border:1px solid var(--ledger-border);">
               <span style="width:12px; height:12px; border-radius:2px;" [style.background]="newCategoryModalColor()"></span>
-              <span style="font-size:13px; font-weight:600; color:var(--ledger-ink);">{{ newCategoryModalName() || 'Preview category' }}</span>
               <span style="font-size:13px; font-weight:600; color:var(--ledger-ink);">{{ newCategoryModalName() || (addCategoryModalIsSavings() ? 'Preview fund' : 'Preview category') }}</span>
               <span style="font-size:11px; color:var(--ledger-muted); margin-left:auto;">{{ newCategoryModalSubcategory() ? ('1 sub-category: ' + newCategoryModalSubcategory()) : 'No sub-categories yet' }}</span>
             </div>
@@ -1472,7 +1417,6 @@
 
           <div class="ledger-dialog-footer">
             <button type="button" class="ledger-btn ledger-btn-ghost" (click)="closeAddCategoryModal()">Cancel</button>
-            <button type="submit" class="ledger-btn ledger-btn-primary">Add category</button>
             <button type="submit" class="ledger-btn ledger-btn-primary">Add {{ addCategoryModalIsSavings() ? 'savings fund' : 'category' }}</button>
           </div>
         </form>
@@ -1485,18 +1429,14 @@
     <div class="ledger-dialog-backdrop" (click)="closeAddSubcategoryModal()">
       <div class="ledger-dialog" (click)="$event.stopPropagation()" style="max-width:400px;">
         <div class="ledger-dialog-header">
-          <h2>Add sub-category</h2>
           <h2>Add sub-category to {{ addSubcategoryModalIsSavings() ? 'savings fund' : 'category' }}</h2>
           <button type="button" class="ledger-dialog-close" (click)="closeAddSubcategoryModal()">×</button>
         </div>
         <form (ngSubmit)="submitAddSubcategoryModal()" style="margin:0;">
           <div class="ledger-dialog-body">
             <div class="ledger-field">
-              <label>Parent category</label>
               <label>Parent {{ addSubcategoryModalIsSavings() ? 'fund' : 'category' }}</label>
               <select class="ledger-select" [ngModel]="subcategoryModalCategory()" name="parentCat" (ngModelChange)="subcategoryModalCategory.set($event)" required>
-                @for (category of categories; track category) {
-                  <option [value]="category">{{ category }}</option>
                 @if (addSubcategoryModalIsSavings()) {
                   @for (category of savingsCategories; track category) {
                     <option [value]="category">{{ category }}</option>
@@ -1511,7 +1451,6 @@
 
             <div class="ledger-field">
               <label>Sub-category name</label>
-              <input class="ledger-input" placeholder="e.g. Equipment, Books, Snacks" [ngModel]="subcategoryModalName()" name="subName" (ngModelChange)="subcategoryModalName.set($event)" required autofocus>
               <input class="ledger-input" [placeholder]="addSubcategoryModalIsSavings() ? 'e.g. Flights, Hotel, Buffer' : 'e.g. Equipment, Books, Snacks'" [ngModel]="subcategoryModalName()" name="subName" (ngModelChange)="subcategoryModalName.set($event)" required autofocus>
             </div>
           </div>
