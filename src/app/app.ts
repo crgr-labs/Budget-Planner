@@ -295,6 +295,8 @@ export class App {
 
   // Savings add-form signals (kept separate from Expected Bills form)
   protected readonly newSavingsBillName = signal('');
+  protected readonly newSavingsBillCategory = signal('Expected Bills');
+  protected readonly newSavingsBillSubcategory = signal('Globe');
   protected readonly newSavingsBillAmount = signal<number | null>(null);
 
   // Computed projection: all active expected bills formatted for the Savings "Fixed Needs" table
@@ -304,6 +306,8 @@ export class App {
       .map(bill => ({
         id: bill.id,
         name: bill.name,
+        category: bill.category,
+        subcategory: bill.subcategory,
         monthly: bill.amount,
         paycheckOne: bill.amount / 2,
         paycheckTwo: bill.amount / 2,
@@ -1607,14 +1611,16 @@ export class App {
     const id = this.editingBillId();
     const bill = this.editingBill();
     const amount = Number(bill?.amount);
-    if (id === null || !bill || !bill.name.trim() || !bill.category || !bill.subcategory || !Number.isFinite(amount) || amount <= 0) return;
+    if (id === null || !bill || !bill.name.trim() || !bill.category || !Number.isFinite(amount) || amount <= 0) return;
+    const subcategory = (bill.subcategory && bill.subcategory.trim()) || this.subcategoriesFor(bill.category)[0] || bill.name.trim();
     this.expectedBills.update((items) => items.map((item) => item.id === id ? {
       ...item,
       name: bill.name.trim(),
       category: bill.category,
-      subcategory: bill.subcategory,
+      subcategory,
       amount,
     } : item));
+    this.ensureExpectedBillsCategory();
     this.persistExpectedBills();
     this.syncToApi();
     this.cancelEditingBill();
@@ -1775,17 +1781,27 @@ export class App {
     this.cancelEditingBill();
   }
 
-  protected updateEditingSavingsBill(field: 'name' | 'monthly', value: string | number): void {
+  protected updateEditingSavingsBill(field: 'name' | 'monthly' | 'category' | 'subcategory', value: string | number): void {
     if (field === 'name') {
       this.updateBillEdit('name', value);
     } else if (field === 'monthly') {
       this.updateBillEdit('amount', value);
+    } else if (field === 'category') {
+      this.updateEditingBillCategory(String(value));
+    } else if (field === 'subcategory') {
+      this.updateBillEdit('subcategory', String(value));
     }
   }
-  // Computed projection of editingBill into the {name, monthly} shape expected by the Savings table editing row
+
+  // Computed projection of editingBill into the shape expected by the Savings table editing row
   protected readonly editingSavingsBillView = computed(() => {
     const bill = this.editingBill();
-    return bill ? { name: bill.name, monthly: bill.amount } : null;
+    return bill ? {
+      name: bill.name,
+      category: bill.category,
+      subcategory: bill.subcategory,
+      monthly: bill.amount,
+    } : null;
   });
 
   protected saveEditingSavingsBill(): void {
@@ -1796,15 +1812,23 @@ export class App {
     this.removeExpectedBill(id);
   }
 
+  protected updateSavingsBillCategory(category: string): void {
+    this.newSavingsBillCategory.set(category);
+    this.newSavingsBillSubcategory.set(this.subcategoriesFor(category)[0] || '');
+  }
+
   protected addSavingsPlanBill(): void {
     const name = this.newSavingsBillName().trim();
     const monthly = Number(this.newSavingsBillAmount());
+    const category = this.newSavingsBillCategory() || 'Expected Bills';
+    const subcategory = this.newSavingsBillSubcategory() || name;
     if (!name || !Number.isFinite(monthly) || monthly <= 0) return;
     this.expectedBills.update((bills) => [...bills, {
-      id: Date.now(), name, category: 'Expected Bills', subcategory: name, amount: monthly, active: true,
+      id: Date.now(), name, category, subcategory, amount: monthly, active: true,
     }]);
     this.newSavingsBillName.set('');
     this.newSavingsBillAmount.set(null);
+    this.newSavingsBillSubcategory.set(this.subcategoriesFor(this.newSavingsBillCategory())[0] || '');
     this.ensureExpectedBillsCategory();
     this.persistExpectedBills();
     this.syncToApi();
