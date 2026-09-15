@@ -297,7 +297,7 @@
         </div>
 
         @if (addBillFormOpen()) {
-          <div class="fiori-panel" style="margin-bottom:24px; padding:20px;">
+          <div class="fiori-panel" style="margin-bottom:16px; padding:16px;">
             <div style="font-size:14px; font-weight:700; margin-bottom:14px;">Add New Expected Bill</div>
             <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
               <input class="fiori-input" style="flex:1; min-width:160px;" placeholder="Bill name (e.g. Electric Bill)" [ngModel]="newBillName()" (ngModelChange)="newBillName.set($event)">
@@ -423,7 +423,7 @@
         </section>
 
         <!-- Two Column Savings Grid -->
-        <div class="fiori-grid-even-2col" style="margin-bottom:24px;">
+        <div class="fiori-grid-even-2col" style="margin-bottom:16px;">
           <!-- Monthly Net Savings Breakdown -->
           <section class="fiori-panel">
             <div class="fiori-panel-header" style="display:flex; justify-content:space-between; align-items:center;">
@@ -483,10 +483,10 @@
         </div>
 
         <!-- Savings Activity & Contributions Table -->
-        <section class="fiori-table-container" style="margin-bottom:24px;">
-          <div class="fiori-panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--fiori-border);">
+        <section class="fiori-table-container" style="margin-bottom:16px;">
+          <div class="fiori-panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--fiori-border);">
             <div>
-              <h2 style="font-size:15px; font-weight:700; margin:0;">Savings activity &amp; contributions</h2>
+              <h2 style="font-size:14px; font-weight:700; margin:0;">Savings activity &amp; contributions</h2>
               <p style="font-size:12px; color:var(--fiori-muted); margin:4px 0 0;">All recorded deposits, transfers, and withdrawals across your savings funds.</p>
             </div>
             <button type="button" class="fiori-btn fiori-btn-ghost" style="font-size:12px; height:28px; padding:0 10px;" (click)="openAddTransactionModal('Savings')">＋ Add entry</button>
@@ -544,7 +544,7 @@
         </section>
 
         <!-- Fixed Needs and Bills Section (Synced with Expected Bills) -->
-        <section class="fiori-table-container" style="margin-bottom:24px;">
+        <section class="fiori-table-container" style="margin-bottom:16px;">
           <div class="fiori-panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--fiori-border);">
             <div>
               <h2 style="font-size:15px; font-weight:700; margin:0;">Fixed needs and bills</h2>
@@ -666,7 +666,7 @@
         </div>
 
         <!-- Plan Parameters -->
-        <div class="fiori-grid-3col" style="margin-bottom:24px;">
+        <div class="fiori-grid-3col" style="margin-bottom:16px;">
           <div class="fiori-field">
             <label>Monthly salary</label>
             <div class="fiori-input-prefix-wrap">
@@ -691,7 +691,7 @@
         </div>
 
         <!-- 4 Connected Plan Metrics -->
-        <div class="fiori-kpi-grid" style="margin-bottom:24px;">
+        <div class="fiori-kpi-grid" style="margin-bottom:16px;">
           <div class="fiori-kpi-card">
             <span class="fiori-kpi-label">Combined monthly salary</span>
             <strong class="fiori-kpi-value">{{ savingsPlanSalary() | currency:'PHP':'symbol':'1.0-0' }}</strong>
@@ -715,7 +715,7 @@
         </div>
 
         <!-- Paycheck Allocation Table -->
-        <section class="fiori-table-container" style="margin-bottom:24px;">
+        <section class="fiori-table-container" style="margin-bottom:16px;">
           <table class="fiori-table">
             <thead>
               <tr>
@@ -739,7 +739,7 @@
         </section>
 
         <!-- Roadmap & Buckets -->
-        <div class="fiori-grid-even-2col" style="margin-bottom:24px; min-width:0;">
+        <div class="fiori-grid-even-2col" style="margin-bottom:16px; min-width:0;">
           <section class="fiori-panel" style="min-width:0; overflow:hidden; box-sizing:border-box;">
             <div class="fiori-panel-header" style="min-width:0; box-sizing:border-box;">
               <h2>Allocation detail</h2>
@@ -796,7 +796,7 @@
           </div>
         </div>
 
-        <div class="fiori-grid-even-2col" style="margin-bottom:24px;">
+        <div class="fiori-grid-even-2col" style="margin-bottom:16px;">
           <section class="fiori-panel fiori-panel-body">
             <h2 style="font-size:14px; font-weight:700; margin:0 0 4px;">Monthly spend</h2>
             <p style="font-size:12px; color:var(--fiori-muted); margin:0 0 18px;">Six-month trend · {{ totalSpent() | currency:'PHP':'symbol':'1.0-0' }} in {{ monthLabel() }}</p>
@@ -825,7 +825,7 @@
           </section>
         </div>
 
-        <section class="fiori-panel" style="margin-bottom:24px;">
+        <section class="fiori-panel" style="margin-bottom:16px;">
           <div class="fiori-panel-header">
             <h2>Category breakdown</h2>
           </div>
@@ -845,14 +845,14 @@
         </section>
 
         <!-- SUB-CATEGORIES SECTION -->
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:28px 0 14px; border-bottom:2px solid var(--fiori-rule); margin-bottom:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:18px 0 10px; border-bottom:2px solid var(--fiori-rule); margin-bottom:16px;">
           <div>
             <h2 style="font-size:20px; font-weight:700; margin:0; letter-spacing:-0.02em;">Sub-categories</h2>
             <p class="fiori-page-subtitle">Grouped by parent category · {{ monthLabel() }}</p>
           </div>
         </div>
 
-        <div class="fiori-grid-2col" style="margin-bottom:24px;">
+        <div class="fiori-grid-2col" style="margin-bottom:16px;">
           <!-- Left: Breakdown -->
           <section class="fiori-panel" style="margin-bottom:0;">
             <div class="fiori-panel-header">
@@ -1045,7 +1045,7 @@
           </section>
 
           <!-- Right: Export & Sync -->
-          <div style="display:flex; flex-direction:column; gap:24px;">
+          <div style="display:flex; flex-direction:column; gap:16px;">
             <section class="fiori-panel">
               <div class="fiori-panel-header">
                 <h2>Export</h2>
