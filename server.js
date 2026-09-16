@@ -36,34 +36,47 @@ async function writeTransactions(transactions) {
   await writeFile(dataFilePath, JSON.stringify(transactions, null, 2), 'utf-8');
 }
 
+// Serializes PUT/DELETE read-modify-write cycles so concurrent requests
+// (e.g. two people saving at once) don't clobber each other's writes.
+let writeQueue = Promise.resolve();
+function enqueueWrite(task) {
+  const result = writeQueue.then(task, task);
+  writeQueue = result.catch(() => {});
+  return result;
+}
+
 const server = createServer(async (request, response) => {
   if (request.method === 'OPTIONS') return send(response, 204, {});
   if (!request.url?.startsWith('/api/transactions')) return send(response, 404, { error: 'Not found' });
   try {
-    let transactions = await readTransactions();
-    if (request.method === 'GET') return send(response, 200, transactions);
+    if (request.method === 'GET') return send(response, 200, await readTransactions());
     if (request.method === 'PUT') {
-      let body = '';
+      const chunks = [];
       let receivedBytes = 0;
       for await (const chunk of request) {
         receivedBytes += chunk.length;
         if (receivedBytes > MAX_BODY_BYTES) {
           return send(response, 413, { error: 'Payload too large' });
         }
-        body += chunk;
+        chunks.push(chunk);
       }
-      const parsed = JSON.parse(body);
+      const parsed = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
       if (!Array.isArray(parsed)) {
         return send(response, 400, { error: 'Expected array of transactions' });
       }
-      transactions = parsed;
-      await writeTransactions(transactions);
+      const transactions = await enqueueWrite(async () => {
+        await writeTransactions(parsed);
+        return parsed;
+      });
       return send(response, 200, transactions);
     }
     if (request.method === 'DELETE') {
       const id = Number(request.url.split('/').pop());
       if (isNaN(id)) return send(response, 400, { error: 'Invalid transaction ID' });
-      await writeTransactions(transactions.filter((item) => Number(item.id) !== id));
+      await enqueueWrite(async () => {
+        const transactions = await readTransactions();
+        await writeTransactions(transactions.filter((item) => Number(item.id) !== id));
+      });
       return send(response, 204, {});
     }
     return send(response, 405, { error: 'Method not allowed' });
