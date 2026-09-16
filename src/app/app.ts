@@ -2129,16 +2129,19 @@ export class App {
   }
 
   protected startEditingExpense(transaction: Transaction): void {
-    if (transaction.savings) return;
     this.editingExpenseId.set(transaction.id);
+    const isSavings = Boolean(transaction.savings);
+    const fundType = transaction.fundType || (this.isSavingsWithdrawal(transaction) ? 'Withdrawal' : 'Contribution');
     this.editingExpense.set({
       date: transaction.date,
-      description: transaction.description,
+      description: transaction.description || '',
       category: transaction.category,
       subcategory: transaction.subcategory || '',
-      type: 'Expense',
+      type: isSavings ? (fundType === 'Withdrawal' ? 'Expense' : 'Income') : (transaction.type || 'Expense'),
       amount: transaction.amount,
-      savings: false,
+      savings: isSavings,
+      fundType: fundType,
+      account: transaction.account || '',
     });
   }
 
@@ -2147,13 +2150,18 @@ export class App {
       if (!expense) return null;
       if (field === 'category') {
         const cat = String(value);
-        const validSubs = this.subcategoriesFor(cat);
+        const validSubs = expense.savings ? this.savingsSubcategoriesFor(cat) : this.subcategoriesFor(cat);
         const currentSub = expense.subcategory || '';
         const newSub = validSubs.includes(currentSub) ? currentSub : (validSubs[0] || '');
         return { ...expense, category: cat, subcategory: newSub };
       }
       if (field === 'amount') {
         return { ...expense, amount: value !== null && value !== '' ? Number(value) : null };
+      }
+      if (field === 'fundType') {
+        const fundType = String(value);
+        const type: TransactionType = fundType === 'Withdrawal' ? 'Expense' : 'Income';
+        return { ...expense, fundType, type };
       }
       return { ...expense, [field]: value };
     });
@@ -2170,7 +2178,6 @@ export class App {
     if (
       id === null ||
       !expense ||
-      !expense.description?.trim() ||
       !expense.date ||
       !expense.category ||
       expense.amount === null ||
@@ -2178,13 +2185,23 @@ export class App {
     ) {
       return;
     }
+    const isSavings = Boolean(expense.savings);
+    const fundType = expense.fundType || (expense.type === 'Expense' ? 'Withdrawal' : 'Contribution');
+    const type: TransactionType = isSavings
+      ? (fundType === 'Withdrawal' ? 'Expense' : 'Income')
+      : (expense.type || 'Expense');
+
     this.transactions.update((items) => items.map((item) => item.id === id ? {
       ...item,
       date: expense.date,
-      description: expense.description.trim(),
+      description: (expense.description || '').trim(),
       category: expense.category,
       subcategory: expense.subcategory || '',
       amount: Number(expense.amount),
+      type,
+      savings: isSavings,
+      fundType: isSavings ? fundType : undefined,
+      account: isSavings ? (expense.account || '').trim() : item.account,
     } : item));
     this.persist();
     this.syncToApi();
