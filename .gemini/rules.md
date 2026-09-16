@@ -1,1 +1,0 @@
-Never use Planning Mode. Always write and apply code edits immediately without asking for prior approval.
