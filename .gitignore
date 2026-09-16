@@ -1,30 +1,65 @@
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
-# Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
-
-# Node
-/node_modules
-npm-debug.log
-yarn-error.log
-
-# Environment & Secrets
+# ==========================================
+# 1. Environment & Secrets
+# ==========================================
 .env
 .env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 src/environments/environment.development.ts
+src/environments/environment.*.local.ts
+*.pem
+*.key
+*.cert
+*.pfx
+*.p12
+credentials.json
+client_secret*.json
 
-# Local Data & Excel Workbooks
-data/*.xlsx
+# ==========================================
+# 2. Local Data & Excel Workbooks
+# ==========================================
 data/
 data/*
 *.xlsx
 *.xls
 *.csv
+*.tsv
+*.sqlite
+*.sqlite3
+*.db
+*.bak
+*.backup
 
-# IDEs and editors
+# ==========================================
+# 3. AI Tools & Assistant Data (Claude, Gemini, AGY)
+# ==========================================
+.claude/
+.gemini/
+.antigravity/
+*conversation_history*
+conversation_history.*
+recent_conversation_history.*
+*.system_generated/
+scratch/
+brain/
+
+# ==========================================
+# 4. Logs & NPM Cache
+# ==========================================
+.npm/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==========================================
+# 5. IDEs, Local Execution & Preferences
+# ==========================================
+.vscode/*
+!.vscode/extensions.json
+.history/
 .idea/
 .project
 .classpath
@@ -33,25 +68,20 @@ data/*
 .settings/
 *.sublime-workspace
 
-# Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/mcp.json
-.history/*
-
-# Miscellaneous
+# ==========================================
+# 6. Build Output & Dependencies
+# ==========================================
+/dist
+/tmp
+/out-tsc
+/bazel-out
+/node_modules
 /.angular/cache
 .sass-cache/
-/connect.lock
 /coverage
-/libpeerconnection.log
-testem.log
-/typings
-__screenshots__/
 
-# System files
+# ==========================================
+# 7. Operating System Files
+# ==========================================
 .DS_Store
 Thumbs.db
