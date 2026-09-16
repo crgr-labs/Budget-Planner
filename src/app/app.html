@@ -15,6 +15,7 @@
       </div>
       <nav class="ledger-shell-nav" aria-label="Main Navigation">
         <a class="ledger-nav-item" [class.active]="activeSection() === 'Overview'" (click)="selectSection('Overview')">Overview</a>
+        <a class="ledger-nav-item" [class.active]="activeSection() === 'Insights'" (click)="selectSection('Insights')">Insights</a>
         <a class="ledger-nav-item" [class.active]="activeSection() === 'Spending' || activeSection() === 'Transactions'" (click)="selectSection('Spending')">Spending</a>
         <a class="ledger-nav-item" [class.active]="activeSection() === 'Bills'" (click)="selectSection('Bills')">Bills</a>
         <a class="ledger-nav-item" [class.active]="activeSection() === 'Savings'" (click)="selectSection('Savings')">Savings</a>
@@ -216,6 +217,122 @@
                 </div>
               }
             </div>
+          </section>
+        </div>
+      </div>
+    }
+
+    <!-- SECTION: INSIGHTS -->
+    @if (activeSection() === 'Insights') {
+      <div>
+        <div class="ledger-page-header">
+          <div>
+            <h1>Insights</h1>
+            <p class="ledger-page-subtitle">{{ monthLabel() }} · Trends, breakdowns &amp; projections</p>
+          </div>
+        </div>
+
+        <h2 style="font-size:15px; font-weight:700; margin:0 0 10px;">Spending trends</h2>
+        <div class="ledger-grid-even-2col" style="margin-bottom:24px;">
+          <section class="ledger-panel ledger-panel-body">
+            <h2 style="font-size:14px; font-weight:700; margin:0 0 4px;">Monthly spend</h2>
+            <p style="font-size:12px; color:var(--ledger-muted); margin:0 0 14px;">{{ insightsSpendTrendNarrative() }}</p>
+            <svg viewBox="0 0 320 90" style="width:100%; height:90px; display:block;" preserveAspectRatio="none">
+              <polyline [attr.points]="reportMonthlySpendTrend().points" fill="none" stroke="#0070f2" stroke-width="2"/>
+              <circle [attr.cx]="reportMonthlySpendTrend().lastPoint.x" [attr.cy]="reportMonthlySpendTrend().lastPoint.y" r="3" fill="#0070f2"/>
+            </svg>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--ledger-muted); margin-top:10px;">
+              @for (m of reportMonthlySpendTrend().monthly; track m.monthKey) {
+                <span>{{ m.shortMonth }}</span>
+              }
+            </div>
+            <a class="ledger-link" style="display:inline-block; margin-top:14px; font-size:12px;" (click)="selectSection('Reports')">View in Reports</a>
+          </section>
+
+          <section class="ledger-panel ledger-panel-body">
+            <h2 style="font-size:14px; font-weight:700; margin:0 0 4px;">Top rising sub-category</h2>
+            @if (insightsTopTrendingSubcategory(); as tr) {
+              <p style="font-size:12px; color:var(--ledger-muted); margin:0 0 14px;">{{ tr.changeLabel }}</p>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <i style="width:8px; height:8px; border-radius:2px; display:inline-block;" [style.background]="tr.color"></i>
+                <span style="font-size:13px; font-weight:500;">{{ tr.name }}</span>
+                <span style="font-size:12px; color:var(--ledger-muted);">· {{ tr.category }}</span>
+              </div>
+              <svg viewBox="0 0 300 40" style="width:100%; height:40px; display:block;" preserveAspectRatio="none">
+                <polyline [attr.points]="tr.points" fill="none" [attr.stroke]="tr.color" stroke-width="2"/>
+              </svg>
+              <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--ledger-muted); margin-top:6px;">
+                <span>{{ tr.startMonth }}</span>
+                <span>{{ tr.endMonth }}</span>
+              </div>
+            } @else {
+              <p style="font-size:12px; color:var(--ledger-muted); margin:0;">No sub-category trend data yet.</p>
+            }
+            <a class="ledger-link" style="display:inline-block; margin-top:14px; font-size:12px;" (click)="selectSection('Reports')">View in Reports</a>
+          </section>
+        </div>
+
+        <h2 style="font-size:15px; font-weight:700; margin:0 0 10px;">Category breakdowns</h2>
+        <div class="ledger-grid-even-2col" style="margin-bottom:24px;">
+          <section class="ledger-panel ledger-panel-body">
+            <h2 style="font-size:14px; font-weight:700; margin:0 0 4px;">Spending by category</h2>
+            <p style="font-size:12px; color:var(--ledger-muted); margin:0 0 14px;">Top categories for {{ monthLabel() }}</p>
+            @if (budgetCategories().length === 0) {
+              <p style="font-size:12px; color:var(--ledger-muted); margin:0;">No spending recorded for {{ monthLabel() }}.</p>
+            }
+            @for (cat of budgetCategories().slice(0, 4); track cat.category) {
+              <div style="display:grid; grid-template-columns:10px minmax(0,1fr) 90px; align-items:center; gap:10px; padding:8px 0;">
+                <span style="width:8px; height:8px;" [style.background]="getCategoryColor(cat.category)"></span>
+                <span style="font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ cat.category }}</span>
+                <span style="height:6px; background:var(--ledger-track); display:block; border-radius:999px; overflow:hidden;">
+                  <i style="display:block; height:100%; border-radius:inherit;" [style.background]="getCategoryColor(cat.category)" [style.width.%]="Math.min(100, Math.max(0, cat.percentOfSpend))"></i>
+                </span>
+              </div>
+            }
+            <a class="ledger-link" style="display:inline-block; margin-top:10px; font-size:12px;" (click)="selectSection('Reports')">View full breakdown</a>
+          </section>
+
+          <section class="ledger-panel ledger-panel-body">
+            <h2 style="font-size:14px; font-weight:700; margin:0 0 4px;">Category highlight</h2>
+            <p style="font-size:12px; color:var(--ledger-muted); margin:0 0 14px;">{{ insightsCategoryNarrative() }}</p>
+            @if (budgetCategories()[0]; as top) {
+              <strong style="display:block; font-size:22px; font-weight:700;">{{ top.total | currency:'PHP':'symbol':'1.0-0' }}</strong>
+              <span style="font-size:12px; color:var(--ledger-muted);">{{ top.category }} · {{ top.percentOfSpend | number:'1.0-0' }}% of {{ monthLabel() }} spend</span>
+            }
+          </section>
+        </div>
+
+        <h2 style="font-size:15px; font-weight:700; margin:0 0 10px;">Savings projections</h2>
+        <div class="ledger-grid-even-2col">
+          <section class="ledger-panel ledger-panel-body">
+            <h2 style="font-size:14px; font-weight:700; margin:0 0 4px;">Time to goal</h2>
+            <p style="font-size:12px; color:var(--ledger-muted); margin:0 0 14px;">At {{ effectiveMonthlySavings() | currency:'PHP':'symbol':'1.0-0' }}/mo, projected to reach goal by {{ targetDate() }}.</p>
+            <div style="height:6px; background:var(--ledger-track); overflow:hidden; border-radius:999px;">
+              <div [style.width.%]="savingsGoalProgress()" style="height:100%; background:var(--ledger-green);"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:12px; color:var(--ledger-muted);">
+              <span>{{ savingsBalance() | currency:'PHP':'symbol':'1.0-0' }} saved</span>
+              <span>{{ savingsGoalProgress() | number:'1.0-0' }}% of {{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }}</span>
+            </div>
+            <a class="ledger-link" style="display:inline-block; margin-top:14px; font-size:12px;" (click)="selectSection('Savings')">View in Savings</a>
+          </section>
+
+          <section class="ledger-panel ledger-panel-body">
+            <h2 style="font-size:14px; font-weight:700; margin:0 0 4px;">Savings trend</h2>
+            <p style="font-size:12px; color:var(--ledger-muted); margin:0 0 14px;">{{ insightsSavingsTrendNarrative() }}</p>
+            @if (savingsTrendData().length === 0) {
+              <p style="font-size:12px; color:var(--ledger-muted); margin:0;">No savings history yet.</p>
+            } @else {
+              <div style="display:flex; align-items:flex-end; gap:8px; height:80px;">
+                @for (point of savingsTrendData(); track point.month) {
+                  <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;">
+                    <div style="width:100%; border-radius:3px 3px 0 0; background:var(--ledger-accent);" [style.height.%]="point.height"></div>
+                    <span style="font-size:10px; color:var(--ledger-muted); margin-top:6px;">{{ point.month }}</span>
+                  </div>
+                }
+              </div>
+            }
+            <a class="ledger-link" style="display:inline-block; margin-top:14px; font-size:12px;" (click)="selectSection('Savings')">View in Savings</a>
           </section>
         </div>
       </div>
@@ -1259,6 +1376,10 @@
     <button type="button" class="ledger-bottom-tab" [class.active]="activeSection() === 'Spending' || activeSection() === 'Transactions'" (click)="selectSection('Spending')">
       <span class="ledger-bottom-tab-icon">↔</span>
       <span class="ledger-bottom-tab-label">Spending</span>
+    </button>
+    <button type="button" class="ledger-bottom-tab" [class.active]="activeSection() === 'Insights'" (click)="selectSection('Insights')">
+      <span class="ledger-bottom-tab-icon">✦</span>
+      <span class="ledger-bottom-tab-label">Insights</span>
     </button>
     <div class="ledger-bottom-add-wrap">
       <button type="button" class="ledger-bottom-add-btn" (click)="openAddTransactionModal()" aria-label="Add transaction">

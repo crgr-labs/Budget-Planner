@@ -916,6 +916,51 @@ export class App {
     });
   });
 
+  protected formatCurrency(amount: number): string {
+    return `₱${Math.round(amount).toLocaleString('en-US')}`;
+  }
+
+  protected readonly insightsSpendTrendNarrative = computed<string>(() => {
+    const monthly = this.reportMonthlySpendTrend().monthly;
+    if (monthly.length < 2) return 'Not enough history yet to spot a trend.';
+    const first = monthly[0].amount;
+    const last = monthly[monthly.length - 1].amount;
+    if (first <= 0) return `Spending is at ${this.formatCurrency(last)} in ${monthly[monthly.length - 1].shortMonth}.`;
+    const pct = ((last - first) / first) * 100;
+    const direction = pct >= 0 ? 'up' : 'down';
+    return `Spending is ${direction} ${Math.abs(Math.round(pct))}% since ${monthly[0].shortMonth}, now ${this.formatCurrency(last)} in ${monthly[monthly.length - 1].shortMonth}.`;
+  });
+
+  protected readonly insightsTopTrendingSubcategory = computed<(SubcategorySparklineTrend & { changeLabel: string }) | null>(() => {
+    const trends = this.reportTopSubcategoryTrends();
+    if (trends.length === 0) return null;
+    const top = trends[0];
+    return { ...top, changeLabel: `Leading sub-category this month · ${this.formatCurrency(top.currentAmount)}` };
+  });
+
+  protected readonly insightsCategoryNarrative = computed<string>(() => {
+    const top = this.budgetCategories()[0];
+    if (!top) return `No expenses recorded yet for ${this.monthLabel()}.`;
+    const momText = this.categoryMoMText(top.category);
+    const share = `${top.category} made up ${Math.round(top.percentOfSpend)}% of spending in ${this.monthLabel()}`;
+    return momText ? `${share} (${momText}).` : `${share}.`;
+  });
+
+  protected readonly insightsSavingsTrendNarrative = computed<string>(() => {
+    const points = this.savingsTrendData();
+    if (points.length < 2) return 'Add savings entries over a few months to see a trend.';
+    const latest = points[points.length - 1];
+    const previous = points[points.length - 2];
+    if (previous.amount <= 0) {
+      return latest.amount > 0
+        ? `${this.formatCurrency(latest.amount)} saved in ${latest.month}, up from nothing the month before.`
+        : `No net savings recorded in ${latest.month}.`;
+    }
+    const pct = ((latest.amount - previous.amount) / previous.amount) * 100;
+    const direction = pct >= 0 ? 'up' : 'down';
+    return `Net savings ${direction} ${Math.abs(Math.round(pct))}% month-over-month, at ${this.formatCurrency(latest.amount)} in ${latest.month}.`;
+  });
+
   protected readonly reportSubcategoriesByCategory = computed<CategorySubcategoryGroup[]>(() => {
     const catMap = new Map<string, { total: number; subs: Map<string, number> }>();
 
