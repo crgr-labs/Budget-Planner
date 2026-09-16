@@ -609,7 +609,10 @@
                     {{ isSavingsContribution(tx) ? '+' : '-' }}{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
                   </td>
                   <td class="text-right" data-label="Actions">
-                    <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--ledger-red);" (click)="deleteTransaction(tx.id)" title="Delete transaction">Delete</button>
+                    <div style="display:inline-flex; gap:6px; justify-content:flex-end;">
+                      <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="startEditingExpense(tx)" title="Edit transaction">Edit</button>
+                      <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--ledger-red);" (click)="deleteTransaction(tx.id)" title="Delete transaction">Delete</button>
+                    </div>
                   </td>
                 </tr>
               }
@@ -1469,14 +1472,14 @@
     <div class="ledger-dialog-backdrop" (click)="cancelEditingExpense()">
       <div class="ledger-dialog" (click)="$event.stopPropagation()">
         <div class="ledger-dialog-header">
-          <h2>Edit transaction</h2>
+          <h2>{{ editTx.savings ? 'Edit savings entry' : 'Edit transaction' }}</h2>
           <button type="button" class="ledger-dialog-close" (click)="cancelEditingExpense()" aria-label="Close dialog">×</button>
         </div>
         <form (ngSubmit)="saveEditingExpense()" style="margin:0;">
           <div class="ledger-dialog-body">
             <div class="ledger-field">
-              <label>Description</label>
-              <input class="ledger-input" placeholder="e.g. Grocery run, Dinner" [ngModel]="editTx.description" name="editDescription" (ngModelChange)="updateExpenseEdit('description', $event)" required autofocus>
+              <label>{{ editTx.savings ? 'Description / Notes' : 'Description' }}</label>
+              <input class="ledger-input" [placeholder]="editTx.savings ? 'e.g. Monthly emergency fund deposit' : 'e.g. Grocery run, Dinner'" [ngModel]="editTx.description" name="editDescription" (ngModelChange)="updateExpenseEdit('description', $event)" [required]="!editTx.savings" autofocus>
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
@@ -1493,30 +1496,64 @@
                 <input class="ledger-input" type="date" [ngModel]="editTx.date" name="editDate" (ngModelChange)="updateExpenseEdit('date', $event)" required>
               </div>
 
-              <div class="ledger-field">
-                <label>Category</label>
-                <select class="ledger-select" [ngModel]="editTx.category" name="editCategory" (ngModelChange)="updateExpenseEdit('category', $event)" required>
-                  @for (category of categories; track category) {
-                    <option [value]="category">{{ category }}</option>
-                  }
-                </select>
-              </div>
+              @if (editTx.savings) {
+                <div class="ledger-field">
+                  <label>Fund Category</label>
+                  <select class="ledger-select" [ngModel]="editTx.category" name="editCategory" (ngModelChange)="updateExpenseEdit('category', $event)" required>
+                    @for (category of savingsCategories; track category) {
+                      <option [value]="category">{{ category }}</option>
+                    }
+                  </select>
+                </div>
 
-              <div class="ledger-field">
-                <label>Sub-category</label>
-                <select class="ledger-select" [ngModel]="editTx.subcategory" name="editSubcategory" (ngModelChange)="updateExpenseEdit('subcategory', $event)">
-                  <option value="">Choose a sub-category</option>
-                  @for (subcategory of subcategoriesFor(editTx.category); track subcategory) {
-                    <option [value]="subcategory">{{ subcategory }}</option>
-                  }
-                </select>
-              </div>
+                <div class="ledger-field">
+                  <label>Sub-category</label>
+                  <select class="ledger-select" [ngModel]="editTx.subcategory" name="editSubcategory" (ngModelChange)="updateExpenseEdit('subcategory', $event)">
+                    <option value="">Choose a sub-category</option>
+                    @for (subcategory of savingsSubcategoriesFor(editTx.category); track subcategory) {
+                      <option [value]="subcategory">{{ subcategory }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="ledger-field">
+                  <label>Action / Type</label>
+                  <select class="ledger-select" [ngModel]="editTx.fundType || 'Contribution'" name="editFundType" (ngModelChange)="updateExpenseEdit('fundType', $event)">
+                    <option value="Contribution">Contribution (Deposit)</option>
+                    <option value="Withdrawal">Withdrawal</option>
+                  </select>
+                </div>
+
+                <div class="ledger-field">
+                  <label>Account / Bank</label>
+                  <input class="ledger-input" placeholder="e.g. Maya, Seabank, BDO" [ngModel]="editTx.account" name="editAccount" (ngModelChange)="updateExpenseEdit('account', $event)">
+                </div>
+              } @else {
+                <div class="ledger-field">
+                  <label>Category</label>
+                  <select class="ledger-select" [ngModel]="editTx.category" name="editCategory" (ngModelChange)="updateExpenseEdit('category', $event)" required>
+                    @for (category of categories; track category) {
+                      <option [value]="category">{{ category }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="ledger-field">
+                  <label>Sub-category</label>
+                  <select class="ledger-select" [ngModel]="editTx.subcategory" name="editSubcategory" (ngModelChange)="updateExpenseEdit('subcategory', $event)">
+                    <option value="">Choose a sub-category</option>
+                    @for (subcategory of subcategoriesFor(editTx.category); track subcategory) {
+                      <option [value]="subcategory">{{ subcategory }}</option>
+                    }
+                  </select>
+                </div>
+              }
             </div>
           </div>
 
           <div class="ledger-dialog-footer">
             <button type="button" class="ledger-btn ledger-btn-ghost" (click)="cancelEditingExpense()">Cancel</button>
-            <button type="submit" class="ledger-btn ledger-btn-primary">Save changes</button>
+            <button type="submit" class="ledger-btn ledger-btn-primary">{{ editTx.savings ? 'Save savings changes' : 'Save changes' }}</button>
           </div>
         </form>
       </div>
