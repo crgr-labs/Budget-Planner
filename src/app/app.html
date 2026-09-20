@@ -1399,24 +1399,59 @@
       <span class="ledger-bottom-tab-icon">↔</span>
       <span class="ledger-bottom-tab-label">Spending</span>
     </button>
-    <button type="button" class="ledger-bottom-tab" [class.active]="activeSection() === 'Insights'" (click)="selectSection('Insights')">
-      <span class="ledger-bottom-tab-icon">✦</span>
-      <span class="ledger-bottom-tab-label">Insights</span>
-    </button>
     <div class="ledger-bottom-add-wrap">
       <button type="button" class="ledger-bottom-add-btn" (click)="openAddTransactionModal()" aria-label="Add transaction">
         ＋
       </button>
     </div>
+    <button type="button" class="ledger-bottom-tab" [class.active]="activeSection() === 'Bills'" (click)="selectSection('Bills')">
+      <span class="ledger-bottom-tab-icon">▤</span>
+      <span class="ledger-bottom-tab-label">Bills</span>
+    </button>
     <button type="button" class="ledger-bottom-tab" [class.active]="activeSection() === 'Savings'" (click)="selectSection('Savings')">
       <span class="ledger-bottom-tab-icon">◎</span>
       <span class="ledger-bottom-tab-label">Savings</span>
     </button>
-    <button type="button" class="ledger-bottom-tab" [class.active]="activeSection() === 'Reports'" (click)="selectSection('Reports')">
-      <span class="ledger-bottom-tab-icon">⌁</span>
-      <span class="ledger-bottom-tab-label">Reports</span>
+    <button type="button" class="ledger-bottom-tab" [class.active]="moreMenuActive() || mobileMenuOpen()" (click)="toggleMobileMenu()" aria-haspopup="dialog" [attr.aria-expanded]="mobileMenuOpen()">
+      <span class="ledger-bottom-tab-icon">⋯</span>
+      <span class="ledger-bottom-tab-label">More</span>
     </button>
   </nav>
+
+  <!-- Mobile "More" Bottom Sheet (<= 768px) -->
+  @if (mobileMenuOpen()) {
+    <div class="ledger-more-backdrop" (click)="closeMobileMenu()">
+      <div class="ledger-more-sheet" role="dialog" aria-modal="true" aria-label="More pages" (click)="$event.stopPropagation()">
+        <div class="ledger-more-handle" aria-hidden="true"></div>
+        <div class="ledger-more-list">
+          <button type="button" class="ledger-more-item" [class.active]="activeSection() === 'Insights'" (click)="selectSection('Insights')">
+            <span class="ledger-more-item-icon">✦</span>
+            <span class="ledger-more-item-label">Insights</span>
+          </button>
+          <button type="button" class="ledger-more-item" [class.active]="activeSection() === 'Plan'" (click)="selectSection('Plan')">
+            <span class="ledger-more-item-icon">◫</span>
+            <span class="ledger-more-item-label">Plan</span>
+          </button>
+          <button type="button" class="ledger-more-item" [class.active]="activeSection() === 'Reports'" (click)="selectSection('Reports')">
+            <span class="ledger-more-item-icon">⌁</span>
+            <span class="ledger-more-item-label">Reports</span>
+          </button>
+          <button type="button" class="ledger-more-item" [class.active]="activeSection() === 'Categories'" (click)="selectSection('Categories')">
+            <span class="ledger-more-item-icon">▦</span>
+            <span class="ledger-more-item-label">Categories</span>
+          </button>
+          <button type="button" class="ledger-more-item" [class.active]="activeSection() === 'Data'" (click)="selectSection('Data')">
+            <span class="ledger-more-item-icon">⇅</span>
+            <span class="ledger-more-item-label">Data</span>
+          </button>
+        </div>
+        <button type="button" class="ledger-more-theme" (click)="toggleTheme()">
+          <span>Appearance</span>
+          <span class="ledger-more-theme-value">{{ themeLabel() }}</span>
+        </button>
+      </div>
+    </div>
+  }
 
   <!-- Add Transaction Modal Dialog -->
   @if (addTransactionModalOpen()) {

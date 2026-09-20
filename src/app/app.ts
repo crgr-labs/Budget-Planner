@@ -218,6 +218,8 @@ export class App {
   protected readonly savingsActionTab = signal<'Transaction' | 'Target'>('Transaction');
   protected readonly savingsDetailsOpen = signal(false);
   protected readonly mobileMenuOpen = signal(false);
+  private readonly moreMenuSections = ['Insights', 'Plan', 'Reports', 'Categories', 'Data'];
+  protected readonly moreMenuActive = computed(() => this.moreMenuSections.includes(this.activeSection()));
   private readonly categoryColorSeed = Math.random() * 360;
   protected readonly selectedMonth = signal('2026-09');
 
@@ -2054,6 +2056,10 @@ export class App {
 
   protected toggleMobileMenu(): void {
     this.mobileMenuOpen.update((isOpen) => !isOpen);
+  }
+
+  protected closeMobileMenu(): void {
+    this.mobileMenuOpen.set(false);
   }
 
   protected startTileDrag(event: DragEvent): void {
