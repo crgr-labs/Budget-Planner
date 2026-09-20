@@ -1,0 +1,142 @@
+LEDGER CLOUD SYNC: ISSUE BREAKDOWN AND RESOLUTION
+=================================================
+
+This note records what went wrong with cloud sync, what fixed it, and how to
+diagnose it faster next time. No secrets (token, sheet ID, deployment ID) are
+in this file. Keep it that way.
+
+
+THE SHORT VERSION
+-----------------
+1. Pending status was lost after a refresh, because the Google Apps Script had
+   no column to store it.
+2. Adding that column made the app fail to connect ("Couldn't load your
+   ledger"). The likely cause was a Transactions tab with too few columns.
+3. Fixing that by pasting the new script caused a second error
+   ("Identifier 'SPREADSHEET_ID' has already been declared"), because the
+   constants ended up declared twice.
+4. A single clean paste of the script fixed it.
+
+
+ISSUE 1: PENDING STATUS DISAPPEARED AFTER REFRESH
+-------------------------------------------------
+Symptom
+  A transaction marked as pending showed as cleared after refreshing the page.
+
+Cause
+  - The app sends the whole ledger to the Apps Script on every save.
+  - The script only stored the original 10 columns (ID to Account). It had no
+    place for pending/status, so it dropped them.
+  - On every load the app replaces its local copy with the cloud copy, so the
+    pending flag came back blank.
+  - Local development was not affected: server.js stores the JSON as it is.
+
+Resolution
+  - App: if the cloud returns no status for a row, the app keeps this device's
+    own pending flag and pushes it to the cloud after loading. This only helps
+    on the device that set it.
+  - Script: added an 11th column, "Status" (pending / cleared). A blank cell
+    means "unknown" (old rows), so the app keeps its own flag for those.
+  - Result: pending survives a refresh and shows on every device.
+
+
+ISSUE 2: "COULDN'T LOAD YOUR LEDGER" / "COULD NOT REACH THE SERVER"
+-----------------------------------------------------------------
+Symptom
+  After the script edit, the app showed a load-failure screen and Test
+  connection said the server could not be reached.
+
+What that message really means
+  The browser got no readable reply at all. A wrong token would NOT look like
+  this: the script answers with JSON ({"error":"Unauthorized"}) and the app
+  says the token was rejected. "No readable reply" usually means Google
+  returned an error page instead of JSON, and browsers block that page.
+
+Likely cause (not proven)
+  - The Transactions tab had exactly 10 columns. The script now reads and
+    writes 11, so every request threw "coordinates outside the dimensions of
+    the sheet". Google then served an error page.
+  - The syntax of the edited script was checked and was correct, so a typo was
+    ruled out.
+  - The original failure was never reproduced against your real sheet. The
+    fixes below cover the likely cause, but this is the one part that is
+    inferred rather than confirmed.
+
+Resolution
+  - Script: ensureTransactionHeaders now adds any missing columns itself.
+  - Script: doGet and doPost catch errors and return them as JSON, so the app
+    can show the real reason instead of a blank failure.
+  - App: the load-failure screen and Test connection now show a plain-language
+    reason (wrong token, access not set to Anyone, URL not found, script
+    error, timeout, network).
+  - App: a reply of {"error": ...} is now treated as a failure when loading,
+    saving and testing. Before, a wrong token looked like a success and
+    nothing was saved.
+
+
+ISSUE 3: "IDENTIFIER 'SPREADSHEET_ID' HAS ALREADY BEEN DECLARED"
+----------------------------------------------------------------
+Symptom
+  Apps Script showed a SyntaxError after pasting the new script.
+
+Cause
+  Apps Script shares one scope across every file in the project. The full
+  script (with its two placeholder constants) was pasted next to the existing
+  constants, or into a second .gs file, so each constant was declared twice.
+
+Resolution
+  - Delete extra .gs files, select all in Code.gs, paste the whole reference
+    script once, then replace ONLY the two placeholders with your own values.
+  - Confirm with Cmd+F: "const SPREADSHEET_ID" must be found exactly once.
+  - The header of docs/apps-script/Code.gs now says this.
+
+
+WHAT CHANGED IN THE PROJECT
+---------------------------
+  docs/apps-script/Code.gs        Reference copy of the script (placeholders for
+                                  the sheet ID and token). Status column, auto
+                                  columns, JSON errors. Tested against a fake
+                                  spreadsheet, including a 10-column tab.
+  src/app/app.ts                  Keep local pending flags; push them after load;
+                                  never upload before a successful load;
+                                  error replies count as failures; readable
+                                  failure reasons; save flush on tab hide.
+  README.md                       Cloud sync section and the script contract.
+
+
+HOW TO DIAGNOSE NEXT TIME (IN THIS ORDER)
+-----------------------------------------
+1. Paste the full sync URL (ending /exec?token=...) into a NEW browser tab.
+   You should see JSON starting with {"transactions":
+     {"error":"Unauthorized"}       token in the URL differs from the script's
+     Google sign-in page or 403     set "Who has access" to Anyone
+     404 page                       wrong deployment; copy the current URL from
+                                    Deploy > Manage deployments
+     Google error page              script error; open Executions in Apps Script
+     {"error":"Missing sheet..."}   a tab name is wrong or missing
+2. The app's load-failure screen now prints the reason. Read it first.
+3. In Apps Script: pick readTransactions and click Run; read the Execution log.
+4. After ANY script change: Deploy > Manage deployments > pencil >
+   Version: New version > Deploy. The URL stays the same. Saving alone does not
+   update the live web app.
+5. The sync URL must include ?token=... The app adds "&cacheBust=..." to it.
+6. Before editing the script, make a copy of the sheet (File > Make a copy).
+
+
+RULES TO KEEP
+-------------
+- Never put the token, sheet ID or full sync URL in a file that is committed.
+- Each constant may be declared once in the whole Apps Script project.
+- The cloud copy wins on load, so the script must store every field the app
+  sends, or that field is lost on refresh.
+
+
+STILL OPEN
+----------
+- Confirm pending survives a refresh AND shows on a second device.
+- Rotate the script's ACCESS_TOKEN and the GOOGLE_SHEETS_URL secret. The token
+  and URL were pasted into chat, and the URL is built into the public site.
+- The script still does not store the savings plan (salary, rate, investment)
+  or shared sub-categories, and has no lock against simultaneous saves. See
+  docs/prompts/apps-script-settings-sync.md.
+- The database decision is in docs/database-migration.md.
