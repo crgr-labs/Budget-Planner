@@ -218,7 +218,7 @@ export class App {
   protected readonly savingsActionTab = signal<'Transaction' | 'Target'>('Transaction');
   protected readonly savingsDetailsOpen = signal(false);
   protected readonly mobileMenuOpen = signal(false);
-  private readonly moreMenuSections = ['Insights', 'Plan', 'Reports', 'Categories', 'Data'];
+  private readonly moreMenuSections = ['Savings', 'Insights', 'Plan', 'Reports', 'Categories', 'Data'];
   protected readonly moreMenuActive = computed(() => this.moreMenuSections.includes(this.activeSection()));
   private readonly categoryColorSeed = Math.random() * 360;
   protected readonly selectedMonth = signal('2026-09');

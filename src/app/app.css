@@ -234,8 +234,23 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   align-items: center;
+}
+
+.ledger-icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.ledger-icon-dots {
+  stroke-width: 3.5;
 }
 
 .ledger-bottom-tab {
@@ -245,7 +260,8 @@
   justify-content: center;
   gap: 3px;
   height: 100%;
-  font-size: 10px;
+  min-height: 44px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--ledger-muted);
   background: transparent;
@@ -263,12 +279,21 @@
 }
 
 .ledger-bottom-tab-icon {
-  font-size: 16px;
-  line-height: 1;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 28px;
+  border-radius: var(--ledger-radius-full);
+  transition: background 0.15s ease;
+}
+
+.ledger-bottom-tab.active .ledger-bottom-tab-icon {
+  background: var(--ledger-accent-tint);
 }
 
 .ledger-bottom-tab-label {
-  font-size: 10px;
+  font-size: 11px;
+  line-height: 1.2;
 }
 
 .ledger-bottom-add-wrap {
@@ -279,22 +304,27 @@
 .ledger-bottom-add-btn {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
+  width: 54px;
+  height: 54px;
   background: #0070f2;
   color: #ffffff;
-  border: none;
+  /* Ring in the bar colour cuts a notch into the bar edge */
+  border: 4px solid var(--ledger-surface);
   border-radius: var(--ledger-radius-full);
-  font-size: 22px;
-  line-height: 1;
-  font-weight: 400;
   cursor: pointer;
+  transform: translateY(-14px);
   box-shadow: 0 4px 12px rgba(0, 112, 242, 0.4);
   transition: background 0.15s ease, transform 0.1s ease;
 }
 
+.ledger-bottom-add-btn .ledger-icon {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2.25;
+}
+
 .ledger-bottom-add-btn:active {
-  transform: scale(0.95);
+  transform: translateY(-14px) scale(0.95);
   background: #0057be;
 }
 
@@ -376,10 +406,9 @@
 }
 
 .ledger-more-item-icon {
+  display: grid;
+  place-items: center;
   width: 24px;
-  text-align: center;
-  font-size: 18px;
-  line-height: 1;
 }
 
 .ledger-more-theme {
