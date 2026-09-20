@@ -109,6 +109,8 @@ interface SavingsTrendPoint {
 }
 
 interface CloudData {
+  /** Set by the Apps Script on failures such as a wrong token; it replies HTTP 200 with { error }. */
+  error?: string;
   transactions: Transaction[];
   settings?: {
     monthlyBudget?: number;
@@ -391,6 +393,8 @@ export class App {
   /** Bumped on every local change; lets a background refresh detect edits made while it was in flight. */
   private dataRevision = 0;
   protected readonly cloudGateBypassed = signal(false);
+  /** Plain-language reason the last cloud load failed, shown on the load-failure gate. */
+  protected readonly cloudLoadError = signal('');
   /** Honest save state for the Overview header; never claims "saved" while a sync is failing or blocked. */
   protected readonly saveStatus = computed<{ label: string; tone: 'ok' | 'pending' | 'error' }>(() => {
     if (this.syncError()) return { label: 'Could not save to cloud', tone: 'error' };
@@ -2158,11 +2162,15 @@ export class App {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then(() => {
+      .then((body: Transaction[] | CloudData) => {
+        const data: CloudData | null = Array.isArray(body) ? { transactions: body } : body;
+        if (!data || data.error || !Array.isArray(data.transactions)) {
+          throw new Error(data?.error ? String(data.error) : 'Unexpected response from the sync URL');
+        }
         this.cloudSyncStatusMessage.set('✓ Connection verified! Google Sheets database connected.');
       })
       .catch((err) => {
-        this.cloudSyncStatusMessage.set(`Connection failed: ${err.message || 'Check URL and token.'}`);
+        this.cloudSyncStatusMessage.set(`Connection failed: ${this.describeCloudError(err)}`);
       });
   }
 
@@ -2190,6 +2198,20 @@ export class App {
       // Note: bills are now persisted via persistExpectedBills() — no longer stored separately
     } catch {}
   }
+  /** Turn a failed cloud request into a plain-language reason for the gate and the connection test. */
+  private describeCloudError(error: unknown): string {
+    const message = error instanceof Error ? error.message : String(error || '');
+    if (/unauthorized/i.test(message)) return 'The server rejected the access token. Check the ?token= part of your Cloud Sync URL.';
+    if (/HTTP 40[13]/.test(message)) return 'Google refused access. In Apps Script, set the web app "Who has access" to Anyone.';
+    if (/HTTP 404/.test(message)) return 'The sync URL was not found. Copy the current web app URL from Deploy > Manage deployments.';
+    if (error instanceof DOMException && error.name === 'AbortError') return 'The request timed out. Try again in a moment.';
+    if (error instanceof SyntaxError || /unexpected response/i.test(message)) {
+      return 'The URL did not return ledger data. Use your script\'s web app URL (ending in /exec), make sure "Who has access" is Anyone, and check the script for errors.';
+    }
+    if (error instanceof TypeError) return 'Could not reach the server. Check your connection and that the URL is your script\'s web app URL.';
+    return message ? `Connection problem: ${message}` : 'The cloud could not be reached.';
+  }
+
   /**
    * A cloud backend that predates the pending feature returns rows without status/pending.
    * For those rows, keep this device's local pending flag instead of resetting it to cleared.
@@ -2206,7 +2228,10 @@ export class App {
   }
 
   private loadFromApi(attempt = 1, background = false): void {
-    if (!background) this.cloudLoaded = false;
+    if (!background) {
+      this.cloudLoaded = false;
+      this.cloudLoadError.set('');
+    }
     const revision = this.dataRevision;
     if (!this.apiUrl) {
       try {
@@ -2231,7 +2256,12 @@ export class App {
       .then((data: Transaction[] | CloudData) => {
         // The user edited while this background refresh was in flight: drop it rather than overwrite the edit.
         if (background && revision !== this.dataRevision) return;
-        const cloudData = Array.isArray(data) ? { transactions: data } : data;
+        const cloudData: CloudData = Array.isArray(data) ? { transactions: data } : data;
+        // The script answers HTTP 200 with { error } for a wrong token, so an OK status is not enough.
+        if (!cloudData || typeof cloudData !== 'object' || cloudData.error || !Array.isArray(cloudData.transactions)) {
+          throw new Error(cloudData?.error ? String(cloudData.error) : 'Unexpected response from the sync URL');
+        }
+        this.cloudLoadError.set('');
         this.cloudDataReady.set(true);
         this.cloudDataError.set(false);
 
@@ -2300,6 +2330,7 @@ export class App {
           }
         } catch {}
         this.syncSelectedMonthToAvailableData(this.transactions());
+        this.cloudLoadError.set(this.describeCloudError(error));
         this.cloudDataReady.set(true);
         this.cloudDataError.set(true);
       })
@@ -2408,7 +2439,9 @@ export class App {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json().catch(() => ({}));
       })
-      .then(() => {
+      .then((body: { error?: string } | null) => {
+        // The script answers HTTP 200 with { error } (e.g. a wrong token): that is a failed save, not a saved one.
+        if (body && !Array.isArray(body) && body.error) throw new Error(String(body.error));
         this.syncInProgress = false;
         this.syncError.set(false);
         if (this.syncQueued) {

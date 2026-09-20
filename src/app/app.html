@@ -1824,6 +1824,9 @@
         @if (cloudDataError()) {
           <h2 id="cloud-gate-title">Couldn't load your ledger</h2>
           <p>Your data is safe in the cloud. Editing is paused so nothing on this device can overwrite it. Check your connection and try again.</p>
+          @if (cloudLoadError()) {
+            <p class="ledger-cloud-gate-reason">{{ cloudLoadError() }}</p>
+          }
           <div class="ledger-cloud-gate-actions">
             <button type="button" class="ledger-btn ledger-btn-primary" (click)="retryCloudData()">Try again</button>
             <button type="button" class="ledger-btn ledger-btn-ghost" (click)="openSyncSettingsFromGate()">Sync settings</button>

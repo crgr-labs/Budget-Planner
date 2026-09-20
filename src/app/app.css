@@ -1688,6 +1688,13 @@ button.ledger-badge:active {
   color: var(--ledger-muted);
 }
 
+.ledger-cloud-gate-card .ledger-cloud-gate-reason {
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ledger-red);
+}
+
 .ledger-cloud-gate-actions {
   display: flex;
   flex-wrap: wrap;
