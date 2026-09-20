@@ -1995,6 +1995,74 @@ button.ledger-badge:active {
     flex-shrink: 0;
   }
 
+  /* Bill transactions (expanded bill): stack each row into a card instead of scrolling sideways */
+  .ledger-bill-tx-table thead {
+    display: none;
+  }
+
+  .ledger-bill-tx-table,
+  .ledger-bill-tx-table tbody,
+  .ledger-bill-tx-table tfoot,
+  .ledger-bill-tx-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .ledger-bill-tx-table tbody tr {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--ledger-row-rule);
+  }
+
+  .ledger-bill-tx-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0;
+    border-bottom: none;
+    text-align: right;
+    white-space: normal !important;
+  }
+
+  .ledger-bill-tx-table td[data-label]::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ledger-muted);
+    text-align: left;
+  }
+
+  /* The action buttons need no label, just right-aligned */
+  .ledger-bill-tx-table td[data-label="Actions"] {
+    justify-content: flex-end;
+  }
+
+  .ledger-bill-tx-table td[data-label="Actions"]::before {
+    display: none;
+  }
+
+  /* Footer: "Total spent … amount" on one line, remaining text underneath */
+  .ledger-bill-tx-table tfoot tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4px 12px;
+    padding: 10px 14px;
+  }
+
+  .ledger-bill-tx-table tfoot td {
+    display: block;
+    padding: 0 !important;
+    border-bottom: none;
+  }
+
+  .ledger-bill-tx-table tfoot td:last-child {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+
   /* Breakdown rows: name / amount / share on top, bar underneath */
   .ledger-breakdown-row {
     grid-template-columns: 14px minmax(0, 1fr) auto auto;

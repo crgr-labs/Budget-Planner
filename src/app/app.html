@@ -564,17 +564,17 @@
                         <tbody>
                           @for (tx of getTransactionsForBill(bill); track tx.id) {
                             <tr>
-                              <td style="font-size:12px; color:var(--ledger-muted); font-variant-numeric:tabular-nums; white-space:nowrap;">{{ tx.date | date:'MMM d, y' }}</td>
-                              <td style="font-size:12px; font-weight:500; color:var(--ledger-ink);">
+                              <td style="font-size:12px; color:var(--ledger-muted); font-variant-numeric:tabular-nums; white-space:nowrap;" data-label="Date">{{ tx.date | date:'MMM d, y' }}</td>
+                              <td style="font-size:12px; font-weight:500; color:var(--ledger-ink);" data-label="Description">
                                 {{ tx.description }}
                                 @if (isFailedTransaction(tx)) {
                                   <span style="display:inline-block; margin-left:6px; padding:2px 5px; font-size:9px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-weight:700;">FLAGGED</span>
                                 }
                               </td>
-                              <td class="text-right" style="font-size:12px; font-variant-numeric:tabular-nums; font-weight:600; color:var(--ledger-red); white-space:nowrap;">
+                              <td class="text-right" style="font-size:12px; font-variant-numeric:tabular-nums; font-weight:600; color:var(--ledger-red); white-space:nowrap;" data-label="Amount">
                                 -{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
                               </td>
-                              <td class="text-right" style="white-space:nowrap;">
+                              <td class="text-right" style="white-space:nowrap;" data-label="Actions">
                                 <button type="button" class="ledger-btn ledger-btn-ghost" style="height:24px; padding:0 7px; font-size:11px; margin-right:4px;" (click)="$event.stopPropagation(); startEditingExpense(tx)">Edit</button>
                                 <button type="button" class="ledger-btn ledger-btn-ghost" style="height:24px; padding:0 7px; font-size:11px; color:var(--ledger-red);" (click)="$event.stopPropagation(); deleteTransaction(tx.id)">Delete</button>
                               </td>
