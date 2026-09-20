@@ -2,7 +2,7 @@
   <!-- Top Shell Bar (Desktop & Tablet) -->
   <header class="ledger-shell-bar">
     <div class="ledger-shell-left">
-      <div class="ledger-brand" (click)="selectSection('Overview')" role="button" tabindex="0" aria-label="Go to Overview">
+      <div class="ledger-brand" (click)="selectSection('Overview')" role="button" tabindex="0" aria-label="Go to Overview" (keydown.enter)="selectSection('Overview')" (keydown.space)="selectSection('Overview'); $event.preventDefault()">
         <span class="ledger-brand-mark">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
@@ -14,15 +14,15 @@
         <span class="ledger-brand-title">Ledger</span>
       </div>
       <nav class="ledger-shell-nav" aria-label="Main Navigation">
-        <a class="ledger-nav-item" [class.active]="activeSection() === 'Overview'" (click)="selectSection('Overview')">Overview</a>
-        <a class="ledger-nav-item" [class.active]="activeSection() === 'Insights'" (click)="selectSection('Insights')">Insights</a>
-        <a class="ledger-nav-item" [class.active]="activeSection() === 'Spending' || activeSection() === 'Transactions'" (click)="selectSection('Spending')">Spending</a>
-        <a class="ledger-nav-item" [class.active]="activeSection() === 'Bills'" (click)="selectSection('Bills')">Bills</a>
-        <a class="ledger-nav-item" [class.active]="activeSection() === 'Savings'" (click)="selectSection('Savings')">Savings</a>
-        <a class="ledger-nav-item" [class.active]="activeSection() === 'Plan'" (click)="selectSection('Plan')">Plan</a>
-        <a class="ledger-nav-item" [class.active]="activeSection() === 'Reports'" (click)="selectSection('Reports')">Reports</a>
-        <a class="ledger-nav-item" [class.active]="activeSection() === 'Categories'" (click)="selectSection('Categories')">Categories</a>
-        <a class="ledger-nav-item" [class.active]="activeSection() === 'Data'" (click)="selectSection('Data')">Data</a>
+        <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Overview'" [attr.aria-current]="(activeSection() === 'Overview') ? 'page' : null" (click)="selectSection('Overview')">Overview</button>
+        <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Insights'" [attr.aria-current]="(activeSection() === 'Insights') ? 'page' : null" (click)="selectSection('Insights')">Insights</button>
+        <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Spending' || activeSection() === 'Transactions'" [attr.aria-current]="(activeSection() === 'Spending' || activeSection() === 'Transactions') ? 'page' : null" (click)="selectSection('Spending')">Spending</button>
+        <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Bills'" [attr.aria-current]="(activeSection() === 'Bills') ? 'page' : null" (click)="selectSection('Bills')">Bills</button>
+        <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Savings'" [attr.aria-current]="(activeSection() === 'Savings') ? 'page' : null" (click)="selectSection('Savings')">Savings</button>
+        <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Plan'" [attr.aria-current]="(activeSection() === 'Plan') ? 'page' : null" (click)="selectSection('Plan')">Plan</button>
+        <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Reports'" [attr.aria-current]="(activeSection() === 'Reports') ? 'page' : null" (click)="selectSection('Reports')">Reports</button>
+        <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Categories'" [attr.aria-current]="(activeSection() === 'Categories') ? 'page' : null" (click)="selectSection('Categories')">Categories</button>
+        <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Data'" [attr.aria-current]="(activeSection() === 'Data') ? 'page' : null" (click)="selectSection('Data')">Data</button>
       </nav>
     </div>
 
@@ -42,7 +42,7 @@
 
   <!-- Mobile Top Header (<= 768px) -->
   <header class="ledger-mobile-header">
-    <div class="ledger-brand" (click)="selectSection('Overview')" role="button" tabindex="0">
+    <div class="ledger-brand" (click)="selectSection('Overview')" role="button" tabindex="0" aria-label="Go to Overview" (keydown.enter)="selectSection('Overview')" (keydown.space)="selectSection('Overview'); $event.preventDefault()">
       <span class="ledger-brand-mark">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
@@ -125,7 +125,7 @@
 
         <!-- 4 Connected KPI Cards -->
         <div class="ledger-kpi-grid">
-          <div class="ledger-kpi-card clickable" (click)="selectSection('Spending')">
+          <div class="ledger-kpi-card clickable" role="button" tabindex="0" (click)="selectSection('Spending')" (keydown.enter)="selectSection('Spending')" (keydown.space)="selectSection('Spending'); $event.preventDefault()">
             <span class="ledger-kpi-label">Monthly spend</span>
             <strong class="ledger-kpi-value">{{ cloudDataReady() ? (totalSpent() | currency:'PHP':'symbol':'1.2-2') : 'Loading...' }}</strong>
             <span class="ledger-kpi-sub">Total expenses for {{ monthLabel() }}</span>
@@ -147,7 +147,7 @@
             </div>
           </div>
 
-          <div class="ledger-kpi-card clickable" (click)="selectSection('Bills')">
+          <div class="ledger-kpi-card clickable" role="button" tabindex="0" (click)="selectSection('Bills')" (keydown.enter)="selectSection('Bills')" (keydown.space)="selectSection('Bills'); $event.preventDefault()">
             <span class="ledger-kpi-label">Expected bills</span>
             <strong class="ledger-kpi-value">{{ billsSpentTotal() | currency:'PHP':'symbol':'1.0-0' }} <span style="font-size:16px; font-weight:500; color:var(--ledger-muted);">/ {{ billsExpectedTotal() | currency:'PHP':'symbol':'1.0-0' }}</span></strong>
             <span class="ledger-kpi-sub">{{ activeExpectedBills().length }} sub-categories planned</span>
@@ -158,7 +158,7 @@
             </div>
           </div>
 
-          <div class="ledger-kpi-card clickable" (click)="selectSection('Savings')">
+          <div class="ledger-kpi-card clickable" role="button" tabindex="0" (click)="selectSection('Savings')" (keydown.enter)="selectSection('Savings')" (keydown.space)="selectSection('Savings'); $event.preventDefault()">
             <span class="ledger-kpi-label">Savings balance</span>
             <strong class="ledger-kpi-value green">{{ savingsBalance() | currency:'PHP':'symbol':'1.2-2' }}</strong>
             <span class="ledger-kpi-sub">{{ savingsGoalProgress() | number:'1.0-0' }}% of {{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }} goal</span>
@@ -204,7 +204,7 @@
           <section class="ledger-panel">
             <div class="ledger-panel-header">
               <h2>Recent transactions</h2>
-              <a class="ledger-link" (click)="selectSection('Spending')">View all</a>
+              <button type="button" class="ledger-link" (click)="selectSection('Spending')">View all</button>
             </div>
             <div>
               @if (allSelectedTransactions().length === 0) {
@@ -259,7 +259,7 @@
                 <span>{{ m.shortMonth }}</span>
               }
             </div>
-            <a class="ledger-link" style="display:inline-block; margin-top:14px; font-size:12px;" (click)="selectSection('Reports')">View in Reports</a>
+            <button type="button" class="ledger-link" style="display:inline-block; margin-top:14px; font-size:12px;" (click)="selectSection('Reports')">View in Reports</button>
           </section>
 
           <section class="ledger-panel ledger-panel-body">
@@ -281,7 +281,7 @@
             } @else {
               <p style="font-size:12px; color:var(--ledger-muted); margin:0;">No sub-category trend data yet.</p>
             }
-            <a class="ledger-link" style="display:inline-block; margin-top:14px; font-size:12px;" (click)="selectSection('Reports')">View in Reports</a>
+            <button type="button" class="ledger-link" style="display:inline-block; margin-top:14px; font-size:12px;" (click)="selectSection('Reports')">View in Reports</button>
           </section>
         </div>
 
@@ -302,7 +302,7 @@
                 </span>
               </div>
             }
-            <a class="ledger-link" style="display:inline-block; margin-top:10px; font-size:12px;" (click)="selectSection('Reports')">View full breakdown</a>
+            <button type="button" class="ledger-link" style="display:inline-block; margin-top:10px; font-size:12px;" (click)="selectSection('Reports')">View full breakdown</button>
           </section>
 
           <section class="ledger-panel ledger-panel-body">
@@ -327,7 +327,7 @@
               <span>{{ savingsBalance() | currency:'PHP':'symbol':'1.0-0' }} saved</span>
               <span>{{ savingsGoalProgress() | number:'1.0-0' }}% of {{ targetSavingsGoal() | currency:'PHP':'symbol':'1.0-0' }}</span>
             </div>
-            <a class="ledger-link" style="display:inline-block; margin-top:14px; font-size:12px;" (click)="selectSection('Savings')">View in Savings</a>
+            <button type="button" class="ledger-link" style="display:inline-block; margin-top:14px; font-size:12px;" (click)="selectSection('Savings')">View in Savings</button>
           </section>
 
           <section class="ledger-panel ledger-panel-body">
@@ -345,7 +345,7 @@
                 }
               </div>
             }
-            <a class="ledger-link" style="display:inline-block; margin-top:14px; font-size:12px;" (click)="selectSection('Savings')">View in Savings</a>
+            <button type="button" class="ledger-link" style="display:inline-block; margin-top:14px; font-size:12px;" (click)="selectSection('Savings')">View in Savings</button>
           </section>
         </div>
       </div>

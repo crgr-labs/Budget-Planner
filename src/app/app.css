@@ -93,6 +93,25 @@
   flex-direction: column;
 }
 
+/* Visible keyboard focus for custom controls */
+.ledger-nav-item:focus-visible,
+.ledger-link:focus-visible,
+.ledger-brand:focus-visible,
+.ledger-kpi-card.clickable:focus-visible,
+.ledger-btn:focus-visible,
+.ledger-more-backdrop button:focus-visible {
+  outline: 2px solid var(--ledger-accent);
+  outline-offset: 2px;
+}
+
+.ledger-bottom-tab:focus-visible,
+.ledger-bottom-add-btn:focus-visible,
+.ledger-more-item:focus-visible,
+.ledger-more-theme:focus-visible {
+  outline: 2px solid var(--ledger-accent);
+  outline-offset: -2px;
+}
+
 /* --------------------------------------------------------------------------
    Desktop Shell Bar Navigation
    -------------------------------------------------------------------------- */
@@ -158,8 +177,11 @@
   font-size: 13px;
   cursor: pointer;
   text-decoration: none;
+  background: transparent;
+  border: none;
   border-bottom: 2px solid transparent;
   border-radius: var(--ledger-radius-sm) var(--ledger-radius-sm) 0 0;
+  font-family: inherit;
   color: var(--ledger-muted);
   font-weight: 500;
   transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
@@ -638,11 +660,16 @@
 }
 
 .ledger-link {
+  font-family: inherit;
   font-size: 12px;
   font-weight: 600;
   color: var(--ledger-accent);
   text-decoration: none;
   cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
 }
 
 .ledger-link:hover {

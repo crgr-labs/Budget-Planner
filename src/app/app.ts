@@ -2165,6 +2165,17 @@ export class App {
     this.mobileMenuOpen.set(false);
   }
 
+  /** Esc closes the topmost open dialog or sheet (checked in reverse of their order in the template). */
+  @HostListener('document:keydown.escape')
+  protected closeTopmostOverlay(): void {
+    if (this.editingExpenseId() !== null) this.cancelEditingExpense();
+    else if (this.addSubcategoryModalOpen()) this.closeAddSubcategoryModal();
+    else if (this.addCategoryModalOpen()) this.closeAddCategoryModal();
+    else if (this.addTransactionModalOpen()) this.closeAddTransactionModal();
+    else if (this.pendingModalOpen()) this.closePendingModal();
+    else if (this.mobileMenuOpen()) this.closeMobileMenu();
+  }
+
   protected startTileDrag(event: DragEvent): void {
     const tile = event.currentTarget as HTMLElement;
     this.draggedTile = tile;
