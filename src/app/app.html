@@ -932,7 +932,7 @@
 
         <!-- Paycheck Allocation Table -->
         <section class="ledger-table-container" style="margin-bottom:16px;">
-          <table class="ledger-table">
+          <table class="ledger-table ledger-responsive-table ledger-responsive-table-titled">
             <thead>
               <tr>
                 <th>Allocation</th>
@@ -944,10 +944,10 @@
             <tbody>
               @for (row of savingsPlanAllocations(); track row.name) {
                 <tr>
-                  <td style="font-weight:500;">{{ row.name }}</td>
-                  <td class="text-right" style="font-variant-numeric:tabular-nums; color:var(--ledger-muted);">{{ row.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
-                  <td class="text-right" style="font-variant-numeric:tabular-nums; color:var(--ledger-muted);">{{ row.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
-                  <td class="text-right" style="font-variant-numeric:tabular-nums; font-weight:600;">{{ row.monthly | currency:'PHP':'symbol':'1.0-0' }}</td>
+                  <td style="font-weight:500;" data-label="Allocation">{{ row.name }}</td>
+                  <td class="text-right" style="font-variant-numeric:tabular-nums; color:var(--ledger-muted);" data-label="Paycheck 1">{{ row.paycheckOne | currency:'PHP':'symbol':'1.0-0' }}</td>
+                  <td class="text-right" style="font-variant-numeric:tabular-nums; color:var(--ledger-muted);" data-label="Paycheck 2">{{ row.paycheckTwo | currency:'PHP':'symbol':'1.0-0' }}</td>
+                  <td class="text-right" style="font-variant-numeric:tabular-nums; font-weight:600;" data-label="Monthly">{{ row.monthly | currency:'PHP':'symbol':'1.0-0' }}</td>
                 </tr>
               }
             </tbody>
@@ -1047,14 +1047,14 @@
           </div>
           <div>
             @for (cat of budgetCategories(); track cat.category) {
-              <div style="display:grid; grid-template-columns:14px minmax(0,1fr) 110px 200px 60px; align-items:center; gap:14px; padding:13px 20px; border-bottom:1px solid var(--ledger-row-rule);">
-                <span style="width:10px; height:10px;" [style.background]="getCategoryColor(cat.category)"></span>
-                <span style="font-size:13px; font-weight:500;">{{ cat.category }}</span>
-                <span style="font-size:13px; text-align:right; font-variant-numeric:tabular-nums;">{{ cat.total | currency:'PHP':'symbol':'1.2-2' }}</span>
-                <span style="height:6px; background:var(--ledger-track); display:block; border-radius:999px; overflow:hidden; width:100%; max-width:100%; box-sizing:border-box; min-width:0;">
-                  <i style="display:block; height:100%; border-radius:inherit; max-width:100%;" [style.background]="getCategoryColor(cat.category)" [style.width.%]="Math.min(100, Math.max(0, cat.percentOfSpend))"></i>
+              <div class="ledger-breakdown-row">
+                <span class="ledger-breakdown-dot" [style.background]="getCategoryColor(cat.category)"></span>
+                <span class="ledger-breakdown-name">{{ cat.category }}</span>
+                <span class="ledger-breakdown-amount">{{ cat.total | currency:'PHP':'symbol':'1.2-2' }}</span>
+                <span class="ledger-breakdown-track">
+                  <i [style.background]="getCategoryColor(cat.category)" [style.width.%]="Math.min(100, Math.max(0, cat.percentOfSpend))"></i>
                 </span>
-                <span style="font-size:12px; color:var(--ledger-muted); text-align:right; font-variant-numeric:tabular-nums;">{{ cat.percentOfSpend | number:'1.0-0' }}%</span>
+                <span class="ledger-breakdown-pct">{{ cat.percentOfSpend | number:'1.0-0' }}%</span>
               </div>
             }
           </div>
@@ -1087,13 +1087,13 @@
                   <span style="font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--ledger-ink);">{{ group.categoryTotal | currency:'PHP':'symbol':'1.2-2' }}</span>
                 </div>
                 @for (sub of group.subcategories; track sub.name) {
-                  <div style="display:grid; grid-template-columns:minmax(0,1fr) 110px 180px 56px; align-items:center; gap:14px; padding:11px 20px 11px 42px;">
-                    <span style="font-size:13px; color:var(--ledger-ink);">{{ sub.name }}</span>
-                    <span style="font-size:13px; text-align:right; font-variant-numeric:tabular-nums; color:var(--ledger-ink);">{{ sub.amount | currency:'PHP':'symbol':'1.2-2' }}</span>
-                    <span style="height:4px; background:var(--ledger-track); display:block; border-radius:999px; overflow:hidden; width:100%; max-width:100%; box-sizing:border-box; min-width:0;">
-                      <i style="display:block; height:100%; border-radius:inherit; max-width:100%;" [style.background]="getCategoryColor(group.category)" [style.width.%]="Math.min(100, Math.max(0, sub.percentOfParent))"></i>
+                  <div class="ledger-breakdown-row ledger-breakdown-row-sub">
+                    <span class="ledger-breakdown-name">{{ sub.name }}</span>
+                    <span class="ledger-breakdown-amount">{{ sub.amount | currency:'PHP':'symbol':'1.2-2' }}</span>
+                    <span class="ledger-breakdown-track">
+                      <i [style.background]="getCategoryColor(group.category)" [style.width.%]="Math.min(100, Math.max(0, sub.percentOfParent))"></i>
                     </span>
-                    <span style="font-size:11px; color:var(--ledger-muted); text-align:right; font-variant-numeric:tabular-nums;">{{ sub.percentOfParent | number:'1.0-0' }}%</span>
+                    <span class="ledger-breakdown-pct">{{ sub.percentOfParent | number:'1.0-0' }}%</span>
                   </div>
                 }
               </div>
@@ -1176,8 +1176,8 @@
                 <div class="ledger-cat-card-header">
                   <span style="width:12px; height:12px; border-radius:2px; flex-shrink:0;" [style.background]="getCategoryColor(group.name)"></span>
                   <strong style="font-size:13px; color:var(--ledger-ink);">{{ group.name }}</strong>
-                  <span style="font-size:11px; color:var(--ledger-muted);">{{ group.subcategories.length }} sub-categories</span>
-                  <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
+                  <span class="ledger-cat-card-count">{{ group.subcategories.length }} sub-categories</span>
+                  <div class="ledger-cat-card-actions">
                     <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="editCategory(group.name, false)" title="Rename {{ group.name }}">
                       Edit
                     </button>
@@ -1226,8 +1226,8 @@
                 <div class="ledger-cat-card-header">
                   <span style="width:12px; height:12px; border-radius:2px; flex-shrink:0;" [style.background]="getCategoryColor(group.name)"></span>
                   <strong style="font-size:13px; color:var(--ledger-ink);">{{ group.name }}</strong>
-                  <span style="font-size:11px; color:var(--ledger-muted);">{{ group.subcategories.length }} sub-categories</span>
-                  <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
+                  <span class="ledger-cat-card-count">{{ group.subcategories.length }} sub-categories</span>
+                  <div class="ledger-cat-card-actions">
                     <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="editCategory(group.name, true)" title="Rename {{ group.name }}">
                       Edit
                     </button>
