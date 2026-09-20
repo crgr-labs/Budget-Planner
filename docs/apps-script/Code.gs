@@ -1,8 +1,11 @@
 /*
  * Ledger cloud sync: Google Apps Script web app.
  *
- * REFERENCE COPY. The two constants below are placeholders; keep YOUR real
- * values in the Apps Script editor and never commit them.
+ * REFERENCE COPY. To use it: select everything in your Apps Script Code.gs
+ * (and delete any other .gs files that repeat these constants), paste this
+ * whole file, then replace ONLY the two placeholders below with your own
+ * values. Never commit your real values. Apps Script shares one scope across
+ * all files, so each constant may be declared once in the whole project.
  *
  * Changes in this version:
  *  - Transactions have a Status column ('pending' / 'cleared').
@@ -20,7 +23,7 @@ const SPREADSHEET_ID =
 const ACCESS_TOKEN =
   'PASTE_YOUR_ACCESS_TOKEN';
 
-// ===== Keep your own two values above. Everything below is the code. =====
+// ===== Only the two values above need your input. Nothing below needs editing. =====
 
 const TRANSACTIONS_SHEET_NAME = 'Transactions';
 const SETTINGS_SHEET_NAME = 'Settings';
