@@ -435,6 +435,22 @@ export class App {
   /** Bumped on every local change; lets a background refresh detect edits made while it was in flight. */
   private dataRevision = 0;
   protected readonly cloudGateBypassed = signal(false);
+  /** Honest save state for the Overview header; never claims "saved" while a sync is failing or blocked. */
+  protected readonly saveStatus = computed<{ label: string; tone: 'ok' | 'pending' | 'error' }>(() => {
+    if (this.syncError()) return { label: 'Could not save to cloud', tone: 'error' };
+    if (this.syncPending()) return { label: 'Saving to cloud…', tone: 'pending' };
+    if (this.cloudDataError()) return { label: 'Not syncing: cloud unavailable', tone: 'error' };
+    return { label: this.apiUrl ? 'Saved automatically' : 'Saved on this device', tone: 'ok' };
+  });
+  /** State of the cloud connection for Data → Sync status. */
+  protected readonly cloudStatus = computed<{ label: string; color: string }>(() => {
+    if (!this.cloudSyncUrl()) return { label: 'Not configured', color: 'var(--ledger-muted)' };
+    if (this.cloudDataError()) return { label: 'Could not load', color: 'var(--ledger-red)' };
+    if (!this.cloudDataReady()) return { label: 'Connecting…', color: 'var(--ledger-orange)' };
+    if (this.syncError()) return { label: 'Not saving', color: 'var(--ledger-red)' };
+    return { label: 'Connected', color: 'var(--ledger-green)' };
+  });
+  protected readonly importMessage = signal<{ text: string; ok: boolean } | null>(null);
   /** Hosted mode: block the whole app while the cloud copy is loading or failed to load. */
   protected readonly showCloudGate = computed(() =>
     this.isHosted &&
@@ -2411,11 +2427,21 @@ export class App {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
+    this.importMessage.set(null);
+    if (/\.xlsx?$/i.test(file.name)) {
+      this.importMessage.set({ ok: false, text: 'Excel files can\'t be read directly. In Excel or Google Sheets, save or download the sheet as CSV, then import that file.' });
+      input.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       try {
         const text = String(reader.result || '').trim();
-        if (!text) return;
+        if (!text) {
+          this.importMessage.set({ ok: false, text: 'That file is empty.' });
+          input.value = '';
+          return;
+        }
         let imported: Transaction[] = [];
         if (text.startsWith('[') && text.endsWith(']')) {
           const parsed = JSON.parse(text);
@@ -2499,9 +2525,13 @@ export class App {
           this.transactions.set([...imported, ...this.transactions()]);
           this.persist();
           this.syncToApi();
+          this.importMessage.set({ ok: true, text: `Imported ${imported.length} transaction${imported.length === 1 ? '' : 's'}.` });
+        } else {
+          this.importMessage.set({ ok: false, text: 'No transactions found. Use a CSV or JSON file with Date, Description, Category, Subcategory and Amount columns.' });
         }
       } catch (err) {
         console.error('Failed to import transactions:', err);
+        this.importMessage.set({ ok: false, text: 'Could not read that file. Check that it is a valid CSV or JSON export.' });
       }
       input.value = '';
     };

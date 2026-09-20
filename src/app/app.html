@@ -91,7 +91,7 @@
             <h1>Overview</h1>
             <p class="ledger-page-subtitle">{{ monthLabel() }} · {{ allSelectedTransactions().length }} transactions</p>
           </div>
-          <span class="ledger-page-status">Saved automatically</span>
+          <span class="ledger-page-status" [class.is-pending]="saveStatus().tone === 'pending'" [class.is-error]="saveStatus().tone === 'error'" role="status">{{ saveStatus().label }}</span>
         </div>
 
         <!-- Flagged / Failed Transaction Mini Alert (collapsed by default, dismissible) -->
@@ -1323,16 +1323,19 @@
               <h2>Import data</h2>
               <label class="ledger-btn ledger-btn-primary" style="cursor:pointer;">
                 Choose file
-                <input type="file" accept=".csv,.json,.xlsx,.xls" (change)="importWorkbook($event)" style="display:none;" />
+                <input type="file" accept=".csv,.json,text/csv,application/json" (change)="importWorkbook($event)" style="display:none;" />
               </label>
             </div>
             <div class="ledger-panel-body">
               <p style="font-size:13px; color:var(--ledger-muted); margin:0 0 14px;">
-                Upload your transactions from CSV or JSON (compatible with Excel & Google Sheets exports). Reads Date, Description, Category, Subcategory, and Amount columns.
+                Upload your transactions from a CSV or JSON file. From Excel or Google Sheets, save or download the sheet as CSV first. Reads Date, Description, Category, Subcategory, and Amount columns.
               </p>
               <div style="font-size:12px; color:var(--ledger-muted);">
                 Rows are added to your active ledger while keeping existing transactions safe.
               </div>
+              @if (importMessage(); as msg) {
+                <div class="ledger-import-note" [class.error]="!msg.ok" role="status">{{ msg.text }}</div>
+              }
             </div>
           </section>
 
@@ -1361,9 +1364,7 @@
                 </div>
                 <div style="display:flex; justify-content:space-between;">
                   <span style="color:var(--ledger-muted);">Cloud workbook</span>
-                  <b [style.color]="cloudSyncUrl() ? 'var(--ledger-green)' : 'var(--ledger-muted)'">
-                    {{ cloudSyncUrl() ? 'Connected' : 'Not configured' }}
-                  </b>
+                  <b [style.color]="cloudStatus().color">{{ cloudStatus().label }}</b>
                 </div>
                 <div style="display:flex; justify-content:space-between;">
                   <span style="color:var(--ledger-muted);">Current month</span>

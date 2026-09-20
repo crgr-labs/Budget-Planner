@@ -12,9 +12,9 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-## Excel-backed API
+## Local API
 
-The optional Node API in `server.js` stores the ledger in `data/transactions.xlsx`:
+The optional Node API in `server.js` stores the ledger in `data/transactions.json`:
 
 ```bash
 npm run server
@@ -26,7 +26,7 @@ Run the Angular app and API together with:
 npm run start:all
 ```
 
-The dashboard uses the API when it is available and keeps a browser-local fallback when it is not. Excel files can also be imported and exported from the dashboard.
+The dashboard uses the API when it is available and keeps a browser-local fallback when it is not. Transactions can be imported from CSV or JSON files and exported as CSV from the dashboard. To bring in an Excel sheet, save or download it as CSV first.
 
 The Node API is optional. For browser-only use, run just:
 
@@ -34,13 +34,13 @@ The Node API is optional. For browser-only use, run just:
 npm start
 ```
 
-Transactions will be saved in this browser. Run `npm run server` only when you want changes automatically written to `data/transactions.xlsx`.
+Transactions will be saved in this browser. Run `npm run server` only when you want changes automatically written to `data/transactions.json`.
 
 ## Use on a phone
 
 The browser-only app works on Android and iPhone. For a shareable address, push this project to GitHub and enable GitHub Pages with **Settings > Pages > Source: GitHub Actions**. The workflow in `.github/workflows/deploy.yml` will publish the app after each push to `main`.
 
-Open the Pages address on your phone, then choose **Add to Home Screen** in Safari or Chrome. The app stores transactions in that phone's browser. GitHub Pages does not run the optional Node API or share the Excel workbook, so use the dashboard's Excel export/import when moving data between devices.
+Open the Pages address on your phone, then choose **Add to Home Screen** in Safari or Chrome. The app stores transactions in that phone's browser. GitHub Pages does not run the optional Node API, so use Cloud Sync (below) or the dashboard's CSV export/import when moving data between devices.
 
 ## Google Sheets cloud sync
 

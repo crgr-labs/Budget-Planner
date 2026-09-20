@@ -474,6 +474,32 @@
   color: var(--ledger-muted);
 }
 
+.ledger-page-status.is-pending {
+  color: var(--ledger-orange);
+}
+
+.ledger-page-status.is-error {
+  color: var(--ledger-red);
+  font-weight: 600;
+}
+
+.ledger-import-note {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--ledger-accent-border);
+  border-radius: var(--ledger-radius-md);
+  background: var(--ledger-accent-tint);
+  color: var(--ledger-accent-ink);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ledger-import-note.error {
+  border-color: var(--ledger-red);
+  background: transparent;
+  color: var(--ledger-red);
+}
+
 /* --------------------------------------------------------------------------
    Connected KPI Grid (4-Column Strip)
    -------------------------------------------------------------------------- */
