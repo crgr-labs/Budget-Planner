@@ -2235,8 +2235,11 @@ export class App {
         this.cloudDataReady.set(true);
         this.cloudDataError.set(false);
 
+        let restoredPending = false;
         if (Array.isArray(cloudData.transactions)) {
-          this.transactions.set(this.mergeLocalPendingFlags(cloudData.transactions));
+          const merged = this.mergeLocalPendingFlags(cloudData.transactions);
+          restoredPending = merged.some((item, index) => item !== cloudData.transactions[index]);
+          this.transactions.set(merged);
         }
         this.syncSelectedMonthToAvailableData(this.transactions());
 
@@ -2277,6 +2280,8 @@ export class App {
         // Only now is the local copy known to match the cloud, so uploads may resume.
         this.cloudLoaded = true;
         this.lastCloudLoadAt = Date.now();
+        // The cloud had no status for rows this device knows are pending: push it so the sheet catches up.
+        if (restoredPending) this.syncToApi();
       })
       .catch((error) => {
         if (background) return; // silent refresh failed: keep what we have, no error state
