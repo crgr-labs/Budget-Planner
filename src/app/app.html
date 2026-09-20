@@ -1815,4 +1815,24 @@
       </div>
     </div>
   }
+
+  <!-- Cloud load gate: nothing can be edited (or uploaded) until the cloud copy has loaded -->
+  @if (showCloudGate()) {
+    <div class="ledger-cloud-gate" role="alertdialog" aria-modal="true" aria-labelledby="cloud-gate-title">
+      <div class="ledger-cloud-gate-card">
+        @if (cloudDataError()) {
+          <h2 id="cloud-gate-title">Couldn't load your ledger</h2>
+          <p>Your data is safe in the cloud. Editing is paused so nothing on this device can overwrite it. Check your connection and try again.</p>
+          <div class="ledger-cloud-gate-actions">
+            <button type="button" class="ledger-btn ledger-btn-primary" (click)="retryCloudData()">Try again</button>
+            <button type="button" class="ledger-btn ledger-btn-ghost" (click)="openSyncSettingsFromGate()">Sync settings</button>
+          </div>
+        } @else {
+          <div class="ledger-cloud-gate-spinner" aria-hidden="true"></div>
+          <h2 id="cloud-gate-title">Loading your ledger…</h2>
+          <p>Syncing with the cloud.</p>
+        }
+      </div>
+    </div>
+  }
 </div>

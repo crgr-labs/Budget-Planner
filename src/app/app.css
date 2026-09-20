@@ -1603,6 +1603,73 @@ button.ledger-badge:active {
 }
 
 /* --------------------------------------------------------------------------
+   Cloud Load Gate (blocks the app until cloud data has loaded)
+   -------------------------------------------------------------------------- */
+.ledger-cloud-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(22, 25, 29, 0.6);
+  backdrop-filter: blur(2px);
+}
+
+.ledger-cloud-gate-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 28px 24px;
+  text-align: center;
+  background: var(--ledger-surface);
+  border: 1px solid var(--ledger-border);
+  border-radius: var(--ledger-radius-xl);
+  box-shadow: var(--ledger-shadow-lg);
+}
+
+.ledger-cloud-gate-card h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ledger-ink);
+}
+
+.ledger-cloud-gate-card p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ledger-muted);
+}
+
+.ledger-cloud-gate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.ledger-cloud-gate-spinner {
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 14px;
+  border: 3px solid var(--ledger-track);
+  border-top-color: var(--ledger-accent);
+  border-radius: var(--ledger-radius-full);
+  animation: ledger-spin 0.8s linear infinite;
+}
+
+@keyframes ledger-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ledger-cloud-gate-spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+/* --------------------------------------------------------------------------
    Modal Dialog
    -------------------------------------------------------------------------- */
 .ledger-dialog-backdrop {

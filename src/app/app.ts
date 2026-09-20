@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, HostListener, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../environments/environment';
 
@@ -426,6 +426,21 @@ export class App {
   protected readonly transactions = signal<Transaction[]>([]);
   protected readonly cloudDataReady = signal(!this.isHosted);
   protected readonly cloudDataError = signal(false);
+  /**
+   * True only once this session has successfully loaded the cloud copy. Uploads are blocked until
+   * then, so a device with empty or stale local data can never overwrite the cloud ledger.
+   */
+  private cloudLoaded = false;
+  private lastCloudLoadAt = 0;
+  /** Bumped on every local change; lets a background refresh detect edits made while it was in flight. */
+  private dataRevision = 0;
+  protected readonly cloudGateBypassed = signal(false);
+  /** Hosted mode: block the whole app while the cloud copy is loading or failed to load. */
+  protected readonly showCloudGate = computed(() =>
+    this.isHosted &&
+    (!this.cloudDataReady() || this.cloudDataError()) &&
+    !(this.cloudGateBypassed() && this.activeSection() === 'Data')
+  );
   protected readonly syncPending = signal(false);
   protected readonly syncError = signal(false);
   protected readonly regularTransactions = computed(() => this.transactions().filter((item) => !item.savings));
@@ -2538,12 +2553,20 @@ export class App {
   protected retryCloudData(): void {
     this.cloudDataError.set(false);
     this.syncError.set(false);
-    if (!this.cloudDataReady()) {
+    this.cloudGateBypassed.set(false);
+    if (!this.cloudLoaded) {
+      // Never upload before the cloud copy has loaded: reload it instead.
       this.cloudDataReady.set(false);
       this.loadFromApi();
     } else {
       this.syncToApi();
     }
+  }
+
+  /** From the load-failure gate: go fix the sync URL without unblocking editing elsewhere. */
+  protected openSyncSettingsFromGate(): void {
+    this.cloudGateBypassed.set(true);
+    this.selectSection('Data');
   }
 
   protected saveCloudSyncUrl(): void {
@@ -2557,6 +2580,8 @@ export class App {
       }
     } catch {}
     this.cloudSyncStatusMessage.set('Cloud sync URL saved successfully.');
+    this.cloudLoaded = false;
+    this.cloudGateBypassed.set(false);
     this.cloudDataReady.set(false);
     this.loadFromApi();
   }
@@ -2569,6 +2594,8 @@ export class App {
       localStorage.removeItem('ledger-cloud-sync-url');
     } catch {}
     this.cloudSyncStatusMessage.set('Reset to default build configuration.');
+    this.cloudLoaded = false;
+    this.cloudGateBypassed.set(false);
     this.cloudDataReady.set(false);
     this.loadFromApi();
   }
@@ -2633,7 +2660,9 @@ export class App {
     });
   }
 
-  private loadFromApi(attempt = 1): void {
+  private loadFromApi(attempt = 1, background = false): void {
+    if (!background) this.cloudLoaded = false;
+    const revision = this.dataRevision;
     if (!this.apiUrl) {
       try {
         const saved = localStorage.getItem('ledger-transactions');
@@ -2649,9 +2678,14 @@ export class App {
       return;
     }
     const requestUrl = this.isHosted ? `${this.apiUrl}&cacheBust=${Date.now()}` : this.apiUrl;
-    void fetch(requestUrl, { cache: 'no-store' })
+    // A hung request must end in the retry/error gate instead of loading forever.
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    void fetch(requestUrl, { cache: 'no-store', signal: controller.signal })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
       .then((data: Transaction[] | CloudData) => {
+        // The user edited while this background refresh was in flight: drop it rather than overwrite the edit.
+        if (background && revision !== this.dataRevision) return;
         const cloudData = Array.isArray(data) ? { transactions: data } : data;
         this.cloudDataReady.set(true);
         this.cloudDataError.set(false);
@@ -2695,8 +2729,12 @@ export class App {
           this.persistSavingsCategories();
         }
         this.persist();
+        // Only now is the local copy known to match the cloud, so uploads may resume.
+        this.cloudLoaded = true;
+        this.lastCloudLoadAt = Date.now();
       })
       .catch((error) => {
+        if (background) return; // silent refresh failed: keep what we have, no error state
         if (attempt < 2) {
           setTimeout(() => this.loadFromApi(attempt + 1), 1500);
           return;
@@ -2714,7 +2752,20 @@ export class App {
         this.syncSelectedMonthToAvailableData(this.transactions());
         this.cloudDataReady.set(true);
         this.cloudDataError.set(true);
-      });
+      })
+      .finally(() => clearTimeout(timeoutId));
+  }
+
+  /**
+   * A tab left open on another device can hold stale data. When the user comes back, quietly
+   * refresh from the cloud, but only if nothing local is waiting to be saved.
+   */
+  @HostListener('document:visibilitychange')
+  protected refreshOnReturn(): void {
+    if (document.visibilityState !== 'visible' || !this.isHosted || !this.cloudLoaded) return;
+    if (this.syncTimeout || this.syncInProgress || this.syncPending() || this.syncError()) return;
+    if (Date.now() - this.lastCloudLoadAt < 60_000) return;
+    this.loadFromApi(1, true);
   }
 
   private syncTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -2722,6 +2773,7 @@ export class App {
   private syncQueued = false;
 
   private syncToApi(immediate = false): void {
+    this.dataRevision++;
     if (!this.apiUrl) return;
     if (this.syncTimeout) {
       clearTimeout(this.syncTimeout);
@@ -2739,7 +2791,8 @@ export class App {
 
   private executeSyncToApi(attempt = 1, maxAttempts = 3): void {
     if (!this.apiUrl) return;
-    if (!this.cloudDataReady() && !this.cloudDataError()) {
+    // Never upload before this session has loaded the cloud copy (see cloudLoaded).
+    if (!this.cloudLoaded) {
       return;
     }
     if (this.transactions().length === 0) {
