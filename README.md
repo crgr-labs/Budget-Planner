@@ -62,6 +62,8 @@ Each transaction has these fields:
 | `savings`, `fundType`, `account` | savings entries only |
 | `status`, `pending` | `status` is `pending` or `cleared`; `pending` is the same as a boolean. Blank means cleared |
 
+A reference copy of the script (with placeholders for the sheet ID and access token) is in [`docs/apps-script/Code.gs`](docs/apps-script/Code.gs).
+
 If the script has no `status` column, marking a transaction as pending is only remembered on the device that set it. Add a `status` column to the sheet, write `tx.status || (tx.pending ? 'pending' : 'cleared')` when saving, return `status` and `pending: status === 'pending'` when loading, then redeploy the script as a new version (the URL stays the same).
 
 ## Code scaffolding
