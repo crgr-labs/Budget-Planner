@@ -16,7 +16,7 @@
       <nav class="ledger-shell-nav" aria-label="Main Navigation">
         <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Overview'" [attr.aria-current]="(activeSection() === 'Overview') ? 'page' : null" (click)="selectSection('Overview')">Overview</button>
         <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Insights'" [attr.aria-current]="(activeSection() === 'Insights') ? 'page' : null" (click)="selectSection('Insights')">Insights</button>
-        <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Spending' || activeSection() === 'Transactions'" [attr.aria-current]="(activeSection() === 'Spending' || activeSection() === 'Transactions') ? 'page' : null" (click)="selectSection('Spending')">Spending</button>
+        <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Spending'" [attr.aria-current]="(activeSection() === 'Spending') ? 'page' : null" (click)="selectSection('Spending')">Spending</button>
         <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Bills'" [attr.aria-current]="(activeSection() === 'Bills') ? 'page' : null" (click)="selectSection('Bills')">Bills</button>
         <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Savings'" [attr.aria-current]="(activeSection() === 'Savings') ? 'page' : null" (click)="selectSection('Savings')">Savings</button>
         <button type="button" class="ledger-nav-item" [class.active]="activeSection() === 'Plan'" [attr.aria-current]="(activeSection() === 'Plan') ? 'page' : null" (click)="selectSection('Plan')">Plan</button>
@@ -352,7 +352,7 @@
     }
 
     <!-- SECTION: SPENDING (REGULAR SPENDING) -->
-    @if (activeSection() === 'Spending' || activeSection() === 'Transactions') {
+    @if (activeSection() === 'Spending') {
       <div>
         <div class="ledger-page-header">
           <div>
@@ -1413,7 +1413,7 @@
       </span>
       <span class="ledger-bottom-tab-label">Overview</span>
     </button>
-    <button type="button" class="ledger-bottom-tab" [class.active]="activeSection() === 'Spending' || activeSection() === 'Transactions'" [attr.aria-current]="activeSection() === 'Spending' || activeSection() === 'Transactions' ? 'page' : null" (click)="selectSection('Spending')">
+    <button type="button" class="ledger-bottom-tab" [class.active]="activeSection() === 'Spending'" [attr.aria-current]="activeSection() === 'Spending' ? 'page' : null" (click)="selectSection('Spending')">
       <span class="ledger-bottom-tab-icon">
         <svg class="ledger-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h13"/><path d="m16 3 4 4-4 4"/><path d="M17 17H4"/><path d="m8 21-4-4 4-4"/></svg>
       </span>

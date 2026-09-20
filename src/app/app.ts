@@ -56,12 +56,6 @@ interface ExpectedBill {
   active: boolean;
 }
 
-interface SubcategoryTrend {
-  name: string;
-  total: number;
-  points: number[];
-}
-
 interface SubcategoryItem {
   name: string;
   amount: number;
@@ -82,27 +76,6 @@ interface CategorySubcategoryGroup {
   category: string;
   categoryTotal: number;
   subcategories: SubcategoryItem[];
-}
-
-interface SubcategoryStackedSegment {
-  name: string;
-  amount: number;
-  heightPercent: number;
-  color: string;
-}
-
-interface MonthSubcategoryTrendPoint {
-  monthKey: string;
-  month: string;
-  total: number;
-  columnHeight: number;
-  isCurrent: boolean;
-  segments: SubcategoryStackedSegment[];
-}
-
-interface ReportSubcategoryTrendData {
-  months: MonthSubcategoryTrendPoint[];
-  legend: { name: string; color: string }[];
 }
 
 interface SavingsPlanAllocation {
@@ -160,18 +133,6 @@ interface CloudData {
   templateUrl: './app.html',
 })
 export class App {
-  private readonly builtInCategories = new Set(['Housing', 'Food', 'Transport', 'Lifestyle', 'Bills', 'Expected Bills', 'Health']);
-  private readonly builtInCategorySubcategories = new Map([
-    ['Housing', ['Rent', 'Utilities', 'Repairs']],
-    ['Food', ['Groceries', 'Restaurants', 'Coffee']],
-    ['Transport', ['Commute', 'Fuel', 'Parking']],
-    ['Lifestyle', ['Entertainment', 'Shopping', 'Subscriptions']],
-    ['Bills', ['Phone', 'Internet', 'Insurance', 'Electricity', 'Water', 'Utilities']],
-    ['Expected Bills', ['Rent', 'Condo', 'Globe', 'Internet', 'Electricity', 'Water', 'Utilities', 'Parking', 'Groceries', 'Insurance', 'Phone']],
-    ['Health', ['Medicine', 'Appointments', 'Fitness']],
-  ]);
-  private readonly builtInSavingsCategories = new Set(['Emergency Fund', 'General Savings', 'Investment Fund', 'Travel Fund', 'Other']);
-  private draggedTile: HTMLElement | null = null;
   private getStoredCloudSyncUrl(): string {
     try {
       const stored = localStorage.getItem('ledger-cloud-sync-url');
@@ -212,15 +173,10 @@ export class App {
   protected setCategoryTab(tab: 'Spending' | 'Savings'): void {
     this.categoryTab.set(tab);
   }
-  protected readonly transactionFormOpen = signal(false);
   protected readonly addTransactionModalOpen = signal(false);
-  protected readonly savingsSubPage = signal<'Plan' | 'AddTransaction'>('Plan');
-  protected readonly savingsActionTab = signal<'Transaction' | 'Target'>('Transaction');
-  protected readonly savingsDetailsOpen = signal(false);
   protected readonly mobileMenuOpen = signal(false);
   private readonly moreMenuSections = ['Savings', 'Insights', 'Plan', 'Reports', 'Categories', 'Data'];
   protected readonly moreMenuActive = computed(() => this.moreMenuSections.includes(this.activeSection()));
-  private readonly categoryColorSeed = Math.random() * 360;
   protected readonly selectedMonth = signal('2026-09');
 
   protected getTransactionMonth(dateStr: string): string {
@@ -494,18 +450,11 @@ export class App {
   }));
   protected readonly billsExpectedTotal = computed(() => this.billTracking().reduce((sum, bill) => sum + bill.amount, 0));
   protected readonly billsSpentTotal = computed(() => this.billTracking().reduce((sum, bill) => sum + bill.spent, 0));
-  protected readonly billsOverspentCount = computed(() => this.billTracking().filter((bill) => bill.overspent).length);
   protected readonly totalSpent = computed(() =>
     this.selectedTransactions()
       .filter((item) => !item.savings && (item.type === 'Expense' || !item.type))
       .reduce((sum, item) => sum + Math.abs(Number(item.amount) || 0), 0)
   );
-  protected readonly regularExpenseCount = computed(() =>
-    this.selectedTransactions()
-      .filter((item) => !item.savings && (item.type === 'Expense' || !item.type))
-      .length
-  );
-  protected readonly monthlyExpenses = computed(() => this.totalSpent());
   protected readonly monthlySavingsContributions = computed(() =>
     this.savingsTransactions()
       .filter((item) => this.isSavingsContribution(item) && this.matchesMonth(item.date, this.selectedMonth()) && !this.isFailedTransaction(item))
@@ -519,28 +468,6 @@ export class App {
   protected readonly monthlyNetSavings = computed(() =>
     this.monthlySavingsContributions() - this.monthlySavingsWithdrawals()
   );
-  protected readonly monthlySavingsSubtitle = computed(() => {
-    const withdrawals = this.monthlySavingsWithdrawals();
-    const contributions = this.monthlySavingsContributions();
-    if (withdrawals > 0 && contributions > 0) {
-      return `Net saved in ${this.monthLabel()} (+₱${Math.round(contributions).toLocaleString('en-US')} · −₱${Math.round(withdrawals).toLocaleString('en-US')})`;
-    }
-    if (withdrawals > 0 && contributions === 0) {
-      return `Net withdrawal in ${this.monthLabel()} (−₱${Math.round(withdrawals).toLocaleString('en-US')})`;
-    }
-    return `Savings contributed in ${this.monthLabel()}`;
-  });
-  protected readonly monthlySavingsReportSubtitle = computed(() => {
-    const withdrawals = this.monthlySavingsWithdrawals();
-    const contributions = this.monthlySavingsContributions();
-    if (withdrawals > 0 && contributions > 0) {
-      return `Net saved (+₱${Math.round(contributions).toLocaleString('en-US')} · −₱${Math.round(withdrawals).toLocaleString('en-US')})`;
-    }
-    if (withdrawals > 0 && contributions === 0) {
-      return `Net withdrawal (−₱${Math.round(withdrawals).toLocaleString('en-US')})`;
-    }
-    return `Saved in ${this.monthLabel()}`;
-  });
   protected readonly monthlySavingsSubtext = computed(() => {
     const withdrawals = this.monthlySavingsWithdrawals();
     const contributions = this.monthlySavingsContributions();
@@ -574,24 +501,7 @@ export class App {
       .filter((item) => item.total > 0)
       .sort((first, second) => second.total - first.total);
   });
-  protected readonly reportCategories = computed(() => {
-    const categoryTotals = new Map<string, number>();
-    for (const item of this.reportTransactions()) {
-      if (item.savings) continue;
-      if (item.type && item.type !== 'Expense') continue;
-      const category = (item.category && item.category.trim()) || 'Other';
-      const amount = Math.abs(Number(item.amount) || 0);
-      categoryTotals.set(category, (categoryTotals.get(category) ?? 0) + amount);
-    }
-    return [...categoryTotals.entries()]
-      .map(([category, total]) => ({ category, total }))
-      .filter((item) => item.total > 0)
-      .sort((first, second) => second.total - first.total);
-  });
   protected readonly reportTransactions = computed(() => this.selectedTransactions().filter((item) => !item.savings));
-  protected readonly reportTotalSpent = computed(() => this.reportTransactions().filter((item) => (item.type === 'Expense' || !item.type)).reduce((sum, item) => sum + Math.abs(Number(item.amount) || 0), 0));
-  protected readonly reportExpenseCount = computed(() => this.reportTransactions().filter((item) => (item.type === 'Expense' || !item.type)).length);
-
   protected isFailedTransaction(item: Transaction | null | undefined): boolean {
     if (!item) return false;
     const desc = (item.description || '').toLowerCase();
@@ -646,11 +556,6 @@ export class App {
       .filter((item) => !item.savings && (item.type === 'Expense' || !item.type))
       .reduce((sum, item) => sum + Math.abs(Number(item.amount) || 0), 0)
   );
-
-  protected readonly pendingCount = computed(() =>
-    this.pendingTransactions().length
-  );
-
   /** Every pending transaction across all months (expenses and savings entries), newest first. */
   protected readonly allPendingTransactions = computed(() =>
     this.transactions()
@@ -727,8 +632,6 @@ export class App {
   }
 
   protected readonly previousMonth = computed(() => this.getPreviousMonthKey(this.selectedMonth()));
-  protected readonly previousMonthLabel = computed(() => this.formatMonth(this.previousMonth()));
-
   protected readonly hasPreviousMonthData = computed(() => {
     const prevMonth = this.previousMonth();
     if (!prevMonth) return false;
@@ -736,19 +639,6 @@ export class App {
       (t) => !t.savings && (t.type === 'Expense' || !t.type) && this.matchesMonth(t.date, prevMonth) && Math.abs(Number(t.amount) || 0) > 0
     );
   });
-
-  protected readonly recordedExpenseMonths = computed(() => {
-    const months = new Set(
-      this.transactions()
-        .filter((t) => !t.savings && (t.type === 'Expense' || !t.type) && Math.abs(Number(t.amount) || 0) > 0)
-        .map((t) => this.getTransactionMonth(t.date))
-        .filter(Boolean)
-    );
-    return [...months].sort();
-  });
-
-  protected readonly hasEnoughHistoricalData = computed(() => this.recordedExpenseMonths().length >= 2);
-
   protected readonly monthOverMonthCategories = computed(() => {
     if (!this.hasPreviousMonthData()) return [];
     const prevMonth = this.previousMonth();
@@ -789,11 +679,6 @@ export class App {
     return '';
   }
   protected readonly targetSavingsGoal = signal(this.getInitialTargetSavings());
-  protected readonly targetSavingsProgress = computed(() => {
-    const goal = this.targetSavingsGoal();
-    if (goal <= 0) return this.savingsBalance() > 0 ? 100 : 0;
-    return Math.min(100, Math.max(0, (this.savingsBalance() / goal) * 100));
-  });
   protected readonly savingsTransactions = computed(() => this.transactions().filter((item) => item.savings));
   protected readonly sortedSavingsTransactions = computed(() =>
     [...this.savingsTransactions()].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -855,13 +740,6 @@ export class App {
     target.setMonth(target.getMonth() + Math.ceil(this.amountRemaining() / rate));
     return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(target);
   });
-  protected readonly recentSavingsTransactions = computed(() => this.transactions()
-    .filter((item) => item.savings)
-    .slice(0, 5));
-  protected readonly savingsBalances = computed(() => [
-    { name: 'Target savings', amount: Math.min(Math.max(this.savingsBalance(), 0), this.targetSavingsGoal()) },
-    { name: 'Additional savings', amount: Math.max(this.savingsBalance() - this.targetSavingsGoal(), 0) },
-  ]);
   protected readonly savingsTrendData = computed<SavingsTrendPoint[]>(() => {
     const months = this.monthOptions().slice(0, 6).reverse();
     const amounts = months.map((month) => this.savingsTransactions()
@@ -878,69 +756,6 @@ export class App {
       height: amounts[index] > 0 ? Math.max(8, (amounts[index] / maximum) * 100) : 4,
     }));
   });
-  protected getLast6Months(): string[] {
-    const recorded = this.recordedExpenseMonths();
-    if (recorded.length < 2) return [];
-
-    const baseMonth = this.selectedMonth() || new Date().toISOString().slice(0, 7);
-    const [yStr, mStr] = baseMonth.split('-');
-    const year = Number(yStr) || new Date().getFullYear();
-    const month = Number(mStr) || (new Date().getMonth() + 1);
-
-    const earliest = recorded[0];
-    const months: string[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(Date.UTC(year, month - 1 - i, 1));
-      const y = d.getUTCFullYear();
-      const m = String(d.getUTCMonth() + 1).padStart(2, '0');
-      const key = `${y}-${m}`;
-      if (key >= earliest && key <= baseMonth) {
-        months.push(key);
-      }
-    }
-    return months.length >= 2 ? months : recorded.slice(-6);
-  }
-  protected readonly trendData = computed(() => {
-    const months = this.getLast6Months();
-    if (months.length < 2) return [];
-    const rawData = months.map((month) => {
-      const amount = this.transactions()
-        .filter((item) => (item.type === 'Expense' || !item.type) && !item.savings && this.matchesMonth(item.date, month) && !this.isFailedTransaction(item))
-        .reduce((sum, item) => sum + Math.abs(Number(item.amount) || 0), 0);
-      return {
-        monthKey: month,
-        month: new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(new Date(`${month}-01T00:00:00Z`)),
-        amount,
-        isCurrent: month === this.selectedMonth(),
-      };
-    });
-    const maxAmount = Math.max(...rawData.map((d) => d.amount), 1);
-    return rawData.map((d) => ({
-      ...d,
-      height: d.amount > 0 ? Math.max(10, Math.round((d.amount / maxAmount) * 100)) : 4,
-    }));
-  });
-  protected readonly subcategoryTrends = computed<SubcategoryTrend[]>(() => {
-    const months = this.getLast6Months();
-    if (months.length < 2) return [];
-    const totals = new Map<string, number[]>();
-    this.transactions().filter((item) => (item.type === 'Expense' || !item.type) && !item.savings && item.subcategory).forEach((item) => {
-      const points = totals.get(item.subcategory) ?? months.map(() => 0);
-      const month = this.getTransactionMonth(item.date);
-      const monthIndex = months.indexOf(month);
-      if (monthIndex >= 0) points[monthIndex] += Math.abs(Number(item.amount) || 0);
-      totals.set(item.subcategory, points);
-    });
-    return [...totals.entries()]
-      .map(([name, points]) => ({ name, total: points.reduce((sum, amount) => sum + amount, 0), points }))
-      .sort((first, second) => second.total - first.total)
-      .slice(0, 2)
-      .map((trend) => {
-        const maximum = Math.max(...trend.points, 1);
-        return { ...trend, points: trend.points.map((point) => point ? Math.max(12, (point / maximum) * 100) : 4) };
-      });
-  });
-
   protected getSixMonthRange(baseMonthKey: string): string[] {
     const base = baseMonthKey || new Date().toISOString().slice(0, 7);
     const [yStr, mStr] = base.split('-');
@@ -1140,17 +955,6 @@ export class App {
       })
       .sort((a, b) => b.categoryTotal - a.categoryTotal);
   });
-
-  protected readonly hasEnoughSubcategoryHistoricalData = computed(() => {
-    const monthsWithSubs = new Set(
-      this.transactions()
-        .filter((t) => !t.savings && (t.type === 'Expense' || !t.type) && t.subcategory && Math.abs(Number(t.amount) || 0) > 0)
-        .map((t) => this.getTransactionMonth(t.date))
-        .filter(Boolean)
-    );
-    return monthsWithSubs.size >= 2;
-  });
-
   protected subcategoryColor(index: number): string {
     const palette = [
       '#0070f2', // Brand Blue
@@ -1164,103 +968,6 @@ export class App {
     ];
     return palette[index % palette.length];
   }
-
-  protected readonly reportSubcategoryTrendData = computed<ReportSubcategoryTrendData>(() => {
-    const months = this.getLast6Months();
-    if (months.length < 2 || !this.hasEnoughSubcategoryHistoricalData()) {
-      return { months: [], legend: [] };
-    }
-
-    const subTotals = new Map<string, number>();
-    for (const month of months) {
-      for (const item of this.transactions()) {
-        if (item.savings || (item.type && item.type !== 'Expense')) continue;
-        if (!this.matchesMonth(item.date, month)) continue;
-        const sub = (item.subcategory && item.subcategory.trim()) || 'Other';
-        const amount = Math.abs(Number(item.amount) || 0);
-        if (amount > 0) {
-          subTotals.set(sub, (subTotals.get(sub) ?? 0) + amount);
-        }
-      }
-    }
-
-    const sortedSubs = [...subTotals.entries()].sort((a, b) => b[1] - a[1]).map((e) => e[0]);
-    const topSubs = sortedSubs.slice(0, 5);
-    const hasOther = sortedSubs.length > 5;
-
-    const legend: { name: string; color: string }[] = topSubs.map((name, idx) => ({
-      name,
-      color: this.subcategoryColor(idx),
-    }));
-    if (hasOther) {
-      legend.push({ name: 'Other', color: '#94a3b8' });
-    }
-
-    const rawMonths = months.map((monthKey) => {
-      const monthTransactions = this.transactions().filter(
-        (t) => !t.savings && (t.type === 'Expense' || !t.type) && this.matchesMonth(t.date, monthKey)
-      );
-
-      const segmentMap = new Map<string, number>();
-      let monthTotal = 0;
-
-      for (const t of monthTransactions) {
-        const amount = Math.abs(Number(t.amount) || 0);
-        if (amount <= 0) continue;
-        monthTotal += amount;
-        const sub = (t.subcategory && t.subcategory.trim()) || 'Other';
-        const targetGroup = topSubs.includes(sub) ? sub : (hasOther ? 'Other' : sub);
-        segmentMap.set(targetGroup, (segmentMap.get(targetGroup) ?? 0) + amount);
-      }
-
-      return {
-        monthKey,
-        month: new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(new Date(`${monthKey}-01T00:00:00Z`)),
-        total: monthTotal,
-        isCurrent: monthKey === this.selectedMonth(),
-        segmentMap,
-      };
-    });
-
-    const maxMonthTotal = Math.max(...rawMonths.map((m) => m.total), 1);
-
-    const monthPoints: MonthSubcategoryTrendPoint[] = rawMonths.map((m) => {
-      const columnHeight = m.total > 0 ? Math.max(10, Math.round((m.total / maxMonthTotal) * 100)) : 4;
-      const segments: SubcategoryStackedSegment[] = [];
-
-      for (const item of legend) {
-        const amount = m.segmentMap.get(item.name) ?? 0;
-        if (amount > 0 && m.total > 0) {
-          segments.push({
-            name: item.name,
-            amount,
-            heightPercent: Math.max(2, (amount / m.total) * 100),
-            color: item.color,
-          });
-        }
-      }
-
-      return {
-        monthKey: m.monthKey,
-        month: m.month,
-        total: m.total,
-        columnHeight,
-        isCurrent: m.isCurrent,
-        segments,
-      };
-    });
-
-    return {
-      months: monthPoints,
-      legend,
-    };
-  });
-  protected readonly newCategoryName = signal('');
-  protected readonly newCategorySubcategory = signal('');
-  protected readonly selectedExpenseCategoryForSubcategory = signal('');
-  protected readonly newExpenseSubcategoryName = signal('');
-  protected readonly selectedCategoryForSubcategory = signal('');
-  protected readonly newSubcategoryName = signal('');
   protected readonly addCategoryModalOpen = signal(false);
   protected readonly addCategoryModalIsSavings = signal(false);
   protected readonly addSubcategoryModalOpen = signal(false);
@@ -1277,20 +984,13 @@ export class App {
     '#0070f2', '#107e3e', '#bb0000', '#e9730c', '#6366f1',
     '#ec4899', '#06b6d4', '#8b5cf6', '#16191d', '#64748b',
   ];
-  protected readonly filteredCategories = computed(() => this.filterCategoryGroups(this.categoryGroups()));
   protected readonly filteredSavingsCategories = computed(() => this.filterCategoryGroups(this.savingsCategoryGroups()));
-  protected readonly newSavingsTransaction = signal<NewTransaction>(this.emptySavingsTransaction());
   protected readonly editingExpenseId = signal<number | null>(null);
   protected readonly editingExpense = signal<NewTransaction | null>(null);
   protected readonly recentlyAddedRegular = signal(false);
   protected readonly recentlyAddedSavings = signal(false);
   private regularAddedTimer: ReturnType<typeof setTimeout> | null = null;
   private savingsAddedTimer: ReturnType<typeof setTimeout> | null = null;
-
-  protected setSavingsAmount(amount: number): void {
-    this.updateSavingsField('amount', Math.round(amount));
-  }
-
   constructor() {
     try {
       const saved = localStorage.getItem('ledger-transactions');
@@ -1394,18 +1094,6 @@ export class App {
 
     this.loadFromApi();
   }
-  protected updateTargetSavingsGoal(value: string | number): void {
-    if (value === null || value === undefined) return;
-    const trimmed = String(value).trim();
-    if (!trimmed) return;
-    const amount = Number(trimmed);
-    if (!Number.isNaN(amount) && amount >= 0) {
-      this.targetSavingsGoal.set(amount);
-      try { localStorage.setItem('ledger-target-savings', String(amount)); } catch {}
-      this.syncToApi();
-    }
-  }
-
   protected updateField(field: keyof NewTransaction, value: string | number | boolean | null): void {
     this.newTransaction.update((form) => {
       if (field === 'category') return form.savings
@@ -1451,20 +1139,6 @@ export class App {
       type: normalized === 'Withdrawal' ? 'Expense' : 'Income',
     }));
   }
-
-  protected updateSavingsField(field: keyof NewTransaction, value: string | number | null): void {
-    this.newSavingsTransaction.update((form) => {
-      if (field === 'category') {
-        const category = String(value);
-        return { ...form, category, subcategory: this.savingsSubcategoriesFor(category)[0] || '' };
-      }
-      if (field === 'type') {
-        return { ...form, type: value as TransactionType, fundType: value === 'Expense' ? 'Withdrawal' : 'Contribution' };
-      }
-      return { ...form, [field]: value };
-    });
-  }
-
   protected subcategoriesFor(category: string): string[] {
     const expectedBillsGroup = this.categoryGroups().find((group) => group.name === 'Expected Bills');
     const expectedBillsSubcategories = expectedBillsGroup?.subcategories ?? [];
@@ -1556,11 +1230,6 @@ export class App {
     this.persistCategories();
     this.syncToApi();
   }
-
-  protected addSubcategory(subcategory: string): void {
-    this.addExpenseSubcategory('__ALL__', subcategory);
-  }
-
   protected addSavingsCategory(name: string, subcategory: string): void {
     const categoryName = name.trim();
     const subcategoryName = subcategory.trim();
@@ -1577,34 +1246,6 @@ export class App {
     this.persistSavingsCategories();
     this.syncToApi();
   }
-
-  protected createCategory(): void {
-    this.addCategory(this.newCategoryName(), this.newCategorySubcategory());
-    this.newCategoryName.set('');
-    this.newCategorySubcategory.set('');
-  }
-
-  protected createSubcategory(): void {
-    this.addSubcategory(this.newSubcategoryName());
-    this.newSubcategoryName.set('');
-  }
-
-  protected createExpenseSubcategory(): void {
-    this.addExpenseSubcategory(this.selectedExpenseCategoryForSubcategory(), this.newExpenseSubcategoryName());
-    this.newExpenseSubcategoryName.set('');
-  }
-
-  protected createSavingsCategory(): void {
-    this.addSavingsCategory(this.newCategoryName(), this.newCategorySubcategory());
-    this.newCategoryName.set('');
-    this.newCategorySubcategory.set('');
-  }
-
-  protected createSavingsSubcategory(): void {
-    this.addSavingsSubcategory(this.selectedCategoryForSubcategory(), this.newSubcategoryName());
-    this.newSubcategoryName.set('');
-  }
-
   protected openAddCategoryModal(savings: boolean = this.categoryTab() === 'Savings'): void {
     this.addCategoryModalIsSavings.set(savings);
     this.newCategoryModalName.set('');
@@ -1705,16 +1346,6 @@ export class App {
       }))
       .filter((group) => group.name.toLowerCase().includes(query) || group.subcategories.length > 0);
   }
-
-  protected isUserCategory(name: string, savings: boolean): boolean {
-    return !(savings ? this.builtInSavingsCategories : this.builtInCategories).has(name);
-  }
-
-  protected isUserSubcategory(category: string, subcategory: string, savings: boolean): boolean {
-    if (savings) return this.isUserCategory(category, true);
-    return !(this.builtInCategorySubcategories.get(category) ?? []).includes(subcategory);
-  }
-
   protected editCategory(name: string, savings: boolean): void {
     const updatedName = window.prompt(`Edit ${savings ? 'savings fund' : 'category'} name`, name)?.trim();
     if (!updatedName || updatedName === name) return;
@@ -1824,13 +1455,6 @@ export class App {
     this.addExpectedBill();
     this.addBillFormOpen.set(false);
   }
-
-  protected toggleExpectedBillActive(bill: ExpectedBill): void {
-    this.expectedBills.update(bills => bills.map(b => b.id === bill.id ? { ...b, active: !b.active } : b));
-    this.persistExpectedBills();
-    this.syncToApi();
-  }
-
   protected removeExpectedBill(id: number): void {
     if (!window.confirm('Are you sure you want to remove this expected bill?')) return;
     this.expectedBills.update((bills) => bills.filter((bill) => bill.id !== id));
@@ -1993,15 +1617,6 @@ export class App {
     this.activeSection.set(section);
     this.mobileMenuOpen.set(false);
   }
-
-  protected selectSavingsSubPage(page: 'Plan' | 'AddTransaction'): void {
-    this.savingsSubPage.set(page);
-  }
-
-  protected toggleSavingsDetails(): void {
-    this.savingsDetailsOpen.update((isOpen) => !isOpen);
-  }
-
   protected toggleEditingPlanParameters(): void {
     this.editingPlanParameters.update((isOpen) => !isOpen);
   }
@@ -2029,32 +1644,6 @@ export class App {
     this.persistSavingsPlan();
     this.syncToApi();
   }
-
-  protected resetSavingsPlanToDefaults(): void {
-    this.savingsPlanSalary.set(192000);
-    this.savingsPlanSavingsRate.set(40);
-    this.savingsPlanInvestment.set(18200);
-    // Seed default fixed bills into expectedBills (only add if not already present)
-    const existing = this.expectedBills();
-    const existingNames = new Set(existing.map(b => b.name.toLowerCase().trim()));
-    const newBills: ExpectedBill[] = this.defaultFixedBills
-      .filter(dfb => !existingNames.has(dfb.name.toLowerCase().trim()))
-      .map((dfb, i) => ({
-        id: Date.now() + i + 1,
-        name: dfb.name,
-        category: 'Expected Bills',
-        subcategory: dfb.name,
-        amount: dfb.monthly,
-        active: true,
-      }));
-    if (newBills.length) {
-      this.expectedBills.update(bills => [...bills, ...newBills]);
-    }
-    this.persistSavingsPlan();
-    this.persistExpectedBills();
-    this.syncToApi();
-  }
-
   // Savings "Fixed Needs" table — inline editing delegates to expectedBills
   protected startEditingSavingsBill(bill: { id: number; name: string; monthly: number }): void {
     const source = this.expectedBills().find(b => b.id === bill.id);
@@ -2117,16 +1706,6 @@ export class App {
     this.persistExpectedBills();
     this.syncToApi();
   }
-
-  protected toggleTransactionForm(): void {
-    this.transactionFormOpen.update((isOpen) => !isOpen);
-  }
-
-  protected openTransactionForm(): void {
-    this.transactionFormOpen.set(true);
-    requestAnimationFrame(() => document.getElementById('transaction-entry-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-  }
-
   protected openAddTransactionModal(mode: 'Expense' | 'Savings' = 'Expense'): void {
     if (mode === 'Savings') {
       const defaultCategory = this.savingsCategories[0] || 'Emergency Fund';
@@ -2175,36 +1754,6 @@ export class App {
     else if (this.pendingModalOpen()) this.closePendingModal();
     else if (this.mobileMenuOpen()) this.closeMobileMenu();
   }
-
-  protected startTileDrag(event: DragEvent): void {
-    const tile = event.currentTarget as HTMLElement;
-    this.draggedTile = tile;
-    tile.classList.add('tile-dragging');
-    event.dataTransfer?.setData('text/plain', 'dashboard-tile');
-    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
-  }
-
-  protected allowTileDrop(event: DragEvent): void {
-    event.preventDefault();
-    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
-  }
-
-  protected dropTile(event: DragEvent): void {
-    event.preventDefault();
-    const target = event.currentTarget as HTMLElement;
-    const parent = target.parentElement;
-    if (!this.draggedTile || !parent || this.draggedTile === target || this.draggedTile.parentElement !== parent) return;
-    const tiles = [...parent.children];
-    const draggedIndex = tiles.indexOf(this.draggedTile);
-    const targetIndex = tiles.indexOf(target);
-    parent.insertBefore(this.draggedTile, draggedIndex < targetIndex ? target.nextSibling : target);
-  }
-
-  protected endTileDrag(): void {
-    this.draggedTile?.classList.remove('tile-dragging');
-    this.draggedTile = null;
-  }
-
   protected selectMonth(month: string): void {
     this.selectedMonth.set(month);
   }
@@ -2254,41 +1803,6 @@ export class App {
     }
     this.newTransaction.set(this.emptyTransaction());
   }
-
-  protected addSavingsTransaction(): void {
-    const entry = this.newSavingsTransaction();
-    const amount = Number(entry.amount);
-    if (!Number.isFinite(amount) || amount <= 0) return;
-    const category = entry.category || this.savingsCategories[0] || 'Emergency Fund';
-    const account = entry.account?.trim() ?? '';
-    const description = entry.description?.trim() || entry.subcategory || category;
-    const date = entry.date || new Date().toISOString().slice(0, 10);
-    const isPending = Boolean(entry.pending || entry.status === 'pending');
-    const status: 'pending' | 'cleared' = isPending ? 'pending' : 'cleared';
-    if (account) {
-      try { localStorage.setItem('ledger-last-savings-account', account); } catch {}
-    }
-    this.transactions.update((items) => [{
-      ...entry,
-      id: Date.now(),
-      fundType: entry.type === 'Expense' ? 'Withdrawal' : 'Contribution',
-      account,
-      savings: true,
-      description,
-      category,
-      date,
-      amount,
-      pending: isPending,
-      status,
-    }, ...items]);
-    this.persist();
-    if (this.savingsAddedTimer) clearTimeout(this.savingsAddedTimer);
-    this.recentlyAddedSavings.set(true);
-    this.savingsAddedTimer = setTimeout(() => this.recentlyAddedSavings.set(false), 1600);
-    this.syncToApi();
-    this.newSavingsTransaction.set(this.emptySavingsTransaction());
-  }
-
   protected removeTransaction(id: number): void {
     this.transactions.update((items) => items.filter((item) => item.id !== id));
     this.persist();
@@ -2581,16 +2095,6 @@ export class App {
   protected formatMonth(month: string): string {
     return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${month}-01T00:00:00Z`));
   }
-
-  protected categoryColor(index: number): string {
-    const hue = (this.categoryColorSeed + (index * 137.508)) % 360;
-    return `hsl(${hue} 65% 45%)`;
-  }
-
-  protected get hosted(): boolean {
-    return this.isHosted;
-  }
-
   protected retryCloudData(): void {
     this.cloudDataError.set(false);
     this.syncError.set(false);
@@ -2907,12 +2411,4 @@ export class App {
   private persistExpectedBills(): void { try { localStorage.setItem('ledger-expected-bills', JSON.stringify(this.expectedBills())); } catch {} }
   private persistSharedSubcategories(): void { try { localStorage.setItem('ledger-shared-subcategories', JSON.stringify(this.sharedSubcategories())); } catch {} }
   private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null, savings: false, pending: false, status: 'cleared' }; }
-  private emptySavingsTransaction(): NewTransaction {
-    const firstCategory = this.savingsCategoryGroups()[0]?.name ?? 'Emergency Fund';
-    let lastAccount = '';
-    try {
-      lastAccount = localStorage.getItem('ledger-last-savings-account') || '';
-    } catch {}
-    return { date: new Date().toISOString().slice(0, 10), description: '', category: firstCategory, subcategory: '', type: 'Income', amount: null, fundType: 'Contribution', account: lastAccount, pending: false, status: 'cleared' };
-  }
 }
