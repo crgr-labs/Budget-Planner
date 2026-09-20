@@ -2208,7 +2208,9 @@ export class App {
     if (error instanceof SyntaxError || /unexpected response/i.test(message)) {
       return 'The URL did not return ledger data. Use your script\'s web app URL (ending in /exec), make sure "Who has access" is Anyone, and check the script for errors.';
     }
-    if (error instanceof TypeError) return 'Could not reach the server. Check your connection and that the URL is your script\'s web app URL.';
+    if (error instanceof TypeError) {
+      return 'The sync URL gave no readable reply. Usually the script has an error or "Who has access" is not Anyone. Otherwise check your internet or a blocker extension.';
+    }
     return message ? `Connection problem: ${message}` : 'The cloud could not be reached.';
   }
 
