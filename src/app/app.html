@@ -207,6 +207,9 @@
                   <div class="ledger-tx-info">
                     <div class="ledger-tx-desc">
                       {{ tx.description }}
+                      @if (isPendingTransaction(tx)) {
+                        <button type="button" class="ledger-badge ledger-badge-warning" style="cursor:pointer; margin-left:6px; border:none;" title="Click to mark as cleared" (click)="toggleTransactionPending(tx.id)">PENDING</button>
+                      }
                       @if (isFailedTransaction(tx)) {
                         <span style="display:inline-block; margin-left:6px; padding:2px 6px; font-size:10px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-weight:700;">FLAGGED</span>
                       }
@@ -344,7 +347,12 @@
         <div class="ledger-page-header">
           <div>
             <h1>Regular spending</h1>
-            <p class="ledger-page-subtitle">{{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }} across {{ allSelectedTransactions().length }} transactions · {{ monthLabel() }}</p>
+            <p class="ledger-page-subtitle">
+              {{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }} across {{ allSelectedTransactions().length }} transactions · {{ monthLabel() }}
+              @if (pendingTotal() > 0) {
+                <span style="color:var(--ledger-orange); font-weight:600;"> (incl. {{ pendingTotal() | currency:'PHP':'symbol':'1.2-2' }} pending)</span>
+              }
+            </p>
           </div>
           <div class="ledger-page-actions">
             <button type="button" class="ledger-btn ledger-btn-primary" (click)="openAddTransactionModal()">Add transaction</button>
@@ -374,6 +382,9 @@
                 <tr [style.background]="editingExpenseId() === tx.id ? 'var(--ledger-accent-tint)' : null">
                   <td style="font-weight:500;" data-label="Transaction">
                     {{ tx.description }}
+                    @if (isPendingTransaction(tx)) {
+                      <button type="button" class="ledger-badge ledger-badge-warning" style="cursor:pointer; margin-left:6px; border:none;" title="Click to mark as cleared" (click)="toggleTransactionPending(tx.id)">PENDING</button>
+                    }
                     @if (isFailedTransaction(tx)) {
                       <span style="display:inline-block; margin-left:6px; padding:2px 6px; font-size:10px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-weight:700;">FLAGGED</span>
                     }
@@ -389,6 +400,9 @@
                     -{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
                   </td>
                   <td class="text-right" data-label="Actions">
+                    @if (isPendingTransaction(tx)) {
+                      <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--ledger-orange);" title="Mark transaction as cleared" (click)="toggleTransactionPending(tx.id)">Clear</button>
+                    }
                     <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="startEditingExpense(tx)">Edit</button>
                     <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--ledger-red);" (click)="deleteTransaction(tx.id)">Delete</button>
                   </td>
@@ -721,12 +735,20 @@
                     </span>
                   </td>
                   <td style="color:var(--ledger-muted);" data-label="Account">{{ tx.account || '—' }}</td>
-                  <td style="font-weight:500;" data-label="Description">{{ tx.description || '—' }}</td>
+                  <td style="font-weight:500;" data-label="Description">
+                    {{ tx.description || '—' }}
+                    @if (isPendingTransaction(tx)) {
+                      <button type="button" class="ledger-badge ledger-badge-warning" style="cursor:pointer; margin-left:6px; border:none;" title="Click to mark as cleared" (click)="toggleTransactionPending(tx.id)">PENDING</button>
+                    }
+                  </td>
                   <td class="text-right" style="font-variant-numeric:tabular-nums; font-weight:700; white-space:nowrap;" [style.color]="isSavingsContribution(tx) ? 'var(--ledger-green)' : 'var(--ledger-red)'" data-label="Amount">
                     {{ isSavingsContribution(tx) ? '+' : '-' }}{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
                   </td>
                   <td class="text-right" data-label="Actions">
                     <div style="display:inline-flex; gap:6px; justify-content:flex-end;">
+                      @if (isPendingTransaction(tx)) {
+                        <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--ledger-orange);" title="Mark entry as cleared" (click)="toggleTransactionPending(tx.id)">Clear</button>
+                      }
                       <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px;" (click)="startEditingExpense(tx)" title="Edit transaction">Edit</button>
                       <button type="button" class="ledger-btn ledger-btn-ghost" style="height:26px; padding:0 8px; font-size:11px; color:var(--ledger-red);" (click)="deleteTransaction(tx.id)" title="Delete transaction">Delete</button>
                     </div>
@@ -1483,6 +1505,13 @@
                 </div>
               }
             </div>
+
+            <div class="ledger-field-checkbox" style="display:flex; align-items:center; gap:8px; margin-top:14px; padding-top:12px; border-top:1px solid var(--ledger-row-rule);">
+              <input type="checkbox" id="add-tx-pending" [ngModel]="newTransaction().pending" name="pending" (ngModelChange)="updateField('pending', $event)" style="width:16px; height:16px; cursor:pointer;">
+              <label for="add-tx-pending" style="cursor:pointer; margin:0; font-size:13px; font-weight:500; color:var(--ledger-ink);">
+                Mark as pending (not yet cleared / posted)
+              </label>
+            </div>
           </div>
 
           <div class="ledger-dialog-footer">
@@ -1669,6 +1698,13 @@
                   </select>
                 </div>
               }
+            </div>
+
+            <div class="ledger-field-checkbox" style="display:flex; align-items:center; gap:8px; margin-top:14px; padding-top:12px; border-top:1px solid var(--ledger-row-rule);">
+              <input type="checkbox" id="edit-tx-pending" [ngModel]="editTx.pending" name="editPending" (ngModelChange)="updateExpenseEdit('pending', $event)" style="width:16px; height:16px; cursor:pointer;">
+              <label for="edit-tx-pending" style="cursor:pointer; margin:0; font-size:13px; font-weight:500; color:var(--ledger-ink);">
+                Mark as pending (not yet cleared / posted)
+              </label>
             </div>
           </div>
 

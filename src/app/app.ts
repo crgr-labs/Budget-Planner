@@ -16,6 +16,8 @@ interface Transaction {
   savings?: boolean;
   fundType?: string;
   account?: string;
+  status?: 'pending' | 'cleared';
+  pending?: boolean;
 }
 
 interface NewTransaction {
@@ -28,6 +30,8 @@ interface NewTransaction {
   fundType?: string;
   account?: string;
   savings?: boolean;
+  status?: 'pending' | 'cleared';
+  pending?: boolean;
 }
 
 interface SavingsMonthlySummary {
@@ -571,6 +575,40 @@ export class App {
   protected readonly failedTransactions = computed(() =>
     this.transactions().filter((item) => this.matchesMonth(item.date, this.selectedMonth()) && this.isFailedTransaction(item))
   );
+
+  protected isPendingTransaction(item: Transaction | null | undefined): boolean {
+    if (!item) return false;
+    const status = String(item.status || '').toLowerCase();
+    return Boolean(item.pending) || status === 'pending';
+  }
+
+  protected readonly pendingTransactions = computed(() =>
+    this.allSelectedTransactions().filter((item) => this.isPendingTransaction(item))
+  );
+
+  protected readonly pendingTotal = computed(() =>
+    this.pendingTransactions()
+      .filter((item) => !item.savings && (item.type === 'Expense' || !item.type))
+      .reduce((sum, item) => sum + Math.abs(Number(item.amount) || 0), 0)
+  );
+
+  protected readonly pendingCount = computed(() =>
+    this.pendingTransactions().length
+  );
+
+  protected toggleTransactionPending(id: number): void {
+    this.transactions.update((items) => items.map((item) => {
+      if (item.id !== id) return item;
+      const isPending = !this.isPendingTransaction(item);
+      return {
+        ...item,
+        pending: isPending,
+        status: isPending ? 'pending' : 'cleared',
+      };
+    }));
+    this.persist();
+    this.syncToApi();
+  }
 
   protected getPreviousMonthKey(monthKey: string): string {
     const [yStr, mStr] = (monthKey || '').split('-');
@@ -1263,11 +1301,15 @@ export class App {
     }
   }
 
-  protected updateField(field: keyof NewTransaction, value: string | number | null): void {
+  protected updateField(field: keyof NewTransaction, value: string | number | boolean | null): void {
     this.newTransaction.update((form) => {
       if (field === 'category') return form.savings
         ? { ...form, category: String(value), subcategory: this.savingsSubcategoriesFor(String(value))[0] || '' }
         : { ...form, category: String(value), subcategory: this.subcategoriesFor(String(value))[0] || '' };
+      if (field === 'pending') {
+        const isPending = Boolean(value);
+        return { ...form, pending: isPending, status: isPending ? 'pending' : 'cleared' };
+      }
       return { ...form, [field]: value };
     });
   }
@@ -2059,6 +2101,8 @@ export class App {
     const type: TransactionType = isSavings
       ? (fundType === 'Withdrawal' ? 'Expense' : 'Income')
       : (entry.type || 'Expense');
+    const isPending = Boolean(entry.pending || entry.status === 'pending');
+    const status: 'pending' | 'cleared' = isPending ? 'pending' : 'cleared';
 
     this.transactions.update((items) => [{
       ...entry,
@@ -2071,6 +2115,8 @@ export class App {
       date,
       amount,
       account: entry.account?.trim() || '',
+      pending: isPending,
+      status,
     }, ...items]);
     this.persist();
     if (isSavings) {
@@ -2097,6 +2143,8 @@ export class App {
     const account = entry.account?.trim() ?? '';
     const description = entry.description?.trim() || entry.subcategory || category;
     const date = entry.date || new Date().toISOString().slice(0, 10);
+    const isPending = Boolean(entry.pending || entry.status === 'pending');
+    const status: 'pending' | 'cleared' = isPending ? 'pending' : 'cleared';
     if (account) {
       try { localStorage.setItem('ledger-last-savings-account', account); } catch {}
     }
@@ -2110,6 +2158,8 @@ export class App {
       category,
       date,
       amount,
+      pending: isPending,
+      status,
     }, ...items]);
     this.persist();
     if (this.savingsAddedTimer) clearTimeout(this.savingsAddedTimer);
@@ -2177,6 +2227,7 @@ export class App {
     this.editingExpenseId.set(transaction.id);
     const isSavings = Boolean(transaction.savings);
     const fundType = transaction.fundType || (this.isSavingsWithdrawal(transaction) ? 'Withdrawal' : 'Contribution');
+    const isPending = this.isPendingTransaction(transaction);
     this.editingExpense.set({
       date: transaction.date,
       description: transaction.description || '',
@@ -2187,10 +2238,12 @@ export class App {
       savings: isSavings,
       fundType: fundType,
       account: transaction.account || '',
+      pending: isPending,
+      status: isPending ? 'pending' : 'cleared',
     });
   }
 
-  protected updateExpenseEdit(field: keyof NewTransaction, value: string | number | null): void {
+  protected updateExpenseEdit(field: keyof NewTransaction, value: string | number | boolean | null): void {
     this.editingExpense.update((expense) => {
       if (!expense) return null;
       if (field === 'category') {
@@ -2207,6 +2260,10 @@ export class App {
         const fundType = String(value);
         const type: TransactionType = fundType === 'Withdrawal' ? 'Expense' : 'Income';
         return { ...expense, fundType, type };
+      }
+      if (field === 'pending') {
+        const isPending = Boolean(value);
+        return { ...expense, pending: isPending, status: isPending ? 'pending' : 'cleared' };
       }
       return { ...expense, [field]: value };
     });
@@ -2235,6 +2292,8 @@ export class App {
     const type: TransactionType = isSavings
       ? (fundType === 'Withdrawal' ? 'Expense' : 'Income')
       : (expense.type || 'Expense');
+    const isPending = Boolean(expense.pending || expense.status === 'pending');
+    const status: 'pending' | 'cleared' = isPending ? 'pending' : 'cleared';
 
     this.transactions.update((items) => items.map((item) => item.id === id ? {
       ...item,
@@ -2247,6 +2306,8 @@ export class App {
       savings: isSavings,
       fundType: isSavings ? fundType : undefined,
       account: isSavings ? (expense.account || '').trim() : item.account,
+      pending: isPending,
+      status,
     } : item));
     this.persist();
     this.syncToApi();
@@ -2266,16 +2327,21 @@ export class App {
         if (text.startsWith('[') && text.endsWith(']')) {
           const parsed = JSON.parse(text);
           if (Array.isArray(parsed)) {
-            imported = parsed.map((item, index) => ({
-              id: Number(item.id) || (Date.now() + index),
-              date: String(item.date || new Date().toISOString().slice(0, 10)),
-              description: String(item.description || 'Imported transaction'),
-              category: String(item.category || 'Other'),
-              subcategory: String(item.subcategory || ''),
-              type: (item.type === 'Income' ? 'Income' : 'Expense') as TransactionType,
-              amount: Math.abs(Number(item.amount) || 0),
-              savings: Boolean(item.savings),
-            })).filter((item) => item.amount > 0);
+            imported = parsed.map((item, index) => {
+              const isPending = Boolean(item.pending) || String(item.status || '').toLowerCase() === 'pending';
+              return {
+                id: Number(item.id) || (Date.now() + index),
+                date: String(item.date || new Date().toISOString().slice(0, 10)),
+                description: String(item.description || 'Imported transaction'),
+                category: String(item.category || 'Other'),
+                subcategory: String(item.subcategory || ''),
+                type: (item.type === 'Income' ? 'Income' : 'Expense') as TransactionType,
+                amount: Math.abs(Number(item.amount) || 0),
+                savings: Boolean(item.savings),
+                pending: isPending,
+                status: (isPending ? 'pending' : 'cleared') as 'pending' | 'cleared',
+              };
+            }).filter((item) => item.amount > 0);
           }
         } else {
           const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
@@ -2290,6 +2356,7 @@ export class App {
             const subIdx = headers.findIndex((h) => h.includes('sub'));
             const typeIdx = headers.findIndex((h) => h.includes('type'));
             const amtIdx = headers.findIndex((h) => h.includes('amount') || h.includes('spent') || h.includes('cost') || h.includes('price') || h.includes('val'));
+            const statusIdx = headers.findIndex((h) => h.includes('status') || h.includes('pending') || h.includes('state'));
 
             imported = lines.slice(1).map((line, index) => {
               const cols: string[] = [];
@@ -2316,6 +2383,8 @@ export class App {
               const type: TransactionType = rawType.includes('inc') ? 'Income' : 'Expense';
               const rawAmount = amtIdx >= 0 && cols[amtIdx] ? cols[amtIdx].replace(/[^0-9.-]+/g, '') : '0';
               const amount = Math.abs(Number(rawAmount) || 0);
+              const statusRaw = statusIdx >= 0 && cols[statusIdx] ? cols[statusIdx].toLowerCase() : '';
+              const isPending = statusRaw.includes('pend');
 
               return {
                 id: Date.now() + index,
@@ -2326,6 +2395,8 @@ export class App {
                 type,
                 amount,
                 savings: false,
+                pending: isPending,
+                status: (isPending ? 'pending' : 'cleared') as 'pending' | 'cleared',
               };
             }).filter((item) => item.amount > 0);
           }
@@ -2345,7 +2416,7 @@ export class App {
   }
 
   protected exportWorkbook(): void {
-    const headers = ['Date', 'Description', 'Category', 'Subcategory', 'Type', 'Amount'];
+    const headers = ['Date', 'Description', 'Category', 'Subcategory', 'Type', 'Amount', 'Status'];
     const rows = this.transactions().map((item) => [
       item.date || '',
       `"${String(item.description || '').replace(/"/g, '""')}"`,
@@ -2353,6 +2424,7 @@ export class App {
       `"${String(item.subcategory || '').replace(/"/g, '""')}"`,
       item.type || 'Expense',
       Number(item.amount) || 0,
+      this.isPendingTransaction(item) ? 'Pending' : 'Cleared',
     ]);
     const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -2647,13 +2719,13 @@ export class App {
 
   private persistExpectedBills(): void { try { localStorage.setItem('ledger-expected-bills', JSON.stringify(this.expectedBills())); } catch {} }
   private persistSharedSubcategories(): void { try { localStorage.setItem('ledger-shared-subcategories', JSON.stringify(this.sharedSubcategories())); } catch {} }
-  private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null, savings: false }; }
+  private emptyTransaction(): NewTransaction { return { date: new Date().toISOString().slice(0, 10), description: '', category: 'Food', subcategory: 'Groceries', type: 'Expense', amount: null, savings: false, pending: false, status: 'cleared' }; }
   private emptySavingsTransaction(): NewTransaction {
     const firstCategory = this.savingsCategoryGroups()[0]?.name ?? 'Emergency Fund';
     let lastAccount = '';
     try {
       lastAccount = localStorage.getItem('ledger-last-savings-account') || '';
     } catch {}
-    return { date: new Date().toISOString().slice(0, 10), description: '', category: firstCategory, subcategory: '', type: 'Income', amount: null, fundType: 'Contribution', account: lastAccount };
+    return { date: new Date().toISOString().slice(0, 10), description: '', category: firstCategory, subcategory: '', type: 'Income', amount: null, fundType: 'Contribution', account: lastAccount, pending: false, status: 'cleared' };
   }
 }

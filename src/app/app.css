@@ -686,6 +686,26 @@
   border: 1px solid #fed7aa;
 }
 
+[data-theme="dark"] .ledger-badge-warning {
+  background: rgba(251, 146, 60, 0.15);
+  color: var(--ledger-orange, #fb923c);
+  border: 1px solid rgba(251, 146, 60, 0.35);
+}
+
+button.ledger-badge {
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+button.ledger-badge:hover {
+  opacity: 0.82;
+}
+
+button.ledger-badge:active {
+  transform: scale(0.96);
+}
+
 .ledger-badge-neutral {
   background: var(--ledger-chip, #f1f3f5);
   color: var(--ledger-muted, #64748b);
