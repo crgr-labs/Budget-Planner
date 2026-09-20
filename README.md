@@ -4,7 +4,13 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 
 ## Development server
 
-To start a local development server, run:
+The development build reads `src/environments/environment.development.ts`, which is git-ignored so a personal Cloud Sync URL never gets committed. On a fresh clone, create it from the template first:
+
+```bash
+cp src/environments/environment.development.example.ts src/environments/environment.development.ts
+```
+
+Leave `googleSheetsUrl` empty to use the local API or browser storage. Then start a local development server:
 
 ```bash
 ng serve

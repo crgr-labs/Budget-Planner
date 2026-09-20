@@ -2302,6 +2302,27 @@ export class App {
   }
 
   /**
+   * Saves are debounced by 1s. If the tab is hidden or closed inside that window (common on phones),
+   * send the waiting save now; otherwise the next load would replace it with the older cloud copy.
+   */
+  @HostListener('document:visibilitychange')
+  protected flushSyncWhenHidden(): void {
+    if (document.visibilityState === 'hidden') this.flushPendingSync();
+  }
+
+  @HostListener('window:pagehide')
+  protected flushSyncOnPageHide(): void {
+    this.flushPendingSync();
+  }
+
+  private flushPendingSync(): void {
+    if (!this.syncTimeout) return;
+    clearTimeout(this.syncTimeout);
+    this.syncTimeout = null;
+    this.executeSyncToApi(1, 3, true);
+  }
+
+  /**
    * A tab left open on another device can hold stale data. When the user comes back, quietly
    * refresh from the cloud, but only if nothing local is waiting to be saved.
    */
@@ -2334,7 +2355,7 @@ export class App {
     }, 1000);
   }
 
-  private executeSyncToApi(attempt = 1, maxAttempts = 3): void {
+  private executeSyncToApi(attempt = 1, maxAttempts = 3, keepalive = false): void {
     if (!this.apiUrl) return;
     // Never upload before this session has loaded the cloud copy (see cloudLoaded).
     if (!this.cloudLoaded) {
@@ -2370,10 +2391,13 @@ export class App {
       },
     } : this.transactions());
 
+    // keepalive lets the request outlive the page, but browsers cap those bodies at about 64 KB.
+    const useKeepalive = keepalive && new Blob([payload]).size < 60_000;
     fetch(this.apiUrl, {
       method: isGoogleSheets ? 'POST' : 'PUT',
       headers: { 'Content-Type': isGoogleSheets ? 'text/plain;charset=utf-8' : 'application/json' },
       body: payload,
+      ...(useKeepalive ? { keepalive: true } : {}),
     })
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
