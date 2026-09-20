@@ -42,6 +42,22 @@ The browser-only app works on Android and iPhone. For a shareable address, push 
 
 Open the Pages address on your phone, then choose **Add to Home Screen** in Safari or Chrome. The app stores transactions in that phone's browser. GitHub Pages does not run the optional Node API or share the Excel workbook, so use the dashboard's Excel export/import when moving data between devices.
 
+## Google Sheets cloud sync
+
+When a Cloud Sync URL is configured (the `GOOGLE_SHEETS_URL` deploy secret, or the URL saved in the dashboard), the app sends the full ledger to a Google Apps Script with `action: 'replace'` and reads it back on every load. The cloud copy wins on load, so the script must persist every transaction field or that field is lost on refresh.
+
+Each transaction has these fields:
+
+| Field | Notes |
+| --- | --- |
+| `id`, `date`, `description`, `category`, `subcategory` | |
+| `type` | `Income` or `Expense` |
+| `amount` | number |
+| `savings`, `fundType`, `account` | savings entries only |
+| `status`, `pending` | `status` is `pending` or `cleared`; `pending` is the same as a boolean. Blank means cleared |
+
+If the script has no `status` column, marking a transaction as pending is only remembered on the device that set it. Add a `status` column to the sheet, write `tx.status || (tx.pending ? 'pending' : 'cleared')` when saving, return `status` and `pending: status === 'pending'` when loading, then redeploy the script as a new version (the URL stays the same).
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:

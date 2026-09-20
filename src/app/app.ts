@@ -2568,6 +2568,21 @@ export class App {
       // Note: bills are now persisted via persistExpectedBills() — no longer stored separately
     } catch {}
   }
+  /**
+   * A cloud backend that predates the pending feature returns rows without status/pending.
+   * For those rows, keep this device's local pending flag instead of resetting it to cleared.
+   * Any status the cloud does return always wins.
+   */
+  private mergeLocalPendingFlags(cloud: Transaction[]): Transaction[] {
+    const local = new Map(this.transactions().map((item) => [String(item.id), item]));
+    return cloud.map((item) => {
+      const cloudHasStatus = Boolean(item.status) || typeof item.pending === 'boolean';
+      const localItem = local.get(String(item.id));
+      if (cloudHasStatus || !localItem || !this.isPendingTransaction(localItem)) return item;
+      return { ...item, pending: true, status: 'pending' };
+    });
+  }
+
   private loadFromApi(attempt = 1): void {
     if (!this.apiUrl) {
       try {
@@ -2592,7 +2607,7 @@ export class App {
         this.cloudDataError.set(false);
 
         if (Array.isArray(cloudData.transactions)) {
-          this.transactions.set(cloudData.transactions);
+          this.transactions.set(this.mergeLocalPendingFlags(cloudData.transactions));
         }
         this.syncSelectedMonthToAvailableData(this.transactions());
 
