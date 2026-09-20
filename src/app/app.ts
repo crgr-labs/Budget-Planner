@@ -578,6 +578,28 @@ export class App {
     this.transactions().filter((item) => this.matchesMonth(item.date, this.selectedMonth()) && this.isFailedTransaction(item))
   );
 
+  protected readonly failedTotal = computed(() =>
+    this.failedTransactions().reduce((sum, item) => sum + Math.abs(Number(item.amount) || 0), 0)
+  );
+
+  protected readonly failedAlertExpanded = signal(false);
+  protected readonly failedAlertDismissedKey = signal('');
+  private readonly failedAlertKey = computed(() =>
+    `${this.selectedMonth()}|${this.failedTransactions().map((item) => item.id).join(',')}`
+  );
+  protected readonly showFailedAlert = computed(() =>
+    this.failedTransactions().length > 0 && this.failedAlertDismissedKey() !== this.failedAlertKey()
+  );
+
+  protected toggleFailedAlert(): void {
+    this.failedAlertExpanded.update((isOpen) => !isOpen);
+  }
+
+  protected dismissFailedAlert(): void {
+    this.failedAlertDismissedKey.set(this.failedAlertKey());
+    this.failedAlertExpanded.set(false);
+  }
+
   protected isPendingTransaction(item: Transaction | null | undefined): boolean {
     if (!item) return false;
     const status = String(item.status || '').toLowerCase();

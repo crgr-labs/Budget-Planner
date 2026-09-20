@@ -94,22 +94,32 @@
           <span class="ledger-page-status">Saved automatically</span>
         </div>
 
-        <!-- Flagged / Failed Transaction Alert Strip -->
-        @if (failedTransactions().length > 0) {
-          <div class="ledger-alert-strip" role="alert">
-            <div class="ledger-alert-icon">⚠</div>
-            <div class="ledger-alert-body">
-              <div class="ledger-alert-title">Flagged / Failed Transaction Alert</div>
-              <p>{{ failedTransactions().length }} transaction{{ failedTransactions().length > 1 ? 's' : '' }} in {{ monthLabel() }} flagged for review (excluded from totals):</p>
-              <div class="ledger-alert-chips">
-                @for (tx of failedTransactions(); track tx.id) {
-                  <span class="ledger-alert-chip">
-                    <strong>{{ tx.description }}</strong>: -{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
-                    <small>({{ tx.date | date:'MMM d' }} · {{ tx.category }})</small>
-                  </span>
-                }
-              </div>
+        <!-- Flagged / Failed Transaction Mini Alert (collapsed by default, dismissible) -->
+        @if (showFailedAlert()) {
+          <div class="ledger-alert-mini" role="status">
+            <div class="ledger-alert-mini-bar">
+              <button type="button" class="ledger-alert-mini-main" (click)="toggleFailedAlert()" [attr.aria-expanded]="failedAlertExpanded()" aria-controls="failed-alert-list">
+                <span class="ledger-alert-mini-icon" aria-hidden="true">⚠</span>
+                <span class="ledger-alert-mini-text">
+                  <strong>{{ failedTransactions().length }} flagged</strong> · {{ failedTotal() | currency:'PHP':'symbol':'1.2-2' }} excluded from totals
+                </span>
+                <span class="ledger-alert-mini-chevron" aria-hidden="true">{{ failedAlertExpanded() ? '▴' : '▾' }}</span>
+              </button>
+              <button type="button" class="ledger-alert-mini-close" (click)="dismissFailedAlert()" aria-label="Dismiss flagged transaction alert" title="Dismiss">×</button>
             </div>
+            @if (failedAlertExpanded()) {
+              <ul class="ledger-alert-mini-list" id="failed-alert-list">
+                @for (tx of failedTransactions(); track tx.id) {
+                  <li>
+                    <span class="ledger-alert-mini-item-main">
+                      <strong>{{ tx.description }}</strong>
+                      <small>{{ tx.date | date:'MMM d' }} · {{ tx.category }}</small>
+                    </span>
+                    <span class="ledger-alert-mini-item-amount">-{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}</span>
+                  </li>
+                }
+              </ul>
+            }
           </div>
         }
 
