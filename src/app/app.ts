@@ -620,6 +620,56 @@ export class App {
     this.pendingTransactions().length
   );
 
+  /** Every pending transaction across all months (expenses and savings entries), newest first. */
+  protected readonly allPendingTransactions = computed(() =>
+    this.transactions()
+      .filter((item) => this.isPendingTransaction(item))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  );
+
+  protected readonly pendingModalOpen = signal(false);
+  protected readonly selectedPendingIds = signal<ReadonlySet<number>>(new Set());
+  protected readonly allPendingSelected = computed(() =>
+    this.allPendingTransactions().length > 0 &&
+    this.allPendingTransactions().every((item) => this.selectedPendingIds().has(item.id))
+  );
+
+  protected openPendingModal(): void {
+    this.selectedPendingIds.set(new Set());
+    this.pendingModalOpen.set(true);
+  }
+
+  protected closePendingModal(): void {
+    this.pendingModalOpen.set(false);
+    this.selectedPendingIds.set(new Set());
+  }
+
+  protected togglePendingSelection(id: number): void {
+    this.selectedPendingIds.update((selected) => {
+      const next = new Set(selected);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  }
+
+  protected toggleAllPendingSelection(): void {
+    this.selectedPendingIds.set(
+      this.allPendingSelected() ? new Set() : new Set(this.allPendingTransactions().map((item) => item.id))
+    );
+  }
+
+  protected clearSelectedPending(): void {
+    const ids = this.selectedPendingIds();
+    if (ids.size === 0) return;
+    this.transactions.update((items) => items.map((item) =>
+      ids.has(item.id) ? { ...item, pending: false, status: 'cleared' } : item
+    ));
+    this.persist();
+    this.syncToApi();
+    this.selectedPendingIds.set(new Set());
+    if (this.allPendingTransactions().length === 0) this.pendingModalOpen.set(false);
+  }
+
   protected toggleTransactionPending(id: number): void {
     this.transactions.update((items) => items.map((item) => {
       if (item.id !== id) return item;

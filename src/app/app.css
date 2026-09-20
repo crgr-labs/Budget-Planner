@@ -1491,6 +1491,118 @@ button.ledger-badge:active {
 }
 
 /* --------------------------------------------------------------------------
+   Pending Transactions Dialog
+   -------------------------------------------------------------------------- */
+.ledger-count-pill {
+  display: inline-block;
+  min-width: 18px;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: var(--ledger-radius-full);
+  background: var(--ledger-orange);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+.ledger-pending-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--ledger-row-rule);
+  background: var(--ledger-chip);
+  font-size: 12px;
+}
+
+.ledger-pending-toolbar-note {
+  color: var(--ledger-muted);
+}
+
+.ledger-pending-check,
+.ledger-pending-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.ledger-pending-check {
+  font-weight: 600;
+  color: var(--ledger-ink);
+}
+
+.ledger-pending-check input,
+.ledger-pending-row input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--ledger-accent);
+  cursor: pointer;
+}
+
+.ledger-pending-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: min(50vh, 360px);
+  overflow-y: auto;
+}
+
+.ledger-pending-list li + li {
+  border-top: 1px solid var(--ledger-row-rule);
+}
+
+.ledger-pending-row {
+  min-height: 52px;
+  padding: 8px 20px;
+  font-size: 13px;
+  color: var(--ledger-ink);
+}
+
+.ledger-pending-row.selected {
+  background: var(--ledger-accent-tint);
+}
+
+.ledger-pending-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ledger-pending-main strong,
+.ledger-pending-main small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ledger-pending-main small {
+  font-size: 11px;
+  color: var(--ledger-muted);
+}
+
+.ledger-pending-amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ledger-pending-amount.positive {
+  color: var(--ledger-green);
+}
+
+.ledger-dialog-footer .ledger-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
    Modal Dialog
    -------------------------------------------------------------------------- */
 .ledger-dialog-backdrop {

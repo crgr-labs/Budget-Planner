@@ -365,6 +365,11 @@
             </p>
           </div>
           <div class="ledger-page-actions">
+            @if (allPendingTransactions().length > 0) {
+              <button type="button" class="ledger-btn ledger-btn-ghost" (click)="openPendingModal()" title="Review and clear pending transactions">
+                Pending <span class="ledger-count-pill">{{ allPendingTransactions().length }}</span>
+              </button>
+            }
             <button type="button" class="ledger-btn ledger-btn-primary" (click)="openAddTransactionModal()">Add transaction</button>
           </div>
         </div>
@@ -1467,6 +1472,47 @@
           <span>Appearance</span>
           <span class="ledger-more-theme-value">{{ themeLabel() }}</span>
         </button>
+      </div>
+    </div>
+  }
+
+  <!-- Pending Transactions Dialog: list all pending, select any, clear in one go -->
+  @if (pendingModalOpen()) {
+    <div class="ledger-dialog-backdrop" (click)="closePendingModal()">
+      <div class="ledger-dialog" role="dialog" aria-modal="true" aria-labelledby="pending-modal-title" (click)="$event.stopPropagation()">
+        <div class="ledger-dialog-header">
+          <h2 id="pending-modal-title">Pending transactions</h2>
+          <button type="button" class="ledger-dialog-close" (click)="closePendingModal()" aria-label="Close">×</button>
+        </div>
+        <div class="ledger-pending-toolbar">
+          <label class="ledger-pending-check">
+            <input type="checkbox" [checked]="allPendingSelected()" (change)="toggleAllPendingSelection()" />
+            Select all ({{ allPendingTransactions().length }})
+          </label>
+          <span class="ledger-pending-toolbar-note">Across all months</span>
+        </div>
+        <ul class="ledger-pending-list">
+          @for (tx of allPendingTransactions(); track tx.id) {
+            <li>
+              <label class="ledger-pending-row" [class.selected]="selectedPendingIds().has(tx.id)">
+                <input type="checkbox" [checked]="selectedPendingIds().has(tx.id)" (change)="togglePendingSelection(tx.id)" />
+                <span class="ledger-pending-main">
+                  <strong>{{ tx.description }}</strong>
+                  <small>{{ tx.date | date:'MMM d, y' }} · {{ tx.category }} @if (tx.savings) { · Savings }</small>
+                </span>
+                <span class="ledger-pending-amount" [class.positive]="tx.savings && isSavingsContribution(tx)">
+                  {{ tx.savings && isSavingsContribution(tx) ? '+' : '-' }}{{ tx.amount | currency:'PHP':'symbol':'1.2-2' }}
+                </span>
+              </label>
+            </li>
+          }
+        </ul>
+        <div class="ledger-dialog-footer">
+          <button type="button" class="ledger-btn ledger-btn-ghost" (click)="closePendingModal()">Close</button>
+          <button type="button" class="ledger-btn ledger-btn-primary" [disabled]="selectedPendingIds().size === 0" (click)="clearSelectedPending()">
+            Clear pending{{ selectedPendingIds().size > 0 ? ' (' + selectedPendingIds().size + ')' : '' }}
+          </button>
+        </div>
       </div>
     </div>
   }
