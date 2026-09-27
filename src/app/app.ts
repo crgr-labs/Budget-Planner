@@ -434,6 +434,51 @@ export class App {
 
   protected readonly selectedTransactions = computed(() => this.regularTransactions().filter((item) => this.matchesMonth(item.date, this.selectedMonth()) && !this.isFailedTransaction(item)));
   protected readonly allSelectedTransactions = computed(() => this.regularTransactions().filter((item) => this.matchesMonth(item.date, this.selectedMonth())));
+
+  protected readonly spendingSearch = signal('');
+  protected readonly spendingCategoryFilter = signal('All');
+  protected readonly spendingStatusFilter = signal<'All' | 'Pending' | 'Flagged' | 'Cleared'>('All');
+  protected readonly spendingDateFrom = signal('');
+  protected readonly spendingDateTo = signal('');
+
+  protected readonly filteredSpendingTransactions = computed(() => {
+    const list = this.allSelectedTransactions();
+    const query = this.spendingSearch().trim().toLowerCase();
+    const category = this.spendingCategoryFilter();
+    const status = this.spendingStatusFilter();
+    const from = this.spendingDateFrom();
+    const to = this.spendingDateTo();
+    return list.filter((tx) => {
+      if (query) {
+        const haystack = `${tx.description} ${tx.category} ${tx.subcategory || ''}`.toLowerCase();
+        if (!haystack.includes(query)) return false;
+      }
+      if (category !== 'All' && tx.category !== category) return false;
+      if (status === 'Pending' && !this.isPendingTransaction(tx)) return false;
+      if (status === 'Flagged' && !this.isFailedTransaction(tx)) return false;
+      if (status === 'Cleared' && (this.isPendingTransaction(tx) || this.isFailedTransaction(tx))) return false;
+      if (from && tx.date < from) return false;
+      if (to && tx.date > to) return false;
+      return true;
+    });
+  });
+
+  protected readonly hasActiveSpendingFilters = computed(() =>
+    !!this.spendingSearch().trim() ||
+    this.spendingCategoryFilter() !== 'All' ||
+    this.spendingStatusFilter() !== 'All' ||
+    !!this.spendingDateFrom() ||
+    !!this.spendingDateTo()
+  );
+
+  protected clearSpendingFilters(): void {
+    this.spendingSearch.set('');
+    this.spendingCategoryFilter.set('All');
+    this.spendingStatusFilter.set('All');
+    this.spendingDateFrom.set('');
+    this.spendingDateTo.set('');
+  }
+
   protected readonly expectedBills = signal<ExpectedBill[]>([]);
   protected readonly newBillName = signal('');
   protected readonly newBillCategory = signal('Expected Bills');

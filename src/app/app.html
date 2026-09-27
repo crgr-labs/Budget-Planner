@@ -358,7 +358,13 @@
           <div>
             <h1>Regular spending</h1>
             <p class="ledger-page-subtitle">
-              {{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }} across {{ allSelectedTransactions().length }} transactions · {{ monthLabel() }}
+              {{ totalSpent() | currency:'PHP':'symbol':'1.2-2' }} across
+              @if (hasActiveSpendingFilters()) {
+                {{ filteredSpendingTransactions().length }} of {{ allSelectedTransactions().length }} transactions
+              } @else {
+                {{ allSelectedTransactions().length }} transactions
+              }
+              · {{ monthLabel() }}
               @if (pendingTotal() > 0) {
                 <span style="color:var(--ledger-orange); font-weight:600;"> (incl. {{ pendingTotal() | currency:'PHP':'symbol':'1.2-2' }} pending)</span>
               }
@@ -374,6 +380,37 @@
           </div>
         </div>
 
+        <div class="ledger-filter-bar">
+          <input class="ledger-input" style="flex:1; min-width:200px;"
+                 placeholder="Search description or category"
+                 [ngModel]="spendingSearch()" (ngModelChange)="spendingSearch.set($event)">
+
+          <select class="ledger-select" style="width:170px;" aria-label="Filter by category"
+                  [ngModel]="spendingCategoryFilter()" (ngModelChange)="spendingCategoryFilter.set($event)">
+            <option value="All">All categories</option>
+            @for (cat of categories; track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+
+          <div class="ledger-segmented-toggle" style="width:280px;">
+            <button type="button" [class.active]="spendingStatusFilter() === 'All'" (click)="spendingStatusFilter.set('All')">All</button>
+            <button type="button" [class.active]="spendingStatusFilter() === 'Pending'" (click)="spendingStatusFilter.set('Pending')">Pending</button>
+            <button type="button" [class.active]="spendingStatusFilter() === 'Flagged'" (click)="spendingStatusFilter.set('Flagged')">Flagged</button>
+            <button type="button" [class.active]="spendingStatusFilter() === 'Cleared'" (click)="spendingStatusFilter.set('Cleared')">Cleared</button>
+          </div>
+
+          <input type="date" class="ledger-input" style="width:150px;" aria-label="From date"
+                 [ngModel]="spendingDateFrom()" (ngModelChange)="spendingDateFrom.set($event)">
+          <span style="color:var(--ledger-muted); font-size:12px;">to</span>
+          <input type="date" class="ledger-input" style="width:150px;" aria-label="To date"
+                 [ngModel]="spendingDateTo()" (ngModelChange)="spendingDateTo.set($event)">
+
+          @if (hasActiveSpendingFilters()) {
+            <button type="button" class="ledger-btn ledger-btn-ghost" (click)="clearSpendingFilters()">Clear filters</button>
+          }
+        </div>
+
         <section class="ledger-table-container">
           <table class="ledger-table ledger-responsive-table">
             <thead>
@@ -386,14 +423,18 @@
               </tr>
             </thead>
             <tbody>
-              @if (allSelectedTransactions().length === 0) {
+              @if (filteredSpendingTransactions().length === 0) {
                 <tr>
                   <td colspan="5" style="padding:40px 20px; text-align:center; color:var(--ledger-muted);">
-                    No transactions recorded for {{ monthLabel() }}.
+                    @if (hasActiveSpendingFilters()) {
+                      No transactions match your search or filters.
+                    } @else {
+                      No transactions recorded for {{ monthLabel() }}.
+                    }
                   </td>
                 </tr>
               }
-              @for (tx of allSelectedTransactions(); track tx.id) {
+              @for (tx of filteredSpendingTransactions(); track tx.id) {
                 <tr [style.background]="editingExpenseId() === tx.id ? 'var(--ledger-accent-tint)' : null">
                   <td style="font-weight:500;" data-label="Transaction">
                     {{ tx.description }}
